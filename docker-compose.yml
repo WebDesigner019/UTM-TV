@@ -1,0 +1,45 @@
+services:
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: utm_tv_liputan
+      MYSQL_USER: utmtv
+      MYSQL_PASSWORD: utmtv_password
+      MYSQL_ROOT_PASSWORD: root_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: mysql://utmtv:utmtv_password@mysql:3306/utm_tv_liputan
+      JWT_SECRET: ganti-dengan-rahasia-panjang
+      SESSION_SECRET: ganti-dengan-rahasia-cookie
+      ADMIN_SEED_EMAIL: admin@trunojoyo.ac.id
+      ADMIN_SEED_PASSWORD: change-me-please
+      ADMIN_SEED_NAME: Admin UTM TV
+      UPLOAD_DIR: /app/uploads
+      MAX_FILE_SIZE_MB: "10"
+      APP_URL: http://localhost:3000
+      ALLOWED_EMAIL_DOMAINS: student.trunojoyo.ac.id,trunojoyo.ac.id
+      SMTP_FROM: noreply@trunojoyo.ac.id
+    ports:
+      - "3000:3000"
+    volumes:
+      - uploads:/app/uploads
+
+volumes:
+  mysql-data:
+  uploads:
