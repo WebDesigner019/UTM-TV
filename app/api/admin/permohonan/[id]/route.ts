@@ -3,7 +3,8 @@ import { z } from "zod";
 import { getCurrentAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { STATUS_OPTIONS } from "@/lib/status";
-import { sendStatusChangedEmail } from "@/lib/email";
+import { sendStatusChangedEmail, sendPermohonanDisetujuiEmail } from "@/lib/email";
+import { sendWaToUser } from "@/lib/wa";
 
 export const dynamic = "force-dynamic";
 
@@ -70,12 +71,31 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     });
 
     if (existing.status !== updated.status || body.pesan_pemohon) {
-      await sendStatusChangedEmail({
-        email: updated.email,
-        nomorRujukan: updated.nomorRujukan,
-        status: updated.status,
-        pesan: body.pesan_pemohon
-      }).catch((error) => console.error("Gagal mengirim email status:", error));
+      if (updated.status === "disetujui") {
+        await Promise.all([
+          sendPermohonanDisetujuiEmail({
+            email: updated.email,
+            namaAcara: updated.namaAcara,
+            tempatAcara: updated.tempatAcara,
+            tanggalAcara: updated.tanggalAcara,
+            pesan: body.pesan_pemohon
+          }).catch((error) => console.error("Gagal mengirim email disetujui:", error)),
+          sendWaToUser({
+            noWa: updated.noWa,
+            namaAcara: updated.namaAcara,
+            tempatAcara: updated.tempatAcara,
+            tanggalAcara: updated.tanggalAcara,
+            pesan: body.pesan_pemohon
+          }).catch((error) => console.error("Gagal mengirim WA ke user:", error))
+        ]);
+      } else {
+        await sendStatusChangedEmail({
+          email: updated.email,
+          nomorRujukan: updated.nomorRujukan,
+          status: updated.status,
+          pesan: body.pesan_pemohon
+        }).catch((error) => console.error("Gagal mengirim email status:", error));
+      }
     }
 
     return NextResponse.json({ permohonan: updated });
