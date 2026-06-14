@@ -56,7 +56,7 @@ export default async function AdminPage({
       <main className="mx-auto max-w-6xl px-4 py-8">
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
           <div>
-            <h1 className="text-3xl font-bold">Dashboard Permohonan</h1>
+            <h1 className="text-2xl font-bold sm:text-3xl">Dashboard Permohonan</h1>
             <p className="mt-2 text-slate-600">Kelola permohonan liputan yang masuk.</p>
           </div>
           <form className="flex flex-col gap-2 sm:flex-row">
@@ -81,7 +81,7 @@ export default async function AdminPage({
           </form>
         </div>
 
-        <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {STATUS_OPTIONS.map((item) => (
             <div key={item} className="rounded border border-line bg-white p-4">
               <div className="text-2xl font-bold">{countMap[item] || 0}</div>
@@ -90,7 +90,35 @@ export default async function AdminPage({
           ))}
         </div>
 
-        <div className="mt-6 overflow-hidden rounded border border-line bg-white">
+        {/* Mobile card layout */}
+        <div className="mt-6 space-y-3 md:hidden">
+          {items.length === 0 ? (
+            <div className="rounded border border-line bg-white p-6 text-center text-slate-500">
+              Belum ada data permohonan.
+            </div>
+          ) : (
+            items.map((item) => (
+              <div key={item.id} className="rounded border border-line bg-white p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="font-medium text-brand">{item.nomorRujukan}</div>
+                  <StatusBadge status={item.status} />
+                </div>
+                <div className="mt-2 font-semibold">{item.namaAcara}</div>
+                <div className="mt-1 text-sm text-slate-600">{item.namaInstansi}</div>
+                <div className="mt-1 text-sm text-slate-500">{formatTanggal(item.tanggalAcara)}</div>
+                <Link
+                  className="mt-3 inline-block text-sm font-semibold text-brand hover:underline"
+                  href={`/admin/permohonan/${item.id}`}
+                >
+                  Detail &rarr;
+                </Link>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop table */}
+        <div className="mt-6 hidden overflow-hidden rounded border border-line bg-white md:block">
           <div className="overflow-x-auto">
             <table className="min-w-full text-left text-sm">
               <thead className="bg-slate-100 text-slate-600">

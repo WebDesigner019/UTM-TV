@@ -40,7 +40,7 @@ export default async function DetailPermohonanPage({ params }: { params: { id: s
               <div className="flex flex-col justify-between gap-3 border-b border-line pb-4 sm:flex-row">
                 <div>
                   <p className="text-sm text-slate-500">{item.nomorRujukan}</p>
-                  <h1 className="text-3xl font-bold">{item.namaAcara}</h1>
+                  <h1 className="text-xl font-bold sm:text-3xl">{item.namaAcara}</h1>
                 </div>
                 <StatusBadge status={item.status} />
               </div>

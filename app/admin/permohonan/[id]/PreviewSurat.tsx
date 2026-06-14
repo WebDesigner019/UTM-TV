@@ -18,7 +18,7 @@ export function PreviewSurat({ id, fileOriginalName, fileMimeType }: Props) {
   if (!isPreviewable) {
     return (
       <span
-        className="mt-5 inline-flex cursor-not-allowed items-center gap-2 rounded border border-line px-4 py-2 font-semibold text-slate-400"
+        className="inline-flex cursor-not-allowed items-center gap-2 rounded border border-line px-4 py-2 font-semibold text-slate-400"
         title="Pratinjau tidak tersedia untuk file ini"
       >
         <Eye className="h-4 w-4" />
@@ -31,7 +31,7 @@ export function PreviewSurat({ id, fileOriginalName, fileMimeType }: Props) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="mt-5 inline-flex items-center gap-2 rounded border border-line px-4 py-2 font-semibold hover:bg-slate-50"
+        className="inline-flex items-center gap-2 rounded border border-line px-4 py-2 font-semibold hover:bg-slate-50"
       >
         <Eye className="h-4 w-4" />
         Lihat Surat
