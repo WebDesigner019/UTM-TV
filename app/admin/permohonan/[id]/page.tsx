@@ -50,6 +50,7 @@ export default async function DetailPermohonanPage({ params }: { params: { id: s
                 <Info label="No. WhatsApp" value={item.noWa} />
                 <Info label="Tanggal acara" value={formatTanggal(item.tanggalAcara)} />
                 <Info label="Tempat acara" value={item.tempatAcara} />
+                {item.detailPesertaAudiens ? <Info label="Detail Peserta/Audiens" value={item.detailPesertaAudiens} /> : null}
                 <Info label="Diajukan" value={formatTanggalWaktu(item.createdAt)} />
                 <Info label="Nama file" value={item.fileOriginalName} />
               </dl>

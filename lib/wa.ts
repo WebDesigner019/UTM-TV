@@ -56,6 +56,7 @@ export async function sendWaGroupNotification(input: {
   namaAcara: string;
   tempatAcara: string;
   tanggalAcara: Date;
+  detailPesertaAudiens?: string | null;
   noWa: string;
   email: string;
 }) {
@@ -73,6 +74,7 @@ export async function sendWaGroupNotification(input: {
     `nama instansi: ${input.namaInstansi}`,
     `nama acara: ${input.namaAcara}`,
     `tempat acara: ${input.tempatAcara}`,
+    `detail peserta/audiens: ${input.detailPesertaAudiens || "-"}`,
     `tanggal acara: ${formatTanggal(input.tanggalAcara)}`,
     `No whatsapp: ${input.noWa}`,
     `email: ${input.email}`

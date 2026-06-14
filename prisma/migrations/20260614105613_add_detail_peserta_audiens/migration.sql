@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `permohonan` ADD COLUMN `detail_peserta_audiens` TEXT NULL;

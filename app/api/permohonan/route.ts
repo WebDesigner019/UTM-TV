@@ -14,7 +14,8 @@ const schema = z.object({
   no_wa: z.string().min(1, "No. WhatsApp wajib diisi."),
   nama_acara: z.string().min(2, "Nama acara wajib diisi."),
   tanggal_acara: z.string().min(1, "Tanggal acara wajib diisi."),
-  tempat_acara: z.string().min(2, "Tempat acara wajib diisi.")
+  tempat_acara: z.string().min(2, "Tempat acara wajib diisi."),
+  detail_peserta_audiens: z.string().optional()
 });
 
 export async function POST(request: Request) {
@@ -32,7 +33,8 @@ export async function POST(request: Request) {
       no_wa: formData.get("no_wa"),
       nama_acara: formData.get("nama_acara"),
       tanggal_acara: formData.get("tanggal_acara"),
-      tempat_acara: formData.get("tempat_acara")
+      tempat_acara: formData.get("tempat_acara"),
+      detail_peserta_audiens: formData.get("detail_peserta_audiens")
     });
 
     const email = normalizeEmail(payload.email);
@@ -63,6 +65,7 @@ export async function POST(request: Request) {
               namaAcara: payload.nama_acara,
               tanggalAcara: new Date(payload.tanggal_acara),
               tempatAcara: payload.tempat_acara,
+              detailPesertaAudiens: payload.detail_peserta_audiens || null,
               filePath: uploaded.relativePath,
               fileOriginalName: uploaded.originalName,
               fileMimeType: uploaded.mimeType,
@@ -97,6 +100,7 @@ export async function POST(request: Request) {
       namaAcara: permohonan.namaAcara,
       tempatAcara: permohonan.tempatAcara,
       tanggalAcara: permohonan.tanggalAcara,
+      detailPesertaAudiens: permohonan.detailPesertaAudiens,
       noWa: permohonan.noWa,
       email: permohonan.email
     }).catch((error) => console.error("Gagal mengirim notifikasi WA grup:", error));

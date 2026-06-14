@@ -50,6 +50,7 @@ model Permohonan {
   namaAcara            String            @map("nama_acara")
   tanggalAcara         DateTime          @map("tanggal_acara") @db.Date
   tempatAcara          String            @map("tempat_acara")
+  detailPesertaAudiens String?           @map("detail_peserta_audiens") @db.Text
   filePath             String            @map("file_path")
   fileOriginalName     String            @map("file_original_name")
   fileMimeType         String            @map("file_mime_type")

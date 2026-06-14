@@ -47,6 +47,17 @@ export function AjukanForm() {
       <Field label="Tanggal acara" name="tanggal_acara" type="date" min={new Date().toISOString().split("T")[0]} />
       <Field label="Tempat acara" name="tempat_acara" />
       <div>
+        <label className="mb-2 block text-sm font-medium" htmlFor="detail_peserta_audiens">
+          Detail Peserta/Audiens
+        </label>
+        <textarea
+          className="focus-ring w-full rounded border border-line bg-white px-3 py-2 text-sm"
+          id="detail_peserta_audiens"
+          name="detail_peserta_audiens"
+          rows={3}
+        />
+      </div>
+      <div>
         <label className="mb-2 block text-sm font-medium">Surat pengajuan</label>
         <input
           className="focus-ring w-full rounded border border-line bg-white px-3 py-2 text-sm"
