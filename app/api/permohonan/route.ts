@@ -6,6 +6,7 @@ import { getClientIp, rateLimit } from "@/lib/rate-limit";
 import { isAllowedCampusEmail, normalizeEmail } from "@/lib/env";
 import { saveUploadedFile } from "@/lib/upload";
 import { sendPermohonanDiterimaEmail } from "@/lib/email";
+import { sendWaGroupNotification } from "@/lib/wa";
 
 const schema = z.object({
   nama_instansi: z.string().min(2, "Nama instansi wajib diisi."),
@@ -90,6 +91,13 @@ export async function POST(request: Request) {
       nomorRujukan: permohonan.nomorRujukan,
       namaAcara: permohonan.namaAcara
     }).catch((error) => console.error("Gagal mengirim email diterima:", error));
+
+    await sendWaGroupNotification({
+      namaInstansi: permohonan.namaInstansi,
+      namaAcara: permohonan.namaAcara,
+      tempatAcara: permohonan.tempatAcara,
+      tanggalAcara: permohonan.tanggalAcara
+    }).catch((error) => console.error("Gagal mengirim notifikasi WA grup:", error));
 
     return NextResponse.json({ nomor_rujukan: permohonan.nomorRujukan });
   } catch (error) {
