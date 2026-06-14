@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { Download } from "lucide-react";
+import { Download, Eye } from "lucide-react";
 import { AdminHeader } from "@/components/AdminHeader";
+import { PreviewSurat } from "./PreviewSurat";
 import { getCurrentAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { STATUS_LABEL, formatTanggal, formatTanggalWaktu } from "@/lib/status";
+import { StatusBadge, StatusIcon } from "@/components/StatusBadge";
 import { StatusForm } from "./StatusForm";
 
 export const dynamic = "force-dynamic";
@@ -40,9 +42,7 @@ export default async function DetailPermohonanPage({ params }: { params: { id: s
                   <p className="text-sm text-slate-500">{item.nomorRujukan}</p>
                   <h1 className="text-3xl font-bold">{item.namaAcara}</h1>
                 </div>
-                <span className="h-fit rounded bg-teal-50 px-3 py-2 text-sm font-semibold text-brand">
-                  {STATUS_LABEL[item.status]}
-                </span>
+                <StatusBadge status={item.status} />
               </div>
               <dl className="mt-5 grid gap-4 sm:grid-cols-2">
                 <Info label="Instansi" value={item.namaInstansi} />
@@ -53,13 +53,20 @@ export default async function DetailPermohonanPage({ params }: { params: { id: s
                 <Info label="Diajukan" value={formatTanggalWaktu(item.createdAt)} />
                 <Info label="Nama file" value={item.fileOriginalName} />
               </dl>
-              <a
-                className="mt-5 inline-flex items-center gap-2 rounded border border-line px-4 py-2 font-semibold hover:bg-slate-50"
-                href={`/api/admin/permohonan/${item.id}/file`}
-              >
-                <Download className="h-4 w-4" />
-                Unduh Surat
-              </a>
+              <div className="mt-5 flex flex-wrap gap-3">
+                <a
+                  className="inline-flex items-center gap-2 rounded border border-line px-4 py-2 font-semibold hover:bg-slate-50"
+                  href={`/api/admin/permohonan/${item.id}/file`}
+                >
+                  <Download className="h-4 w-4" />
+                  Unduh Surat
+                </a>
+                <PreviewSurat
+                  id={item.id}
+                  fileOriginalName={item.fileOriginalName}
+                  fileMimeType={item.fileMimeType}
+                />
+              </div>
             </div>
 
             <div className="rounded border border-line bg-white p-5">
@@ -67,7 +74,7 @@ export default async function DetailPermohonanPage({ params }: { params: { id: s
               <div className="mt-4 space-y-4">
                 {item.statusHistory.map((history) => (
                   <div key={history.id} className="border-l-2 border-brand pl-4">
-                    <div className="font-medium">{STATUS_LABEL[history.statusBaru]}</div>
+                    <div className="font-medium"><StatusIcon status={history.statusBaru} /></div>
                     <div className="text-sm text-slate-500">
                       {formatTanggalWaktu(history.createdAt)}
                       {history.admin ? ` - ${history.admin.nama}` : " - Sistem"}

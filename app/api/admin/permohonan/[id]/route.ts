@@ -8,7 +8,7 @@ import { sendStatusChangedEmail } from "@/lib/email";
 export const dynamic = "force-dynamic";
 
 const updateSchema = z.object({
-  status: z.enum(["diterima", "dalam_semakan", "disetujui", "ditolak", "dijadualkan", "selesai"]),
+  status: z.enum(["diterima", "disetujui", "ditolak", "selesai"]),
   pesan_pemohon: z.string().optional().nullable(),
   catatan_internal: z.string().optional().nullable()
 });

@@ -6,6 +6,7 @@ import { AdminHeader } from "@/components/AdminHeader";
 import { getCurrentAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { STATUS_LABEL, STATUS_OPTIONS, formatTanggal } from "@/lib/status";
+import { StatusBadge } from "@/components/StatusBadge";
 
 export const dynamic = "force-dynamic";
 
@@ -80,11 +81,11 @@ export default async function AdminPage({
           </form>
         </div>
 
-        <div className="mt-6 grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {STATUS_OPTIONS.map((item) => (
             <div key={item} className="rounded border border-line bg-white p-4">
               <div className="text-2xl font-bold">{countMap[item] || 0}</div>
-              <div className="text-sm text-slate-600">{STATUS_LABEL[item]}</div>
+              <div className="mt-1"><StatusBadge status={item} /></div>
             </div>
           ))}
         </div>
@@ -109,7 +110,7 @@ export default async function AdminPage({
                     <td className="px-4 py-3">{item.namaAcara}</td>
                     <td className="px-4 py-3">{item.namaInstansi}</td>
                     <td className="px-4 py-3">{formatTanggal(item.tanggalAcara)}</td>
-                    <td className="px-4 py-3">{STATUS_LABEL[item.status]}</td>
+                    <td className="px-4 py-3"><StatusBadge status={item.status} /></td>
                     <td className="px-4 py-3">
                       <Link className="font-semibold text-brand hover:underline" href={`/admin/permohonan/${item.id}`}>
                         Detail

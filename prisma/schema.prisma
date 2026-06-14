@@ -9,10 +9,8 @@ datasource db {
 
 enum StatusPermohonan {
   diterima
-  dalam_semakan
   disetujui
   ditolak
-  dijadualkan
   selesai
 }
 

@@ -13,12 +13,12 @@ async function getStats() {
   const year = new Date().getFullYear();
   const start = new Date(year, 0, 1);
   const end = new Date(year + 1, 0, 1);
-  const [total, disetujui, dalamSemakan] = await Promise.all([
+  const [total, disetujui, pengajuanMasuk] = await Promise.all([
     prisma.permohonan.count({ where: { createdAt: { gte: start, lt: end } } }),
     prisma.permohonan.count({ where: { status: "disetujui", createdAt: { gte: start, lt: end } } }),
-    prisma.permohonan.count({ where: { status: "dalam_semakan", createdAt: { gte: start, lt: end } } })
+    prisma.permohonan.count({ where: { status: "diterima", createdAt: { gte: start, lt: end } } })
   ]);
-  return { year, total, disetujui, dalamSemakan };
+  return { year, total, disetujui, pengajuanMasuk };
 }
 
 export default async function Home() {
@@ -87,7 +87,7 @@ export default async function Home() {
             <div className="mx-auto grid max-w-6xl gap-3 px-4 py-8 sm:grid-cols-3">
               <Stat label={`Total permohonan ${stats.year}`} value={stats.total} />
               <Stat label="Disetujui" value={stats.disetujui} />
-              <Stat label="Dalam semakan" value={stats.dalamSemakan} />
+              <Stat label="Pengajuan masuk" value={stats.pengajuanMasuk} />
             </div>
           </section>
         ) : null}

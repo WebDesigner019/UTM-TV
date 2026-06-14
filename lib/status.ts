@@ -2,19 +2,15 @@ import type { StatusPermohonan } from "@prisma/client";
 
 export const STATUS_OPTIONS: StatusPermohonan[] = [
   "diterima",
-  "dalam_semakan",
   "disetujui",
   "ditolak",
-  "dijadualkan",
   "selesai"
 ];
 
 export const STATUS_LABEL: Record<StatusPermohonan, string> = {
-  diterima: "Diterima",
-  dalam_semakan: "Dalam semakan",
-  disetujui: "Disetujui",
+  diterima: "Pengajuan masuk",
+  disetujui: "Pengajuan disetujui",
   ditolak: "Ditolak",
-  dijadualkan: "Dijadualkan",
   selesai: "Selesai"
 };
 

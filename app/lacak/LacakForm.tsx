@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Search } from "lucide-react";
 import { STATUS_LABEL, formatTanggal, formatTanggalWaktu } from "@/lib/status";
+import { StatusBadge, StatusIcon } from "@/components/StatusBadge";
 import type { StatusPermohonan } from "@prisma/client";
 
 type Result = {
@@ -83,9 +84,7 @@ export function LacakForm() {
               </p>
               <p className="text-sm text-slate-500">WA: {result.noWa}</p>
             </div>
-            <div className="h-fit rounded bg-teal-50 px-3 py-2 text-sm font-semibold text-brand">
-              {STATUS_LABEL[result.status]}
-            </div>
+            <StatusBadge status={result.status} />
           </div>
 
           {result.pesanPemohon ? (
@@ -98,7 +97,7 @@ export function LacakForm() {
           <div className="mt-4 space-y-4">
             {result.statusHistory.map((item, index) => (
               <div key={`${item.createdAt}-${index}`} className="border-l-2 border-brand pl-4">
-                <div className="font-medium">{STATUS_LABEL[item.statusBaru]}</div>
+                <div className="font-medium"><StatusIcon status={item.statusBaru} /></div>
                 <div className="text-sm text-slate-500">{formatTanggalWaktu(item.createdAt)}</div>
                 {item.pesan ? <p className="mt-1 text-sm text-slate-700">{item.pesan}</p> : null}
               </div>

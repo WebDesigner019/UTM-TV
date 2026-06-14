@@ -16,10 +16,10 @@ export async function GET() {
   const start = new Date(year, 0, 1);
   const end = new Date(year + 1, 0, 1);
 
-  const [total, disetujui, dalamSemakan] = await Promise.all([
+  const [total, disetujui, pengajuanMasuk] = await Promise.all([
     prisma.permohonan.count({ where: { createdAt: { gte: start, lt: end } } }),
     prisma.permohonan.count({ where: { status: "disetujui", createdAt: { gte: start, lt: end } } }),
-    prisma.permohonan.count({ where: { status: "dalam_semakan", createdAt: { gte: start, lt: end } } })
+    prisma.permohonan.count({ where: { status: "diterima", createdAt: { gte: start, lt: end } } })
   ]);
 
   return NextResponse.json({
@@ -27,6 +27,6 @@ export async function GET() {
     tahun: year,
     total,
     disetujui,
-    dalam_semakan: dalamSemakan
+    pengajuan_masuk: pengajuanMasuk
   });
 }
