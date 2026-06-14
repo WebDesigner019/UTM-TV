@@ -96,7 +96,9 @@ export async function POST(request: Request) {
       namaInstansi: permohonan.namaInstansi,
       namaAcara: permohonan.namaAcara,
       tempatAcara: permohonan.tempatAcara,
-      tanggalAcara: permohonan.tanggalAcara
+      tanggalAcara: permohonan.tanggalAcara,
+      noWa: permohonan.noWa,
+      email: permohonan.email
     }).catch((error) => console.error("Gagal mengirim notifikasi WA grup:", error));
 
     return NextResponse.json({ nomor_rujukan: permohonan.nomorRujukan });

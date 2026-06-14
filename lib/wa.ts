@@ -7,6 +7,8 @@ export async function sendWaGroupNotification(input: {
   namaAcara: string;
   tempatAcara: string;
   tanggalAcara: Date;
+  noWa: string;
+  email: string;
 }) {
   const token = process.env.FONNTE_WA_API;
   const groupId = process.env.FONNTE_GROUP_ID;
@@ -22,7 +24,9 @@ export async function sendWaGroupNotification(input: {
     `nama instansi: ${input.namaInstansi}`,
     `nama acara: ${input.namaAcara}`,
     `tempat acara: ${input.tempatAcara}`,
-    `tanggal acara: ${formatTanggal(input.tanggalAcara)}`
+    `tanggal acara: ${formatTanggal(input.tanggalAcara)}`,
+    `No whatsapp: ${input.noWa}`,
+    `email: ${input.email}`
   ].join("\n");
 
   const response = await fetch(FONNTE_API, {
