@@ -10,6 +10,7 @@ import { sendPermohonanDiterimaEmail } from "@/lib/email";
 const schema = z.object({
   nama_instansi: z.string().min(2, "Nama instansi wajib diisi."),
   email: z.string().email("Email tidak valid."),
+  no_wa: z.string().min(1, "No. WhatsApp wajib diisi."),
   nama_acara: z.string().min(2, "Nama acara wajib diisi."),
   tanggal_acara: z.string().min(1, "Tanggal acara wajib diisi."),
   tempat_acara: z.string().min(2, "Tempat acara wajib diisi.")
@@ -27,6 +28,7 @@ export async function POST(request: Request) {
     const payload = schema.parse({
       nama_instansi: formData.get("nama_instansi"),
       email: formData.get("email"),
+      no_wa: formData.get("no_wa"),
       nama_acara: formData.get("nama_acara"),
       tanggal_acara: formData.get("tanggal_acara"),
       tempat_acara: formData.get("tempat_acara")
@@ -56,6 +58,7 @@ export async function POST(request: Request) {
               nomorRujukan,
               namaInstansi: payload.nama_instansi,
               email,
+              noWa: payload.no_wa,
               namaAcara: payload.nama_acara,
               tanggalAcara: new Date(payload.tanggal_acara),
               tempatAcara: payload.tempat_acara,

@@ -8,6 +8,7 @@ import type { StatusPermohonan } from "@prisma/client";
 type Result = {
   nomorRujukan: string;
   namaInstansi: string;
+  noWa: string;
   namaAcara: string;
   tanggalAcara: string;
   tempatAcara: string;
@@ -80,6 +81,7 @@ export function LacakForm() {
               <p className="mt-1 text-sm text-slate-600">
                 {result.namaInstansi} - {formatTanggal(result.tanggalAcara)} - {result.tempatAcara}
               </p>
+              <p className="text-sm text-slate-500">WA: {result.noWa}</p>
             </div>
             <div className="h-fit rounded bg-teal-50 px-3 py-2 text-sm font-semibold text-brand">
               {STATUS_LABEL[result.status]}

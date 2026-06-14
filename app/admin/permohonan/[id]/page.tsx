@@ -47,6 +47,7 @@ export default async function DetailPermohonanPage({ params }: { params: { id: s
               <dl className="mt-5 grid gap-4 sm:grid-cols-2">
                 <Info label="Instansi" value={item.namaInstansi} />
                 <Info label="Email" value={item.email} />
+                <Info label="No. WhatsApp" value={item.noWa} />
                 <Info label="Tanggal acara" value={formatTanggal(item.tanggalAcara)} />
                 <Info label="Tempat acara" value={item.tempatAcara} />
                 <Info label="Diajukan" value={formatTanggalWaktu(item.createdAt)} />

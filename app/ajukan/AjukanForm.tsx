@@ -42,8 +42,9 @@ export function AjukanForm() {
       {error ? <div className="rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : null}
       <Field label="Nama instansi/kantor/prodi/unit kampus" name="nama_instansi" />
       <Field label="Email kampus" name="email" type="email" placeholder="nama@student.trunojoyo.ac.id" />
+      <Field label="No. WhatsApp" name="no_wa" type="tel" placeholder="08123456789" />
       <Field label="Nama acara" name="nama_acara" />
-      <Field label="Tanggal acara" name="tanggal_acara" type="date" />
+      <Field label="Tanggal acara" name="tanggal_acara" type="date" min={new Date().toISOString().split("T")[0]} />
       <Field label="Tempat acara" name="tempat_acara" />
       <div>
         <label className="mb-2 block text-sm font-medium">Surat pengajuan</label>
@@ -71,12 +72,14 @@ function Field({
   label,
   name,
   type = "text",
-  placeholder
+  placeholder,
+  min
 }: {
   label: string;
   name: string;
   type?: string;
   placeholder?: string;
+  min?: string;
 }) {
   return (
     <div>
@@ -89,6 +92,7 @@ function Field({
         name={name}
         type={type}
         placeholder={placeholder}
+        min={min}
         required
       />
     </div>

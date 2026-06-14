@@ -48,6 +48,7 @@ model Permohonan {
   nomorRujukan         String            @unique @map("nomor_rujukan") @db.VarChar(32)
   namaInstansi         String            @map("nama_instansi")
   email                String
+  noWa                 String            @map("no_wa")
   namaAcara            String            @map("nama_acara")
   tanggalAcara         DateTime          @map("tanggal_acara") @db.Date
   tempatAcara          String            @map("tempat_acara")

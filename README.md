@@ -46,7 +46,7 @@ cp .env.example .env
 DATABASE_URL="mysql://user:pass@localhost:3306/utm_tv_liputan"
 JWT_SECRET="rahasia-panjang"
 SESSION_SECRET="rahasia-cookie"
-ADMIN_SEED_EMAIL="admin@trunojoyo.ac.id"
+ADMIN_SEED_EMAIL="tv@trunojoyo.ac.id"
 ADMIN_SEED_PASSWORD="password-admin-yang-aman"
 ```
 

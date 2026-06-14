@@ -26,6 +26,7 @@ export async function POST(request: Request) {
       select: {
         nomorRujukan: true,
         namaInstansi: true,
+        noWa: true,
         namaAcara: true,
         tanggalAcara: true,
         tempatAcara: true,
