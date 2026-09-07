@@ -5,11 +5,12 @@ import { Eye, X } from "lucide-react";
 
 type Props = {
   id: number;
+  jenis: string;
   fileOriginalName: string;
   fileMimeType: string;
 };
 
-export function PreviewSurat({ id, fileOriginalName, fileMimeType }: Props) {
+export function PreviewSurat({ id, jenis, fileOriginalName, fileMimeType }: Props) {
   const [open, setOpen] = useState(false);
 
   const isPreviewable =
@@ -57,7 +58,7 @@ export function PreviewSurat({ id, fileOriginalName, fileMimeType }: Props) {
             </div>
             <div className="flex-1">
               <iframe
-                src={`/api/admin/permohonan/${id}/file/preview`}
+                src={`/api/admin/permohonan/${id}/file/preview?jenis=${jenis}`}
                 className="h-full w-full"
                 title={fileOriginalName}
               />

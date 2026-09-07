@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Sistem Pengajuan Liputan UTM TV",
-  description: "Sistem web untuk mengajukan dan melacak permohonan liputan UTM TV.",
+  title: "Sistem Pengajuan Kerjasama dan Media Partner UTM TV",
+  description: "Sistem web untuk mengajukan dan melacak permohonan liputan, media partner, dan kerjasama UTM TV.",
   icons: {
     icon: "/assets/utm-tv-logo.jpg",
     shortcut: "/assets/utm-tv-logo.jpg",

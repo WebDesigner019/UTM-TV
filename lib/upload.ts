@@ -19,7 +19,7 @@ export async function saveUploadedFile(file: File) {
   }
 
   if (file.size > getMaxFileSizeBytes()) {
-    throw new Error(`Ukuran file maksimal ${process.env.MAX_FILE_SIZE_MB || "10"} MB.`);
+    throw new Error(`Ukuran file maksimal ${process.env.MAX_FILE_SIZE_MB || "5"} MB.`);
   }
 
   const originalName = file.name || "surat-pengajuan";

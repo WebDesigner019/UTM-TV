@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Send } from "lucide-react";
+import { FormField, FileInput } from "@/components/FormField";
 
 export function AjukanForm() {
   const router = useRouter();
@@ -22,7 +23,7 @@ export function AjukanForm() {
       return;
     }
 
-    const response = await fetch("/api/permohonan", {
+    const response = await fetch("/api/permohonan/liputan", {
       method: "POST",
       body: formData
     });
@@ -40,12 +41,12 @@ export function AjukanForm() {
   return (
     <form onSubmit={onSubmit} className="space-y-5 rounded border border-line bg-white p-5">
       {error ? <div className="rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : null}
-      <Field label="Nama instansi/kantor/prodi/unit kampus" name="nama_instansi" />
-      <Field label="Email kampus" name="email" type="email" placeholder="nama@student.trunojoyo.ac.id" />
-      <Field label="No. WhatsApp" name="no_wa" type="tel" placeholder="08123456789" />
-      <Field label="Nama acara" name="nama_acara" />
-      <Field label="Tanggal acara" name="tanggal_acara" type="date" min={new Date().toISOString().split("T")[0]} />
-      <Field label="Tempat acara" name="tempat_acara" />
+      <FormField label="Nama instansi/kantor/prodi/unit kampus" name="nama_instansi" />
+      <FormField label="Email kampus" name="email" type="email" placeholder="nama@student.trunojoyo.ac.id" />
+      <FormField label="No. WhatsApp" name="no_wa" type="tel" placeholder="08123456789" />
+      <FormField label="Nama acara" name="nama_acara" />
+      <FormField label="Tanggal acara" name="tanggal_acara" type="date" min={new Date().toISOString().split("T")[0]} />
+      <FormField label="Tempat acara" name="tempat_acara" />
       <div>
         <label className="mb-2 block text-sm font-medium" htmlFor="detail_peserta_audiens">
           Detail Peserta/Audiens
@@ -57,17 +58,11 @@ export function AjukanForm() {
           rows={3}
         />
       </div>
-      <div>
-        <label className="mb-2 block text-sm font-medium">Surat pengajuan</label>
-        <input
-          className="focus-ring w-full rounded border border-line bg-white px-3 py-2 text-sm"
-          name="surat_pengajuan"
-          type="file"
-          accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png"
-          required
-        />
-        <p className="mt-2 text-xs text-slate-500">Format PDF, DOC, DOCX, JPG, atau PNG. Maksimal 10 MB.</p>
-      </div>
+      <FileInput
+        label="Surat pengajuan"
+        name="surat_pengajuan"
+        hint="Format PDF, DOC, DOCX, JPG, atau PNG. Maksimal 5 MB."
+      />
       <button
         disabled={loading}
         className="inline-flex w-full items-center justify-center gap-2 rounded bg-brand px-4 py-3 font-semibold text-white hover:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
@@ -76,36 +71,5 @@ export function AjukanForm() {
         {loading ? "Mengirim..." : "Kirim Permohonan"}
       </button>
     </form>
-  );
-}
-
-function Field({
-  label,
-  name,
-  type = "text",
-  placeholder,
-  min
-}: {
-  label: string;
-  name: string;
-  type?: string;
-  placeholder?: string;
-  min?: string;
-}) {
-  return (
-    <div>
-      <label className="mb-2 block text-sm font-medium" htmlFor={name}>
-        {label}
-      </label>
-      <input
-        className="focus-ring w-full rounded border border-line bg-white px-3 py-2"
-        id={name}
-        name={name}
-        type={type}
-        placeholder={placeholder}
-        min={min}
-        required
-      />
-    </div>
   );
 }

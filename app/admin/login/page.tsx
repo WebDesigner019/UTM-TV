@@ -14,7 +14,7 @@ export default async function LoginPage() {
         Admin UTM TV
       </p>
       <h1 className="mt-2 text-3xl font-bold">Login Admin</h1>
-      <p className="mb-6 mt-3 text-slate-600">Masuk untuk mengelola permohonan liputan.</p>
+      <p className="mb-6 mt-3 text-slate-600">Masuk untuk mengelola permohonan liputan, media partner, dan kerjasama.</p>
       <LoginForm />
     </main>
   );

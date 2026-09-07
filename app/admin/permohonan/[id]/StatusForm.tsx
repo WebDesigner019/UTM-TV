@@ -8,11 +8,13 @@ import { STATUS_LABEL, STATUS_OPTIONS } from "@/lib/status";
 
 export function StatusForm({
   id,
+  jenis,
   status,
   pesanPemohon,
   catatanInternal
 }: {
   id: number;
+  jenis: string;
   status: StatusPermohonan;
   pesanPemohon?: string | null;
   catatanInternal?: string | null;
@@ -27,7 +29,7 @@ export function StatusForm({
     setLoading(true);
     const form = new FormData(event.currentTarget);
 
-    const response = await fetch(`/api/admin/permohonan/${id}`, {
+    const response = await fetch(`/api/admin/permohonan/${id}?jenis=${jenis}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

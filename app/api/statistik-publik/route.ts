@@ -16,16 +16,18 @@ export async function GET() {
   const start = new Date(year, 0, 1);
   const end = new Date(year + 1, 0, 1);
 
-  const [total, disetujui, pengajuanMasuk] = await Promise.all([
-    prisma.permohonan.count({ where: { createdAt: { gte: start, lt: end } } }),
-    prisma.permohonan.count({ where: { status: "disetujui", createdAt: { gte: start, lt: end } } }),
-    prisma.permohonan.count({ where: { status: "diterima", createdAt: { gte: start, lt: end } } })
+  const [totalLiputan, totalMp, totalKj, disetujui, pengajuanMasuk] = await Promise.all([
+    prisma.permohonanLiputan.count({ where: { createdAt: { gte: start, lt: end } } }),
+    prisma.permohonanMediaPartner.count({ where: { createdAt: { gte: start, lt: end } } }),
+    prisma.permohonanKerjasama.count({ where: { createdAt: { gte: start, lt: end } } }),
+    prisma.permohonanLiputan.count({ where: { status: "disetujui", createdAt: { gte: start, lt: end } } }),
+    prisma.permohonanLiputan.count({ where: { status: "diterima", createdAt: { gte: start, lt: end } } })
   ]);
 
   return NextResponse.json({
     aktif: true,
     tahun: year,
-    total,
+    total: totalLiputan + totalMp + totalKj,
     disetujui,
     pengajuan_masuk: pengajuanMasuk
   });

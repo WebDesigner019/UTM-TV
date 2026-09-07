@@ -2,8 +2,10 @@ import Link from "next/link";
 import { CampusWatermark } from "@/components/CampusWatermark";
 import { PublicNav } from "@/components/PublicNav";
 
-export default function SuksesPage({ searchParams }: { searchParams: { nomor?: string } }) {
+export default function SuksesPage({ searchParams }: { searchParams: { nomor?: string; jenis?: string } }) {
   const nomor = searchParams.nomor || "-";
+  const jenis = searchParams.jenis || "liputan";
+  const butuhEmail = jenis === "liputan";
   return (
     <>
       <CampusWatermark />
@@ -14,7 +16,9 @@ export default function SuksesPage({ searchParams }: { searchParams: { nomor?: s
         <div className="mt-6 rounded border border-line bg-white p-8">
           <div className="break-all text-4xl font-bold text-ink">{nomor}</div>
           <p className="mt-4 text-slate-600">
-            Nomor ini diperlukan untuk mengecek status permohonan bersama email kampus yang digunakan saat pengajuan.
+            {butuhEmail
+              ? "Nomor ini diperlukan untuk mengecek status permohonan bersama email kampus yang digunakan saat pengajuan."
+              : "Nomor ini diperlukan untuk mengecek status permohonan Anda."}
           </p>
         </div>
         <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">

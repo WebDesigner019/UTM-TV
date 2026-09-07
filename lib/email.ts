@@ -6,6 +6,31 @@ import { STATUS_LABEL, formatTanggal } from "@/lib/status";
 import path from "path";
 import fs from "fs";
 
+const THEME = {
+  brand: "#0f766e",
+  ink: "#18212f",
+  line: "#dce3ec",
+  accent: "#c2410c",
+  bg: "#f7f9fb",
+  logoNavy: "#002740",
+  logoBlue: "#0F87D3",
+  logoOrange: "#F67D14"
+} as const;
+
+const STATUS_COLOR: Record<StatusPermohonan, string> = {
+  diterima: "#3b82f6",
+  disetujui: "#22c55e",
+  ditolak: "#ef4444",
+  selesai: "#0f766e"
+};
+
+const STATUS_BG: Record<StatusPermohonan, string> = {
+  diterima: "#eff6ff",
+  disetujui: "#f0fdf4",
+  ditolak: "#fef2f2",
+  selesai: "#f0fdfa"
+};
+
 function smtpReady() {
   return Boolean(process.env.SMTP_HOST && process.env.SMTP_PORT && process.env.SMTP_FROM);
 }
@@ -47,25 +72,201 @@ async function sendMail(
   await transporter.sendMail(mailOptions);
 }
 
+function buildEmailHtml(content: string, logoCid?: string) {
+  const logoHtml = logoCid
+    ? `<img src="cid:${logoCid}" alt="UTM-TV" style="max-width:130px;height:auto;display:block;margin:0 auto;" />`
+    : "";
+
+  return `<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    body {
+      margin: 0; padding: 0;
+      font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
+      background: ${THEME.bg};
+      color: ${THEME.ink};
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+    .outer {
+      padding: 32px 16px;
+    }
+    .card {
+      max-width: 560px; margin: 0 auto;
+      background: #ffffff;
+      border: 1px solid ${THEME.line};
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .card-header {
+      background: ${THEME.logoNavy};
+      text-align: center;
+      padding: 28px 24px 20px;
+    }
+    .card-body {
+      padding: 28px 32px;
+    }
+    .card-footer {
+      padding: 20px 32px;
+      border-top: 1px solid ${THEME.line};
+      font-size: 13px;
+      color: #64748b;
+      text-align: center;
+      background: #fafbfc;
+    }
+    h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: ${THEME.ink};
+      margin: 0 0 8px;
+    }
+    p {
+      margin: 0 0 16px;
+      color: #334155;
+    }
+    .info-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+    }
+    .info-table td {
+      padding: 8px 0;
+      vertical-align: top;
+      font-size: 14px;
+    }
+    .info-table td:first-child {
+      width: 135px;
+      font-weight: 600;
+      color: ${THEME.ink};
+    }
+    .info-table td:last-child {
+      color: #334155;
+    }
+    .badge {
+      display: inline-block;
+      padding: 3px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+    }
+    .message-box {
+      background: #f8fafc;
+      border-left: 4px solid ${THEME.brand};
+      padding: 14px 16px;
+      border-radius: 6px;
+      margin: 16px 0;
+      font-size: 14px;
+      color: #334155;
+    }
+    .message-box p { margin: 0; }
+    .btn {
+      display: inline-block;
+      padding: 12px 28px;
+      background: ${THEME.brand};
+      color: #ffffff !important;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 15px;
+    }
+    .btn:hover { background: #0d5e57; }
+    .btn-orange {
+      background: ${THEME.logoOrange};
+    }
+    .btn-orange:hover { background: #d96a0e; }
+    .divider {
+      height: 1px;
+      background: ${THEME.line};
+      margin: 20px 0;
+    }
+    .accent-line {
+      height: 4px;
+      background: linear-gradient(90deg, ${THEME.brand}, ${THEME.logoBlue}, ${THEME.logoOrange});
+    }
+    .text-center { text-align: center; }
+    .mt-16 { margin-top: 16px; }
+    a { color: ${THEME.brand}; }
+    @media only screen and (max-width: 480px) {
+      .outer { padding: 16px 8px; }
+      .card-body { padding: 20px 16px; }
+      .card-footer { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="outer">
+    <div class="card">
+      <div class="accent-line"></div>
+      <div class="card-header">
+        ${logoHtml}
+      </div>
+      <div class="card-body">
+        ${content}
+      </div>
+      <div class="card-footer">
+        &copy; ${new Date().getFullYear()} UTM-TV &mdash; Lembaga Penyiaran Kampus Universitas Trunojoyo Madura
+      </div>
+    </div>
+  </div>
+</body>
+</html>`;
+}
+
+function getLogoAttachment(): Mail.Attachment[] {
+  const logoPath = path.join(process.cwd(), "public", "assets", "utm-tv-logo.jpg");
+  if (fs.existsSync(logoPath)) {
+    return [{ filename: "utm-tv-logo.jpg", path: logoPath, cid: "logo" }];
+  }
+  return [];
+}
+
 export async function sendPermohonanDiterimaEmail(input: {
   email: string;
   nomorRujukan: string;
   namaAcara: string;
 }) {
   const lacakUrl = `${getAppUrl()}/lacak`;
-  await sendMail(
-    input.email,
-    `Permohonan liputan diterima - ${input.nomorRujukan}`,
-    [
-      "Permohonan liputan Anda telah diterima.",
-      "",
-      `Nomor rujukan: ${input.nomorRujukan}`,
-      `Nama acara: ${input.namaAcara}`,
-      `Cek status permohonan: ${lacakUrl}`,
-      "",
-      "Simpan nomor rujukan ini untuk pelacakan."
-    ].join("\n")
-  );
+  const text = [
+    "Permohonan liputan Anda telah diterima.",
+    "",
+    `Nomor rujukan: ${input.nomorRujukan}`,
+    `Nama acara: ${input.namaAcara}`,
+    `Cek status permohonan: ${lacakUrl}`,
+    "",
+    "Simpan nomor rujukan ini untuk pelacakan."
+  ].join("\n");
+
+  const html = buildEmailHtml(`
+    <div class="text-center">
+      <h1>Permohonan Diterima</h1>
+      <p style="color:#64748b;font-size:15px;">Permohonan liputan Anda telah kami terima dan sedang diproses.</p>
+    </div>
+    <table class="info-table">
+      <tr>
+        <td>Nomor Rujukan</td>
+        <td><strong style="color:${THEME.brand};">${input.nomorRujukan}</strong></td>
+      </tr>
+      <tr>
+        <td>Nama Acara</td>
+        <td>${input.namaAcara}</td>
+      </tr>
+      <tr>
+        <td>Status</td>
+        <td><span class="badge" style="background:${STATUS_BG.diterima};color:${STATUS_COLOR.diterima};">${STATUS_LABEL.diterima}</span></td>
+      </tr>
+    </table>
+    <div class="divider"></div>
+    <p style="font-size:14px;">Simpan nomor rujukan di atas untuk memantau status permohonan Anda.</p>
+    <div class="text-center mt-16">
+      <a href="${lacakUrl}" class="btn btn-orange">Lacak Permohonan</a>
+    </div>
+  `, "logo");
+
+  await sendMail(input.email, `Permohonan liputan diterima - ${input.nomorRujukan}`, text, html, getLogoAttachment());
 }
 
 export async function sendStatusChangedEmail(input: {
@@ -74,20 +275,47 @@ export async function sendStatusChangedEmail(input: {
   status: StatusPermohonan;
   pesan?: string | null;
 }) {
-  await sendMail(
-    input.email,
-    `Status permohonan diperbarui - ${input.nomorRujukan}`,
-    [
-      `Status permohonan ${input.nomorRujukan} diperbarui.`,
-      "",
-      `Status baru: ${STATUS_LABEL[input.status]}`,
-      input.pesan ? `Pesan: ${input.pesan}` : null,
-      "",
-      `Cek status permohonan: ${getAppUrl()}/lacak`
-    ]
-      .filter(Boolean)
-      .join("\n")
-  );
+  const label = STATUS_LABEL[input.status];
+  const color = STATUS_COLOR[input.status];
+  const bg = STATUS_BG[input.status];
+
+  const text = [
+    `Status permohonan ${input.nomorRujukan} diperbarui.`,
+    "",
+    `Status baru: ${label}`,
+    input.pesan ? `Pesan: ${input.pesan}` : null,
+    "",
+    `Cek status permohonan: ${getAppUrl()}/lacak`
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  const html = buildEmailHtml(`
+    <div class="text-center">
+      <h1>Status Diperbarui</h1>
+      <p style="color:#64748b;font-size:15px;">Status permohonan liputan Anda telah diperbarui.</p>
+    </div>
+    <table class="info-table">
+      <tr>
+        <td>Nomor Rujukan</td>
+        <td><strong style="color:${THEME.brand};">${input.nomorRujukan}</strong></td>
+      </tr>
+      <tr>
+        <td>Status Baru</td>
+        <td><span class="badge" style="background:${bg};color:${color};">${label}</span></td>
+      </tr>
+    </table>
+    ${input.pesan ? `
+    <div class="message-box">
+      <p><strong>Pesan:</strong> ${input.pesan}</p>
+    </div>` : ""}
+    <div class="divider"></div>
+    <div class="text-center mt-16">
+      <a href="${getAppUrl()}/lacak" class="btn">Lacak Permohonan</a>
+    </div>
+  `, "logo");
+
+  await sendMail(input.email, `Status permohonan diperbarui - ${input.nomorRujukan}`, text, html, getLogoAttachment());
 }
 
 export async function sendPermohonanDisetujuiEmail(input: {
@@ -97,87 +325,56 @@ export async function sendPermohonanDisetujuiEmail(input: {
   tanggalAcara: Date;
   pesan?: string | null;
 }) {
-  const logoPath = path.join(process.cwd(), "public", "assets", "utm-tv-logo.jpg");
-  const logoExists = fs.existsSync(logoPath);
-
   const tanggal = formatTanggal(input.tanggalAcara);
   const keterangan = input.pesan || "-";
 
   const text = [
-    `Hi Tretan UTM!👋`,
-    `pengajuan liputan anda telah kami terima pada:`,
+    "Pengajuan liputan anda telah disetujui!",
+    "",
     `nama acara: ${input.namaAcara}`,
     `tempat: ${input.tempatAcara}`,
     `tanggal: ${tanggal}`,
-    `status: disetujui`,
-    ``,
-    `dengan keterangan:`,
-    `${keterangan}`,
-    ``,
-    `terimakasih, salam hangat UTM-TV.`
+    "status: disetujui",
+    "",
+    `dengan keterangan: ${keterangan}`,
+    "",
+    "terimakasih, salam hangat UTM-TV."
   ].join("\n");
 
-  const html = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <style>
-    body { font-family: Arial, sans-serif; color: #333; margin: 0; padding: 0; }
-    .container { max-width: 600px; margin: 0 auto; padding: 24px; }
-    .header { text-align: center; padding: 20px 0; }
-    .logo { max-width: 120px; height: auto; }
-    .content { padding: 20px 0; line-height: 1.6; }
-    .label { font-weight: bold; }
-    .keterangan { background: #f5f5f5; padding: 12px; border-radius: 6px; margin-top: 8px; }
-    .status-badge {
-      display: inline-block; background: #22c55e; color: #fff;
-      padding: 4px 14px; border-radius: 999px; font-size: 14px; font-weight: 600;
-    }
-    .footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid #e5e7eb; font-size: 13px; color: #666; text-align: center; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="header">
-      ${logoExists ? '<img src="cid:logo" alt="UTM-TV" class="logo" />' : ""}
+  const html = buildEmailHtml(`
+    <div class="text-center">
+      <h1>Pengajuan Disetujui</h1>
+      <p style="color:#64748b;font-size:15px;">Selamat! Pengajuan liputan Anda telah disetujui oleh tim UTM-TV.</p>
     </div>
-    <div class="content">
-      <p>Hi Tretan UTM!👋</p>
-      <p>pengajuan liputan anda telah kami terima pada:</p>
-      <table>
-        <tr><td class="label">nama acara</td><td>: ${input.namaAcara}</td></tr>
-        <tr><td class="label">tempat</td><td>: ${input.tempatAcara}</td></tr>
-        <tr><td class="label">tanggal</td><td>: ${tanggal}</td></tr>
-        <tr><td class="label">status</td><td>: <span class="status-badge">disetujui</span></td></tr>
-      </table>
-      <p>dengan keterangan:</p>
-      <div class="keterangan">${keterangan}</div>
-      <p>terimakasih, salam hangat UTM-TV.</p>
+    <table class="info-table">
+      <tr>
+        <td>Nama Acara</td>
+        <td><strong>${input.namaAcara}</strong></td>
+      </tr>
+      <tr>
+        <td>Tempat</td>
+        <td>${input.tempatAcara}</td>
+      </tr>
+      <tr>
+        <td>Tanggal</td>
+        <td>${tanggal}</td>
+      </tr>
+      <tr>
+        <td>Status</td>
+        <td><span class="badge" style="background:${STATUS_BG.disetujui};color:${STATUS_COLOR.disetujui};">disetujui</span></td>
+      </tr>
+    </table>
+    <div class="message-box">
+      <p><strong>Keterangan:</strong></p>
+      <p>${keterangan}</p>
     </div>
-    <div class="footer">
-      &copy; ${new Date().getFullYear()} UTM-TV
+    <p style="font-size:14px;color:#64748b;">Silakan hubungi kami jika ada perubahan jadwal atau informasi lebih lanjut.</p>
+    <div class="text-center mt-16">
+      <a href="${getAppUrl()}/lacak" class="btn btn-orange">Cek Status</a>
     </div>
-  </div>
-</body>
-</html>`;
+  `, "logo");
 
-  const attachments: Mail.Attachment[] = [];
-  if (logoExists) {
-    attachments.push({
-      filename: "utm-tv-logo.jpg",
-      path: logoPath,
-      cid: "logo"
-    });
-  }
-
-  await sendMail(
-    input.email,
-    "Pengajuan liputan disetujui",
-    text,
-    html,
-    attachments.length > 0 ? attachments : undefined
-  );
+  await sendMail(input.email, "Pengajuan liputan disetujui", text, html, getLogoAttachment());
 }
 
 export async function sendAdminPasswordResetEmail(input: {
@@ -185,16 +382,28 @@ export async function sendAdminPasswordResetEmail(input: {
   nama: string;
   resetUrl: string;
 }) {
-  await sendMail(
-    input.email,
-    "Reset password admin UTM TV",
-    [
-      `Halo ${input.nama},`,
-      "",
-      "Kami menerima permintaan untuk membuat password admin baru.",
-      `Buka tautan berikut untuk melanjutkan: ${input.resetUrl}`,
-      "",
-      "Tautan ini berlaku selama 30 menit. Abaikan email ini jika Anda tidak meminta reset password."
-    ].join("\n")
-  );
+  const text = [
+    `Halo ${input.nama},`,
+    "",
+    "Kami menerima permintaan untuk membuat password admin baru.",
+    `Buka tautan berikut untuk melanjutkan: ${input.resetUrl}`,
+    "",
+    "Tautan ini berlaku selama 30 menit. Abaikan email ini jika Anda tidak meminta reset password."
+  ].join("\n");
+
+  const html = buildEmailHtml(`
+    <div class="text-center">
+      <h1>Reset Password Admin</h1>
+      <p style="color:#64748b;font-size:15px;">Kami menerima permintaan reset password untuk akun admin Anda.</p>
+    </div>
+    <p>Halo, <strong>${input.nama}</strong>!</p>
+    <p>Klik tombol di bawah untuk membuat password baru. Tautan ini berlaku selama <strong>30 menit</strong>.</p>
+    <div class="text-center mt-16">
+      <a href="${input.resetUrl}" class="btn">Reset Password</a>
+    </div>
+    <p style="font-size:13px;color:#94a3b8;margin-top:24px;">Abaikan email ini jika Anda tidak merasa meminta reset password. Jika tombol tidak berfungsi, salin tautan berikut ke browser:</p>
+    <p style="font-size:12px;color:#64748b;word-break:break-all;">${input.resetUrl}</p>
+  `, "logo");
+
+  await sendMail(input.email, "Reset password admin UTM TV", text, html, getLogoAttachment());
 }

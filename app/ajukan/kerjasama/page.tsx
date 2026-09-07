@@ -1,19 +1,19 @@
 import { PublicNav } from "@/components/PublicNav";
 import { CampusWatermark } from "@/components/CampusWatermark";
-import { LacakForm } from "./LacakForm";
+import { KerjasamaForm } from "./KerjasamaForm";
 
-export default function LacakPage() {
+export default function KerjasamaPage() {
   return (
     <>
       <CampusWatermark />
       <PublicNav />
       <main className="mx-auto max-w-3xl px-4 py-10">
-        <h1 className="text-3xl font-bold">Cek Status Permohonan</h1>
+        <h1 className="text-3xl font-bold">Pengajuan Permohonan Kerjasama</h1>
         <p className="mt-3 text-slate-600">
-          Pilih jenis pengajuan dan masukkan nomor rujukan. Untuk pengajuan liputan, gunakan email kampus yang sama dengan data pengajuan.
+          Lengkapi data acara dan unggah surat permohonan kerjasama. Simpan nomor rujukan untuk pelacakan.
         </p>
         <div className="mt-6">
-          <LacakForm />
+          <KerjasamaForm />
         </div>
       </main>
     </>

@@ -17,7 +17,7 @@ export function isAllowedCampusEmail(email: string) {
 }
 
 export function getMaxFileSizeBytes() {
-  const mb = Number(process.env.MAX_FILE_SIZE_MB || "10");
+  const mb = Number(process.env.MAX_FILE_SIZE_MB || "5");
   return mb * 1024 * 1024;
 }
 

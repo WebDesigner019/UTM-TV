@@ -1,17 +1,25 @@
 import { prisma } from "@/lib/prisma";
 
-export async function generateNomorRujukan(tanggal = new Date()) {
+export type JenisPrefix = "LIP" | "MP" | "KJ";
+
+export async function generateNomorRujukan(jenis: JenisPrefix, tanggal = new Date()) {
   const year = tanggal.getFullYear();
   const start = new Date(year, 0, 1);
   const end = new Date(year + 1, 0, 1);
-  const count = await prisma.permohonan.count({
-    where: {
-      createdAt: {
-        gte: start,
-        lt: end
-      }
-    }
-  });
+  const where = { createdAt: { gte: start, lt: end } };
 
-  return `UTMTV-${year}-${String(count + 1).padStart(4, "0")}`;
+  let count: number;
+  switch (jenis) {
+    case "LIP":
+      count = await prisma.permohonanLiputan.count({ where });
+      break;
+    case "MP":
+      count = await prisma.permohonanMediaPartner.count({ where });
+      break;
+    case "KJ":
+      count = await prisma.permohonanKerjasama.count({ where });
+      break;
+  }
+
+  return `UTMTV-${jenis}-${year}-${String(count + 1).padStart(4, "0")}`;
 }

@@ -11,21 +11,60 @@ import { StatusForm } from "./StatusForm";
 
 export const dynamic = "force-dynamic";
 
-export default async function DetailPermohonanPage({ params }: { params: { id: string } }) {
+const JENIS_LABEL: Record<string, string> = {
+  liputan: "Pengajuan Liputan",
+  media_partner: "Pengajuan Media Partner",
+  kerjasama: "Pengajuan Kerjasama"
+};
+
+export default async function DetailPermohonanPage({
+  params,
+  searchParams
+}: {
+  params: { id: string };
+  searchParams: { jenis?: string };
+}) {
   const admin = await getCurrentAdmin();
   if (!admin) redirect("/admin/login");
 
   const id = Number(params.id);
-  const item = await prisma.permohonan.findUnique({
-    where: { id },
-    include: {
-      statusHistory: {
-        orderBy: { createdAt: "asc" },
-        include: { admin: { select: { nama: true, email: true } } }
+  const jenis = searchParams.jenis || "liputan";
+
+  let item: any = null;
+  if (jenis === "liputan") {
+    item = await prisma.permohonanLiputan.findUnique({
+      where: { id },
+      include: {
+        statusHistory: {
+          orderBy: { createdAt: "asc" },
+          include: { admin: { select: { nama: true, email: true } } }
+        }
       }
-    }
-  });
+    });
+  } else if (jenis === "media_partner") {
+    item = await prisma.permohonanMediaPartner.findUnique({
+      where: { id },
+      include: {
+        statusHistory: {
+          orderBy: { createdAt: "asc" },
+          include: { admin: { select: { nama: true, email: true } } }
+        }
+      }
+    });
+  } else if (jenis === "kerjasama") {
+    item = await prisma.permohonanKerjasama.findUnique({
+      where: { id },
+      include: {
+        statusHistory: {
+          orderBy: { createdAt: "asc" },
+          include: { admin: { select: { nama: true, email: true } } }
+        }
+      }
+    });
+  }
   if (!item) notFound();
+
+  const fileUrl = `/api/admin/permohonan/${item.id}/file?jenis=${jenis}`;
 
   return (
     <>
@@ -39,31 +78,50 @@ export default async function DetailPermohonanPage({ params }: { params: { id: s
             <div className="rounded border border-line bg-white p-5">
               <div className="flex flex-col justify-between gap-3 border-b border-line pb-4 sm:flex-row">
                 <div>
-                  <p className="text-sm text-slate-500">{item.nomorRujukan}</p>
+                  <p className="text-sm text-slate-500">
+                    {item.nomorRujukan} · {JENIS_LABEL[jenis]}
+                  </p>
                   <h1 className="text-xl font-bold sm:text-3xl">{item.namaAcara}</h1>
                 </div>
                 <StatusBadge status={item.status} />
               </div>
-              <dl className="mt-5 grid gap-4 sm:grid-cols-2">
-                <Info label="Instansi" value={item.namaInstansi} />
-                <Info label="Email" value={item.email} />
-                <Info label="No. WhatsApp" value={item.noWa} />
-                <Info label="Tanggal acara" value={formatTanggal(item.tanggalAcara)} />
-                <Info label="Tempat acara" value={item.tempatAcara} />
-                {item.detailPesertaAudiens ? <Info label="Detail Peserta/Audiens" value={item.detailPesertaAudiens} /> : null}
-                <Info label="Diajukan" value={formatTanggalWaktu(item.createdAt)} />
-                <Info label="Nama file" value={item.fileOriginalName} />
-              </dl>
+
+              {jenis === "liputan" ? (
+                <dl className="mt-5 grid gap-4 sm:grid-cols-2">
+                  <Info label="Instansi" value={item.namaInstansi} />
+                  <Info label="Email" value={item.email} />
+                  <Info label="No. WhatsApp" value={item.noWa} />
+                  <Info label="Tanggal acara" value={formatTanggal(item.tanggalAcara)} />
+                  <Info label="Tempat acara" value={item.tempatAcara} />
+                  {item.detailPesertaAudiens ? <Info label="Detail Peserta/Audiens" value={item.detailPesertaAudiens} /> : null}
+                  <Info label="Diajukan" value={formatTanggalWaktu(item.createdAt)} />
+                  <Info label="Nama file" value={item.fileOriginalName} />
+                </dl>
+              ) : (
+                <dl className="mt-5 grid gap-4 sm:grid-cols-2">
+                  <Info label="Fakultas/Organisasi/Unit" value={item.fakultasOrganisasi} />
+                  <Info label="Nama Acara" value={item.namaAcara} />
+                  <Info
+                    label="Hari dan Tanggal Request Upload"
+                    value={item.tanggalRequestUpload ? formatTanggal(item.tanggalRequestUpload) : "-"}
+                  />
+                  <Info label="Kontak Penanggung Jawab" value={item.kontakPenanggungJawab} />
+                  <Info label="Diajukan" value={formatTanggalWaktu(item.createdAt)} />
+                  <Info label="Nama file" value={item.fileOriginalName} />
+                </dl>
+              )}
+
               <div className="mt-5 flex flex-wrap gap-3">
                 <a
                   className="inline-flex items-center gap-2 rounded border border-line px-4 py-2 font-semibold hover:bg-slate-50"
-                  href={`/api/admin/permohonan/${item.id}/file`}
+                  href={fileUrl}
                 >
                   <Download className="h-4 w-4" />
                   Unduh Surat
                 </a>
                 <PreviewSurat
                   id={item.id}
+                  jenis={jenis}
                   fileOriginalName={item.fileOriginalName}
                   fileMimeType={item.fileMimeType}
                 />
@@ -73,7 +131,7 @@ export default async function DetailPermohonanPage({ params }: { params: { id: s
             <div className="rounded border border-line bg-white p-5">
               <h2 className="text-xl font-semibold">Riwayat status</h2>
               <div className="mt-4 space-y-4">
-                {item.statusHistory.map((history) => (
+                {item.statusHistory.map((history: any) => (
                   <div key={history.id} className="border-l-2 border-brand pl-4">
                     <div className="font-medium"><StatusIcon status={history.statusBaru} /></div>
                     <div className="text-sm text-slate-500">
@@ -90,6 +148,7 @@ export default async function DetailPermohonanPage({ params }: { params: { id: s
           <aside>
             <StatusForm
               id={item.id}
+              jenis={jenis}
               status={item.status}
               pesanPemohon={item.pesanPemohon}
               catatanInternal={item.catatanInternal}
