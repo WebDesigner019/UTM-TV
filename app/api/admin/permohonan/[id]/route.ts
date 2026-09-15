@@ -2,9 +2,14 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getCurrentAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { STATUS_OPTIONS } from "@/lib/status";
+import { STATUS_OPTIONS, type JenisPermohonan } from "@/lib/status";
 import { sendStatusChangedEmail, sendPermohonanDisetujuiEmail } from "@/lib/email";
-import { sendWaToUser, sendWaMediaPartnerToUser, sendWaKerjasamaToUser } from "@/lib/wa";
+import {
+  sendWaToUser,
+  sendWaMediaPartnerToUser,
+  sendWaKerjasamaToUser,
+  sendWaStatusChangedToUser
+} from "@/lib/wa";
 
 export const dynamic = "force-dynamic";
 
@@ -149,11 +154,14 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     }
 
     if (existing.status !== updated.status || body.pesan_pemohon) {
+      const jenisTyped = jenis as JenisPermohonan;
+
       if (updated.status === "disetujui") {
         if (jenis === "liputan") {
           await Promise.all([
             sendPermohonanDisetujuiEmail({
               email: updated.email,
+              jenis: jenisTyped,
               namaAcara: updated.namaAcara,
               tempatAcara: updated.tempatAcara,
               tanggalAcara: updated.tanggalAcara,
@@ -168,27 +176,55 @@ export async function PATCH(request: Request, { params }: { params: { id: string
             }).catch((error) => console.error("Gagal mengirim WA ke user:", error))
           ]);
         } else if (jenis === "media_partner") {
-          await sendWaMediaPartnerToUser({
-            noWa: extractWaFromKontak(updated.kontakPenanggungJawab),
-            namaAcara: updated.namaAcara,
-            tanggalRequestUpload: updated.tanggalRequestUpload,
-            pesan: body.pesan_pemohon
-          }).catch((error) => console.error("Gagal mengirim WA ke user:", error));
+          await Promise.all([
+            sendPermohonanDisetujuiEmail({
+              email: updated.email,
+              jenis: jenisTyped,
+              namaAcara: updated.namaAcara,
+              tanggalRequestUpload: updated.tanggalRequestUpload,
+              pesan: body.pesan_pemohon
+            }).catch((error) => console.error("Gagal mengirim email disetujui:", error)),
+            sendWaMediaPartnerToUser({
+              noWa: extractWaFromKontak(updated.kontakPenanggungJawab),
+              namaAcara: updated.namaAcara,
+              tanggalRequestUpload: updated.tanggalRequestUpload,
+              pesan: body.pesan_pemohon
+            }).catch((error) => console.error("Gagal mengirim WA ke user:", error))
+          ]);
         } else {
-          await sendWaKerjasamaToUser({
-            noWa: extractWaFromKontak(updated.kontakPenanggungJawab),
-            namaAcara: updated.namaAcara,
-            tanggalRequestUpload: updated.tanggalRequestUpload,
-            pesan: body.pesan_pemohon
-          }).catch((error) => console.error("Gagal mengirim WA ke user:", error));
+          await Promise.all([
+            sendPermohonanDisetujuiEmail({
+              email: updated.email,
+              jenis: jenisTyped,
+              namaAcara: updated.namaAcara,
+              tanggalRequestUpload: updated.tanggalRequestUpload,
+              pesan: body.pesan_pemohon
+            }).catch((error) => console.error("Gagal mengirim email disetujui:", error)),
+            sendWaKerjasamaToUser({
+              noWa: extractWaFromKontak(updated.kontakPenanggungJawab),
+              namaAcara: updated.namaAcara,
+              tanggalRequestUpload: updated.tanggalRequestUpload,
+              pesan: body.pesan_pemohon
+            }).catch((error) => console.error("Gagal mengirim WA ke user:", error))
+          ]);
         }
-      } else if (jenis === "liputan") {
-        await sendStatusChangedEmail({
-          email: updated.email,
-          nomorRujukan: updated.nomorRujukan,
-          status: updated.status,
-          pesan: body.pesan_pemohon
-        }).catch((error) => console.error("Gagal mengirim email status:", error));
+      } else {
+        await Promise.all([
+          sendStatusChangedEmail({
+            email: updated.email,
+            nomorRujukan: updated.nomorRujukan,
+            status: updated.status,
+            pesan: body.pesan_pemohon,
+            jenis: jenisTyped
+          }).catch((error) => console.error("Gagal mengirim email status:", error)),
+          sendWaStatusChangedToUser({
+            noWa: jenis === "liputan" ? updated.noWa : extractWaFromKontak(updated.kontakPenanggungJawab),
+            jenis: jenisTyped,
+            status: updated.status,
+            namaAcara: updated.namaAcara,
+            pesan: body.pesan_pemohon
+          }).catch((error) => console.error("Gagal mengirim WA status:", error))
+        ]);
       }
     }
 

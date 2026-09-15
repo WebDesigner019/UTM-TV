@@ -16,6 +16,12 @@ export function MediaPartnerForm() {
     setLoading(true);
 
     const formData = new FormData(event.currentTarget);
+    const email = String(formData.get("email") || "").toLowerCase();
+    if (!email.endsWith("@student.trunojoyo.ac.id") && !email.endsWith("@trunojoyo.ac.id")) {
+      setError("Gunakan email kampus @student.trunojoyo.ac.id atau @trunojoyo.ac.id.");
+      setLoading(false);
+      return;
+    }
 
     const response = await fetch("/api/permohonan/media-partner", {
       method: "POST",
@@ -41,6 +47,7 @@ export function MediaPartnerForm() {
         placeholder="Contoh: UTM TV/BEM Fakultas, dst."
       />
       <FormField label="Nama Acara" name="nama_acara" placeholder="Contoh: Donor Darah Bersama 2026" />
+      <FormField label="Email Kampus" name="email" type="email" placeholder="nama@student.trunojoyo.ac.id" />
       <FormField
         label="Hari dan Tanggal Request Upload"
         name="tanggal_request_upload"

@@ -2,7 +2,7 @@ import nodemailer from "nodemailer";
 import type Mail from "nodemailer/lib/mailer";
 import type { StatusPermohonan } from "@prisma/client";
 import { getAppUrl } from "@/lib/env";
-import { STATUS_LABEL, formatTanggal } from "@/lib/status";
+import { JENIS_LABEL, type JenisPermohonan, STATUS_LABEL, formatTanggal } from "@/lib/status";
 import path from "path";
 import fs from "fs";
 
@@ -228,10 +228,13 @@ export async function sendPermohonanDiterimaEmail(input: {
   email: string;
   nomorRujukan: string;
   namaAcara: string;
+  jenis?: JenisPermohonan;
 }) {
+  const jenis = input.jenis || "liputan";
+  const jenisLabel = JENIS_LABEL[jenis];
   const lacakUrl = `${getAppUrl()}/lacak`;
   const text = [
-    "Permohonan liputan Anda telah diterima.",
+    `Permohonan ${jenisLabel} Anda telah diterima.`,
     "",
     `Nomor rujukan: ${input.nomorRujukan}`,
     `Nama acara: ${input.namaAcara}`,
@@ -243,7 +246,7 @@ export async function sendPermohonanDiterimaEmail(input: {
   const html = buildEmailHtml(`
     <div class="text-center">
       <h1>Permohonan Diterima</h1>
-      <p style="color:#64748b;font-size:15px;">Permohonan liputan Anda telah kami terima dan sedang diproses.</p>
+      <p style="color:#64748b;font-size:15px;">Permohonan ${jenisLabel} Anda telah kami terima dan sedang diproses.</p>
     </div>
     <table class="info-table">
       <tr>
@@ -266,7 +269,7 @@ export async function sendPermohonanDiterimaEmail(input: {
     </div>
   `, "logo");
 
-  await sendMail(input.email, `Permohonan liputan diterima - ${input.nomorRujukan}`, text, html, getLogoAttachment());
+  await sendMail(input.email, `Permohonan ${jenisLabel} diterima - ${input.nomorRujukan}`, text, html, getLogoAttachment());
 }
 
 export async function sendStatusChangedEmail(input: {
@@ -274,13 +277,16 @@ export async function sendStatusChangedEmail(input: {
   nomorRujukan: string;
   status: StatusPermohonan;
   pesan?: string | null;
+  jenis?: JenisPermohonan;
 }) {
+  const jenis = input.jenis || "liputan";
+  const jenisLabel = JENIS_LABEL[jenis];
   const label = STATUS_LABEL[input.status];
   const color = STATUS_COLOR[input.status];
   const bg = STATUS_BG[input.status];
 
   const text = [
-    `Status permohonan ${input.nomorRujukan} diperbarui.`,
+    `Status permohonan ${jenisLabel} ${input.nomorRujukan} diperbarui.`,
     "",
     `Status baru: ${label}`,
     input.pesan ? `Pesan: ${input.pesan}` : null,
@@ -293,7 +299,7 @@ export async function sendStatusChangedEmail(input: {
   const html = buildEmailHtml(`
     <div class="text-center">
       <h1>Status Diperbarui</h1>
-      <p style="color:#64748b;font-size:15px;">Status permohonan liputan Anda telah diperbarui.</p>
+      <p style="color:#64748b;font-size:15px;">Status permohonan ${jenisLabel} Anda telah diperbarui.</p>
     </div>
     <table class="info-table">
       <tr>
@@ -315,50 +321,66 @@ export async function sendStatusChangedEmail(input: {
     </div>
   `, "logo");
 
-  await sendMail(input.email, `Status permohonan diperbarui - ${input.nomorRujukan}`, text, html, getLogoAttachment());
+  await sendMail(input.email, `Status permohonan ${jenisLabel} diperbarui - ${input.nomorRujukan}`, text, html, getLogoAttachment());
 }
 
 export async function sendPermohonanDisetujuiEmail(input: {
   email: string;
+  jenis?: JenisPermohonan;
   namaAcara: string;
-  tempatAcara: string;
-  tanggalAcara: Date;
+  tempatAcara?: string;
+  tanggalAcara?: Date;
+  tanggalRequestUpload?: Date | null;
   pesan?: string | null;
 }) {
-  const tanggal = formatTanggal(input.tanggalAcara);
+  const jenis = input.jenis || "liputan";
+  const jenisLabel = JENIS_LABEL[jenis];
   const keterangan = input.pesan || "-";
 
+  const isLiputan = jenis === "liputan";
+  const tanggal = isLiputan ? formatTanggal(input.tanggalAcara || new Date()) : (input.tanggalRequestUpload ? formatTanggal(input.tanggalRequestUpload) : "-");
+
+  const detailRows = isLiputan
+    ? `
+      <tr>
+        <td>Tempat</td>
+        <td>${input.tempatAcara || "-"}</td>
+      </tr>
+      <tr>
+        <td>Tanggal</td>
+        <td>${tanggal}</td>
+      </tr>`
+    : `
+      <tr>
+        <td>Tanggal Request Upload</td>
+        <td>${tanggal}</td>
+      </tr>`;
+
   const text = [
-    "Pengajuan liputan anda telah disetujui!",
+    `Pengajuan ${jenisLabel} Anda telah disetujui!`,
     "",
-    `nama acara: ${input.namaAcara}`,
-    `tempat: ${input.tempatAcara}`,
-    `tanggal: ${tanggal}`,
-    "status: disetujui",
+    `Nama acara: ${input.namaAcara}`,
+    ...(isLiputan
+      ? [`Tempat: ${input.tempatAcara || "-"}`, `Tanggal: ${tanggal}`]
+      : [`Tanggal request upload: ${tanggal}`]),
+    "Status: disetujui",
     "",
-    `dengan keterangan: ${keterangan}`,
+    `Dengan keterangan: ${keterangan}`,
     "",
-    "terimakasih, salam hangat UTM-TV."
+    "Terima kasih, salam hangat UTM-TV."
   ].join("\n");
 
   const html = buildEmailHtml(`
     <div class="text-center">
       <h1>Pengajuan Disetujui</h1>
-      <p style="color:#64748b;font-size:15px;">Selamat! Pengajuan liputan Anda telah disetujui oleh tim UTM-TV.</p>
+      <p style="color:#64748b;font-size:15px;">Selamat! Pengajuan ${jenisLabel} Anda telah disetujui oleh tim UTM-TV.</p>
     </div>
     <table class="info-table">
       <tr>
         <td>Nama Acara</td>
         <td><strong>${input.namaAcara}</strong></td>
       </tr>
-      <tr>
-        <td>Tempat</td>
-        <td>${input.tempatAcara}</td>
-      </tr>
-      <tr>
-        <td>Tanggal</td>
-        <td>${tanggal}</td>
-      </tr>
+      ${detailRows}
       <tr>
         <td>Status</td>
         <td><span class="badge" style="background:${STATUS_BG.disetujui};color:${STATUS_COLOR.disetujui};">disetujui</span></td>
@@ -374,7 +396,7 @@ export async function sendPermohonanDisetujuiEmail(input: {
     </div>
   `, "logo");
 
-  await sendMail(input.email, "Pengajuan liputan disetujui", text, html, getLogoAttachment());
+  await sendMail(input.email, `Pengajuan ${jenisLabel} disetujui`, text, html, getLogoAttachment());
 }
 
 export async function sendAdminPasswordResetEmail(input: {

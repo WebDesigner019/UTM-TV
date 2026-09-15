@@ -3,11 +3,14 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { generateNomorRujukan } from "@/lib/reference";
 import { getClientIp, rateLimit } from "@/lib/rate-limit";
+import { isAllowedCampusEmail, normalizeEmail } from "@/lib/env";
 import { saveUploadedFile } from "@/lib/upload";
+import { sendPermohonanDiterimaEmail } from "@/lib/email";
 import { sendWaGroupNotificationMediaPartner } from "@/lib/wa";
 
 const schema = z.object({
   fakultas_organisasi: z.string().min(2, "Fakultas/Organisasi/Unit wajib diisi."),
+  email: z.string().email("Email tidak valid."),
   nama_acara: z.string().min(2, "Nama acara wajib diisi."),
   tanggal_request_upload: z.string().min(1, "Hari dan tanggal request upload wajib diisi."),
   kontak_penanggung_jawab: z.string().min(2, "Kontak penanggung jawab wajib diisi.")
@@ -24,10 +27,19 @@ export async function POST(request: Request) {
     const formData = await request.formData();
     const payload = schema.parse({
       fakultas_organisasi: formData.get("fakultas_organisasi"),
+      email: formData.get("email"),
       nama_acara: formData.get("nama_acara"),
       tanggal_request_upload: formData.get("tanggal_request_upload"),
       kontak_penanggung_jawab: formData.get("kontak_penanggung_jawab")
     });
+
+    const email = normalizeEmail(payload.email);
+    if (!isAllowedCampusEmail(email)) {
+      return NextResponse.json(
+        { message: "Gunakan email kampus @student.trunojoyo.ac.id atau @trunojoyo.ac.id." },
+        { status: 400 }
+      );
+    }
 
     const file = formData.get("surat_media_partner");
     if (!(file instanceof File)) {
@@ -44,6 +56,7 @@ export async function POST(request: Request) {
             data: {
               nomorRujukan,
               fakultasOrganisasi: payload.fakultas_organisasi,
+              email,
               namaAcara: payload.nama_acara,
               tanggalRequestUpload: new Date(payload.tanggal_request_upload),
               kontakPenanggungJawab: payload.kontak_penanggung_jawab,
@@ -69,6 +82,13 @@ export async function POST(request: Request) {
       }
       throw new Error("Nomor rujukan gagal dibuat. Coba lagi.");
     });
+
+    await sendPermohonanDiterimaEmail({
+      email,
+      nomorRujukan: permohonan.nomorRujukan,
+      namaAcara: permohonan.namaAcara,
+      jenis: "media_partner"
+    }).catch((error) => console.error("Gagal mengirim email diterima:", error));
 
     await sendWaGroupNotificationMediaPartner({
       fakultasOrganisasi: permohonan.fakultasOrganisasi,

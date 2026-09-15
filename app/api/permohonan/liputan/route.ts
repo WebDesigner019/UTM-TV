@@ -92,7 +92,8 @@ export async function POST(request: Request) {
     await sendPermohonanDiterimaEmail({
       email,
       nomorRujukan: permohonan.nomorRujukan,
-      namaAcara: permohonan.namaAcara
+      namaAcara: permohonan.namaAcara,
+      jenis: "liputan"
     }).catch((error) => console.error("Gagal mengirim email diterima:", error));
 
     await sendWaGroupNotification({
