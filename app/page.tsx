@@ -31,52 +31,58 @@ export default async function Home() {
       <CampusWatermark />
       <PublicNav />
       <main>
-        <section className="bg-white">
-          <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 md:grid-cols-[1.2fr_0.8fr] md:py-20">
+        <section className="bg-white/60 backdrop-blur">
+          <div className="mx-auto grid max-w-6xl gap-12 px-4 py-16 md:grid-cols-[1.2fr_0.8fr] md:py-24">
             <div>
               <Image
                 src="/assets/utm-tv-logo.jpg"
                 alt="Logo UTM TV"
                 width={96}
                 height={96}
-                className="mb-6 h-20 w-20 rounded object-cover shadow-sm"
+                className="mb-8 h-20 w-20 rounded-2xl object-cover shadow-card"
                 priority
               />
-              <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-brand">Layanan Kampus</p>
-              <h1 className="max-w-3xl text-4xl font-bold leading-tight text-ink md:text-5xl">
+              <p className="mb-4 text-sm font-semibold uppercase tracking-widest text-brand">Layanan Kampus</p>
+              <h1 className="max-w-3xl text-balance text-4xl font-bold leading-tight tracking-tight text-ink md:text-6xl">
                 Selamat Datang di Website Pengajuan Kerjasama dan Media Partner UTM TV!
               </h1>
-              <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-600">
+              <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
                 Website ini digunakan untuk pengajuan Liputan, Kerjasama dan Media Partner bersama UTM TV,
                 khususnya dalam bentuk publikasi poster, promosi acara, serta bentuk kolaborasi media lainnya.
               </p>
               <p className="mt-4 max-w-2xl leading-7 text-slate-600">
                 Silakan membaca <span className="font-medium text-brand">SOP Media Partner UTM TV 2026</span> terlebih dahulu.
               </p>
-              <div className="mt-6 rounded border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+              <div className="mt-8 rounded-2xl border border-amber-200/80 bg-amber-50/80 px-5 py-4 text-sm text-amber-900 backdrop-blur">
                 <p className="font-medium">Catatan: Pengisian formulir wajib menggunakan email resmi Universitas Trunojoyo Madura
                   (@trunojoyo.ac.id / @student.trunojoyo.ac.id) untuk memudahkan proses verifikasi dan tindak lanjut pengajuan.</p>
               </div>
-              <div className="mt-4 flex items-center gap-2 text-sm text-slate-700">
-                <Phone className="h-4 w-4 text-brand" />
+              <div className="mt-6 flex items-center gap-2 text-sm text-slate-700">
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-brand/10 text-brand">
+                  <Phone className="h-4 w-4" />
+                </span>
                 <span>Contact Person Tim Admin UTM TV: <span className="font-semibold">+62 858-0150-7663</span></span>
               </div>
               <p className="mt-2 text-sm text-slate-500">
                 Dapatkan informasi lebih lanjut terkait ketentuan dan kebutuhan Media Partner UTM TV melalui media sosial resmi UTM TV.
               </p>
             </div>
-            <div className="rounded border border-line bg-slate-50 p-6">
-              <div className="flex items-center gap-3">
-                <ShieldCheck className="h-10 w-10 text-brand" />
+            <div className="card h-fit p-8">
+              <div className="flex items-center gap-4">
+                <span className="tile-icon h-12 w-12">
+                  <ShieldCheck className="h-6 w-6" />
+                </span>
                 <div>
                   <h2 className="font-semibold">Alur transparan</h2>
-                  <p className="text-sm text-slate-600">Nomor rujukan, status, dan timeline tersedia setelah verifikasi.</p>
+                  <p className="text-sm text-slate-500">Nomor rujukan, status, dan timeline tersedia setelah verifikasi.</p>
                 </div>
               </div>
-              <div className="mt-6 space-y-4 text-sm text-slate-700">
+              <div className="mt-8 space-y-5 text-sm text-slate-700">
                 {["Pilih jenis pengajuan sesuai kebutuhan", "Lengkapi formulir dan unggah surat", "Pantau status tanpa akun"].map((item) => (
                   <div key={item} className="flex items-center gap-3">
-                    <ShieldCheck className="h-5 w-5 text-brand" />
+                    <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand/10 text-brand">
+                      <ShieldCheck className="h-4 w-4" />
+                    </span>
                     <span>{item}</span>
                   </div>
                 ))}
@@ -86,8 +92,8 @@ export default async function Home() {
         </section>
 
         {stats ? (
-          <section className="border-y border-line bg-slate-100">
-            <div className="mx-auto grid max-w-6xl gap-3 px-4 py-8 sm:grid-cols-3">
+          <section className="border-y border-line/70 bg-white/60 backdrop-blur">
+            <div className="mx-auto grid max-w-6xl gap-4 px-4 py-10 sm:grid-cols-3">
               <Stat label={`Total pengajuan ${stats.year}`} value={stats.total} />
               <Stat label="Disetujui" value={stats.disetujui} />
               <Stat label="Pengajuan masuk" value={stats.pengajuanMasuk} />
@@ -95,26 +101,26 @@ export default async function Home() {
           </section>
         ) : null}
 
-        <section className="mx-auto max-w-6xl px-4 py-14">
-          <h2 className="text-2xl font-semibold">Pilih Jenis Pengajuan</h2>
-          <p className="mt-2 text-slate-600">Pilih salah satu jenis pengajuan sesuai kebutuhan Anda bersama UTM TV.</p>
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
+        <section className="mx-auto max-w-6xl px-4 py-16">
+          <h2 className="text-balance text-3xl font-bold tracking-tight text-ink md:text-4xl">Pilih Jenis Pengajuan</h2>
+          <p className="mt-3 text-lg text-slate-500">Pilih salah satu jenis pengajuan sesuai kebutuhan Anda bersama UTM TV.</p>
+          <div className="mt-10 grid gap-5 md:grid-cols-3">
             <JenisCard
-              icon={<Megaphone className="h-8 w-8 text-brand" />}
+              icon={<Megaphone className="h-6 w-6" />}
               title="Pengajuan Liputan"
               text="Ajukan permohonan liputan acara kampus Anda dan pantau statusnya sampai proses selesai."
               href="/ajukan"
               cta="Ajukan Liputan"
             />
             <JenisCard
-              icon={<Handshake className="h-8 w-8 text-brand" />}
+              icon={<Handshake className="h-6 w-6" />}
               title="Pengajuan Media Partner"
               text="Bentuk kolaborasi publikasi poster dan promosi acara bersama UTM TV sebagai media partner."
               href="/ajukan/media-partner"
               cta="Ajukan Media Partner"
             />
             <JenisCard
-              icon={<Video className="h-8 w-8 text-brand" />}
+              icon={<Video className="h-6 w-6" />}
               title="Pengajuan Kerjasama"
               text="Ajukan bentuk kerjasama lainnya bersama UTM TV dalam bentuk kolaborasi media."
               href="/ajukan/kerjasama"
@@ -123,31 +129,25 @@ export default async function Home() {
           </div>
         </section>
 
-        <section className="border-y border-line bg-gradient-to-b from-slate-50 to-white py-14">
+        <section className="border-y border-line/70 bg-gradient-to-b from-white/70 to-white/40 py-16 backdrop-blur">
           <div className="mx-auto max-w-3xl px-4 text-center">
-            <h2 className="text-2xl font-semibold">Terima Kasih</h2>
-            <p className="mt-3 text-slate-600">
+            <h2 className="text-balance text-3xl font-bold tracking-tight text-ink md:text-4xl">Terima Kasih</h2>
+            <p className="mt-4 text-lg leading-8 text-slate-500">
               Terima kasih telah menggunakan layanan pengajuan UTM TV.
               Kami siap membantu menghadirkan publikasi terbaik untuk acara Anda.
             </p>
-            <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-              <Link
-                href="/ajukan"
-                className="inline-flex items-center justify-center gap-2 rounded bg-brand px-5 py-3 font-semibold text-white hover:bg-teal-800"
-              >
+            <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
+              <Link href="/ajukan" className="btn-primary px-7 py-3">
                 Ajukan Permohonan <ArrowRight className="h-4 w-4" />
               </Link>
-              <Link
-                href="/lacak"
-                className="inline-flex items-center justify-center gap-2 rounded border border-line bg-white px-5 py-3 font-semibold hover:bg-slate-50"
-              >
+              <Link href="/lacak" className="btn-secondary px-7 py-3">
                 <Search className="h-4 w-4" /> Cek Status Permohonan
               </Link>
             </div>
           </div>
         </section>
       </main>
-      <footer className="border-t border-line bg-white px-4 py-6 text-center text-sm text-slate-600">
+      <footer className="border-t border-line/70 bg-white/60 px-4 py-8 text-center text-sm text-slate-500 backdrop-blur">
         UTM TV - Universitas Trunojoyo Madura
       </footer>
     </>
@@ -156,9 +156,9 @@ export default async function Home() {
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded border border-line bg-white p-5">
-      <div className="text-3xl font-bold text-ink">{value}</div>
-      <div className="mt-1 text-sm text-slate-600">{label}</div>
+    <div className="card p-6 text-center">
+      <div className="text-4xl font-bold tracking-tight text-ink">{value}</div>
+      <div className="mt-1 text-sm text-slate-500">{label}</div>
     </div>
   );
 }
@@ -177,14 +177,11 @@ function JenisCard({
   cta: string;
 }) {
   return (
-    <div className="flex flex-col rounded border border-line bg-white p-6">
-      <div className="flex h-14 w-14 items-center justify-center rounded bg-brand/10">{icon}</div>
-      <h3 className="mt-4 text-lg font-semibold">{title}</h3>
-      <p className="mt-2 flex-1 text-sm leading-6 text-slate-600">{text}</p>
-      <Link
-        href={href}
-        className="mt-5 inline-flex items-center justify-center gap-2 rounded bg-brand px-4 py-2.5 font-semibold text-white hover:bg-teal-800"
-      >
+    <div className="card flex flex-col p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-elevated">
+      <span className="tile-icon h-14 w-14">{icon}</span>
+      <h3 className="mt-6 text-xl font-semibold tracking-tight text-ink">{title}</h3>
+      <p className="mt-2 flex-1 text-[15px] leading-6 text-slate-500">{text}</p>
+      <Link href={href} className="btn-primary mt-7 self-start">
         {cta} <ArrowRight className="h-4 w-4" />
       </Link>
     </div>

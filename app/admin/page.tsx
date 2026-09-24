@@ -252,21 +252,21 @@ export default async function AdminPage({
   return (
     <>
       <AdminHeader nama={admin.nama} />
-      <main className="mx-auto max-w-6xl px-4 py-8">
-        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+      <main className="mx-auto max-w-6xl px-4 py-10">
+        <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
           <div>
-            <h1 className="text-2xl font-bold sm:text-3xl">Dashboard Permohonan</h1>
-            <p className="mt-2 text-slate-600">Kelola permohonan liputan, media partner, dan kerjasama yang masuk.</p>
+            <h1 className="text-balance text-3xl font-bold tracking-tight text-ink sm:text-4xl">Dashboard Permohonan</h1>
+            <p className="mt-2 text-slate-500">Kelola permohonan liputan, media partner, dan kerjasama yang masuk.</p>
           </div>
           <form className="flex flex-col gap-2 sm:flex-row">
-            <select className="focus-ring rounded border border-line bg-white px-3 py-2" name="jenis" defaultValue={jenis}>
+            <select className="input-field sm:w-auto" name="jenis" defaultValue={jenis}>
               {JENIS_OPTIONS.map((item) => (
                 <option key={item.value} value={item.value}>
                   {item.label}
                 </option>
               ))}
             </select>
-            <select className="focus-ring rounded border border-line bg-white px-3 py-2" name="status" defaultValue={status || ""}>
+            <select className="input-field sm:w-auto" name="status" defaultValue={status || ""}>
               <option value="">Semua status</option>
               {STATUS_OPTIONS.map((item) => (
                 <option key={item} value={item}>
@@ -275,47 +275,47 @@ export default async function AdminPage({
               ))}
             </select>
             <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+              <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <input
-                className="focus-ring w-full rounded border border-line bg-white py-2 pl-9 pr-3"
+                className="input-field pl-10"
                 name="q"
                 defaultValue={q}
                 placeholder="Cari permohonan"
               />
             </div>
-            <button className="rounded bg-brand px-4 py-2 font-semibold text-white hover:bg-teal-800">Filter</button>
+            <button className="btn-primary sm:w-auto">Filter</button>
           </form>
         </div>
 
-        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
           {STATUS_OPTIONS.map((item) => (
-            <div key={item} className="rounded border border-line bg-white p-4">
-              <div className="text-2xl font-bold">{countMap[item] || 0}</div>
-              <div className="mt-1"><StatusBadge status={item} /></div>
+            <div key={item} className="card p-6">
+              <div className="text-3xl font-bold tracking-tight text-ink">{countMap[item] || 0}</div>
+              <div className="mt-2"><StatusBadge status={item} /></div>
             </div>
           ))}
         </div>
 
         {/* Mobile card layout */}
-        <div className="mt-6 space-y-3 md:hidden">
+        <div className="mt-8 space-y-3 md:hidden">
           {items.length === 0 ? (
-            <div className="rounded border border-line bg-white p-6 text-center text-slate-500">
+            <div className="card p-8 text-center text-slate-500">
               Belum ada data permohonan.
             </div>
           ) : (
             items.map((item) => (
-              <div key={`${item.jenis}-${item.id}`} className="rounded border border-line bg-white p-4">
+              <div key={`${item.jenis}-${item.id}`} className="card p-5">
                 <div className="flex items-start justify-between gap-2">
-                  <div className="font-medium text-brand">{item.nomorRujukan}</div>
+                  <div className="font-semibold text-brand">{item.nomorRujukan}</div>
                   <StatusBadge status={item.status} />
                 </div>
-                <div className="mt-2 font-semibold">{item.namaAcara}</div>
-                <div className="mt-1 text-sm text-slate-600">{item.instansi}</div>
-                <div className="mt-1 text-sm text-slate-500">
+                <div className="mt-2 font-semibold text-ink">{item.namaAcara}</div>
+                <div className="mt-1 text-sm text-slate-500">{item.instansi}</div>
+                <div className="mt-1 text-sm text-slate-400">
                   {item.tanggal ? formatTanggal(item.tanggal) : "-"} · {JENIS_LABEL[item.jenis]}
                 </div>
                 <Link
-                  className="mt-3 inline-block text-sm font-semibold text-brand hover:underline"
+                  className="mt-3 inline-block text-sm font-semibold text-brand transition-colors hover:text-brand-hover"
                   href={`/admin/permohonan/${item.id}?jenis=${item.jenis}`}
                 >
                   Detail &rarr;
@@ -326,31 +326,31 @@ export default async function AdminPage({
         </div>
 
         {/* Desktop table */}
-        <div className="mt-6 hidden overflow-hidden rounded border border-line bg-white md:block">
+        <div className="card mt-8 hidden overflow-hidden md:block">
           <div className="overflow-x-auto">
-            <table className="min-w-full text-left text-sm">
-              <thead className="bg-slate-100 text-slate-600">
+            <table className="min-w-full text-left text-[15px]">
+              <thead className="bg-slate-100/70 text-sm font-semibold text-slate-500">
                 <tr>
-                  <th className="px-4 py-3">Nomor</th>
-                  <th className="px-4 py-3">Acara</th>
-                  <th className="px-4 py-3">Instansi</th>
-                  <th className="px-4 py-3">Jenis</th>
-                  <th className="px-4 py-3">Tanggal</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3">Aksi</th>
+                  <th className="px-6 py-3.5">Nomor</th>
+                  <th className="px-6 py-3.5">Acara</th>
+                  <th className="px-6 py-3.5">Instansi</th>
+                  <th className="px-6 py-3.5">Jenis</th>
+                  <th className="px-6 py-3.5">Tanggal</th>
+                  <th className="px-6 py-3.5">Status</th>
+                  <th className="px-6 py-3.5">Aksi</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-line">
+              <tbody className="divide-y divide-line/70 bg-white">
                 {items.map((item) => (
-                  <tr key={`${item.jenis}-${item.id}`}>
-                    <td className="px-4 py-3 font-medium">{item.nomorRujukan}</td>
-                    <td className="px-4 py-3">{item.namaAcara}</td>
-                    <td className="px-4 py-3">{item.instansi}</td>
-                    <td className="px-4 py-3">{JENIS_LABEL[item.jenis]}</td>
-                    <td className="px-4 py-3">{item.tanggal ? formatTanggal(item.tanggal) : "-"}</td>
-                    <td className="px-4 py-3"><StatusBadge status={item.status} /></td>
-                    <td className="px-4 py-3">
-                      <Link className="font-semibold text-brand hover:underline" href={`/admin/permohonan/${item.id}?jenis=${item.jenis}`}>
+                  <tr key={`${item.jenis}-${item.id}`} className="transition-colors duration-150 hover:bg-slate-50/80">
+                    <td className="px-6 py-4 font-medium">{item.nomorRujukan}</td>
+                    <td className="px-6 py-4">{item.namaAcara}</td>
+                    <td className="px-6 py-4">{item.instansi}</td>
+                    <td className="px-6 py-4">{JENIS_LABEL[item.jenis]}</td>
+                    <td className="px-6 py-4">{item.tanggal ? formatTanggal(item.tanggal) : "-"}</td>
+                    <td className="px-6 py-4"><StatusBadge status={item.status} /></td>
+                    <td className="px-6 py-4">
+                      <Link className="font-semibold text-brand transition-colors hover:text-brand-hover" href={`/admin/permohonan/${item.id}?jenis=${item.jenis}`}>
                         Detail
                       </Link>
                     </td>
@@ -358,7 +358,7 @@ export default async function AdminPage({
                 ))}
                 {items.length === 0 ? (
                   <tr>
-                    <td className="px-4 py-8 text-center text-slate-500" colSpan={7}>
+                    <td className="px-6 py-10 text-center text-slate-400" colSpan={7}>
                       Belum ada data permohonan.
                     </td>
                   </tr>
@@ -368,7 +368,7 @@ export default async function AdminPage({
           </div>
         </div>
 
-        <div className="mt-4 flex items-center justify-between text-sm text-slate-600">
+        <div className="mt-4 flex items-center justify-between text-sm text-slate-500">
           <span>Total {total} permohonan</span>
           <span>
             Halaman {page} dari {Math.max(Math.ceil(total / take), 1)}

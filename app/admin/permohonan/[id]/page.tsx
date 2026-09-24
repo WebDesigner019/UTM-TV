@@ -69,25 +69,25 @@ export default async function DetailPermohonanPage({
   return (
     <>
       <AdminHeader nama={admin.nama} />
-      <main className="mx-auto max-w-6xl px-4 py-8">
-        <Link className="text-sm font-semibold text-brand hover:underline" href="/admin">
+      <main className="mx-auto max-w-6xl px-4 py-10">
+        <Link className="text-sm font-semibold text-brand transition-colors hover:text-brand-hover" href="/admin">
           Kembali ke dashboard
         </Link>
-        <div className="mt-4 grid gap-6 lg:grid-cols-[1fr_380px]">
+        <div className="mt-5 grid gap-6 lg:grid-cols-[1fr_380px]">
           <section className="space-y-6">
-            <div className="rounded border border-line bg-white p-5">
-              <div className="flex flex-col justify-between gap-3 border-b border-line pb-4 sm:flex-row">
+            <div className="card p-6 sm:p-8">
+              <div className="flex flex-col justify-between gap-3 border-b border-line/70 pb-5 sm:flex-row">
                 <div>
-                  <p className="text-sm text-slate-500">
+                  <p className="text-[13px] font-medium uppercase tracking-wide text-slate-400">
                     {item.nomorRujukan} · {JENIS_LABEL[jenis]}
                   </p>
-                  <h1 className="text-xl font-bold sm:text-3xl">{item.namaAcara}</h1>
+                  <h1 className="mt-1 text-balance text-2xl font-bold tracking-tight text-ink sm:text-3xl">{item.namaAcara}</h1>
                 </div>
                 <StatusBadge status={item.status} />
               </div>
 
               {jenis === "liputan" ? (
-                <dl className="mt-5 grid gap-4 sm:grid-cols-2">
+                <dl className="mt-6 grid gap-x-8 gap-y-5 sm:grid-cols-2">
                   <Info label="Instansi" value={item.namaInstansi} />
                   <Info label="Email" value={item.email} />
                   <Info label="No. WhatsApp" value={item.noWa} />
@@ -98,7 +98,7 @@ export default async function DetailPermohonanPage({
                   <Info label="Nama file" value={item.fileOriginalName} />
                 </dl>
               ) : (
-                <dl className="mt-5 grid gap-4 sm:grid-cols-2">
+                <dl className="mt-6 grid gap-x-8 gap-y-5 sm:grid-cols-2">
                   <Info label="Fakultas/Organisasi/Unit" value={item.fakultasOrganisasi} />
                   <Info label="Nama Acara" value={item.namaAcara} />
                   <Info
@@ -111,9 +111,9 @@ export default async function DetailPermohonanPage({
                 </dl>
               )}
 
-              <div className="mt-5 flex flex-wrap gap-3">
+              <div className="mt-7 flex flex-wrap gap-3">
                 <a
-                  className="inline-flex items-center gap-2 rounded border border-line px-4 py-2 font-semibold hover:bg-slate-50"
+                  className="btn-secondary"
                   href={fileUrl}
                 >
                   <Download className="h-4 w-4" />
@@ -128,17 +128,23 @@ export default async function DetailPermohonanPage({
               </div>
             </div>
 
-            <div className="rounded border border-line bg-white p-5">
-              <h2 className="text-xl font-semibold">Riwayat status</h2>
-              <div className="mt-4 space-y-4">
-                {item.statusHistory.map((history: any) => (
-                  <div key={history.id} className="border-l-2 border-brand pl-4">
-                    <div className="font-medium"><StatusIcon status={history.statusBaru} /></div>
-                    <div className="text-sm text-slate-500">
-                      {formatTanggalWaktu(history.createdAt)}
-                      {history.admin ? ` - ${history.admin.nama}` : " - Sistem"}
+            <div className="card p-6 sm:p-8">
+              <h2 className="text-xl font-bold tracking-tight text-ink">Riwayat status</h2>
+              <div className="mt-5">
+                {item.statusHistory.map((history: any, index: number) => (
+                  <div key={history.id} className="relative flex gap-4 pb-6 last:pb-0">
+                    <div className="flex flex-col items-center">
+                      <span className="h-3 w-3 shrink-0 rounded-full bg-brand ring-4 ring-brand/15" />
+                      {index < item.statusHistory.length - 1 ? <span className="w-px flex-1 bg-line" /> : null}
                     </div>
-                    {history.pesan ? <p className="mt-1 text-sm text-slate-700">{history.pesan}</p> : null}
+                    <div className="flex-1">
+                      <div className="font-medium text-ink"><StatusIcon status={history.statusBaru} /></div>
+                      <div className="mt-0.5 text-sm text-slate-400">
+                        {formatTanggalWaktu(history.createdAt)}
+                        {history.admin ? ` - ${history.admin.nama}` : " - Sistem"}
+                      </div>
+                      {history.pesan ? <p className="mt-1.5 text-sm leading-6 text-slate-600">{history.pesan}</p> : null}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -163,8 +169,8 @@ export default async function DetailPermohonanPage({
 function Info({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-sm text-slate-500">{label}</dt>
-      <dd className="mt-1 font-medium">{value}</dd>
+      <dt className="text-sm text-slate-400">{label}</dt>
+      <dd className="mt-1 font-medium text-ink">{value}</dd>
     </div>
   );
 }

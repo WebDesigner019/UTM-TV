@@ -40,23 +40,23 @@ export function ResetPasswordForm({ token }: { token: string }) {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4 rounded border border-line bg-white p-5">
-      {message ? <div className="rounded border border-teal-200 bg-teal-50 px-4 py-3 text-sm text-teal-800">{message}</div> : null}
-      {error ? <div className="rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : null}
+    <form onSubmit={onSubmit} className="space-y-4">
+      {message ? <div className="rounded-xl border border-teal-200/80 bg-teal-50/80 px-4 py-3 text-sm text-teal-800">{message}</div> : null}
+      {error ? <div className="rounded-xl border border-red-200/80 bg-red-50/80 px-4 py-3 text-sm text-red-700">{error}</div> : null}
       <div>
-        <label className="mb-2 block text-sm font-medium">Password baru</label>
-        <input className="focus-ring w-full rounded border border-line px-3 py-2" name="password" type="password" minLength={8} required />
+        <label className="mb-2 block text-[15px] font-semibold text-ink">Password baru</label>
+        <input className="focus-ring input-field" name="password" type="password" minLength={8} required />
       </div>
       <div>
-        <label className="mb-2 block text-sm font-medium">Konfirmasi password</label>
-        <input className="focus-ring w-full rounded border border-line px-3 py-2" name="confirm_password" type="password" minLength={8} required />
+        <label className="mb-2 block text-[15px] font-semibold text-ink">Konfirmasi password</label>
+        <input className="focus-ring input-field" name="confirm_password" type="password" minLength={8} required />
       </div>
-      <button className="inline-flex w-full items-center justify-center gap-2 rounded bg-brand px-4 py-3 font-semibold text-white hover:bg-teal-800">
+      <button className="btn-primary w-full py-3">
         <KeyRound className="h-4 w-4" />
         {loading ? "Menyimpan..." : "Simpan Password Baru"}
       </button>
       {message ? (
-        <Link className="block text-center text-sm font-semibold text-brand hover:underline" href="/admin/login">
+        <Link className="block text-center text-sm font-semibold text-brand transition-colors hover:text-brand-hover" href="/admin/login">
           Masuk dengan password baru
         </Link>
       ) : null}

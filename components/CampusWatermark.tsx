@@ -8,16 +8,16 @@ export function CampusWatermark() {
         alt=""
         fill
         sizes="100vw"
-        className="object-cover opacity-[0.045]"
+        className="object-cover opacity-[0.03]"
         priority
       />
-      <div className="absolute inset-0 bg-[#f7f9fb]/90" />
+      <div className="absolute inset-0 bg-[#f5f5f7]/85" />
       <Image
         src="/assets/utm-watermark-secondary.jpg"
         alt=""
         width={220}
         height={220}
-        className="absolute bottom-8 right-8 hidden rounded opacity-[0.055] grayscale md:block"
+        className="absolute bottom-8 right-8 hidden rounded opacity-[0.04] grayscale md:block"
       />
     </div>
   );

@@ -33,8 +33,8 @@ export function KerjasamaForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-5 rounded border border-line bg-white p-5">
-      {error ? <div className="rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : null}
+    <form onSubmit={onSubmit} className="card space-y-5 p-6 sm:p-8">
+      {error ? <div className="rounded-xl border border-red-200/80 bg-red-50/80 px-4 py-3 text-sm text-red-700">{error}</div> : null}
       <FormField
         label="Fakultas/Organisasi/Unit Penyelenggara Acara"
         name="fakultas_organisasi"
@@ -59,10 +59,7 @@ export function KerjasamaForm() {
         name="surat_kerjasama"
         hint="Format PDF, DOC, DOCX, JPG, atau PNG. Maksimal 5 MB."
       />
-      <button
-        disabled={loading}
-        className="inline-flex w-full items-center justify-center gap-2 rounded bg-brand px-4 py-3 font-semibold text-white hover:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
-      >
+      <button disabled={loading} className="btn-primary w-full py-3 sm:w-52">
         <Send className="h-4 w-4" />
         {loading ? "Mengirim..." : "Kirim Permohonan"}
       </button>

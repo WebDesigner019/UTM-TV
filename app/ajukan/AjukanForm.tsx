@@ -39,8 +39,8 @@ export function AjukanForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-5 rounded border border-line bg-white p-5">
-      {error ? <div className="rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : null}
+    <form onSubmit={onSubmit} className="card space-y-5 p-6 sm:p-8">
+      {error ? <div className="rounded-xl border border-red-200/80 bg-red-50/80 px-4 py-3 text-sm text-red-700">{error}</div> : null}
       <FormField label="Nama instansi/kantor/prodi/unit kampus" name="nama_instansi" />
       <FormField label="Email kampus" name="email" type="email" placeholder="nama@student.trunojoyo.ac.id" />
       <FormField label="No. WhatsApp" name="no_wa" type="tel" placeholder="08123456789" />
@@ -48,11 +48,11 @@ export function AjukanForm() {
       <FormField label="Tanggal acara" name="tanggal_acara" type="date" min={new Date().toISOString().split("T")[0]} />
       <FormField label="Tempat acara" name="tempat_acara" />
       <div>
-        <label className="mb-2 block text-sm font-medium" htmlFor="detail_peserta_audiens">
+        <label className="mb-2 block text-[15px] font-semibold text-ink" htmlFor="detail_peserta_audiens">
           Detail Peserta/Audiens
         </label>
         <textarea
-          className="focus-ring w-full rounded border border-line bg-white px-3 py-2 text-sm"
+          className="focus-ring input-field"
           id="detail_peserta_audiens"
           name="detail_peserta_audiens"
           rows={3}
@@ -63,10 +63,7 @@ export function AjukanForm() {
         name="surat_pengajuan"
         hint="Format PDF, DOC, DOCX, JPG, atau PNG. Maksimal 5 MB."
       />
-      <button
-        disabled={loading}
-        className="inline-flex w-full items-center justify-center gap-2 rounded bg-brand px-4 py-3 font-semibold text-white hover:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
-      >
+      <button disabled={loading} className="btn-primary w-full py-3 sm:w-52">
         <Send className="h-4 w-4" />
         {loading ? "Mengirim..." : "Kirim Permohonan"}
       </button>
