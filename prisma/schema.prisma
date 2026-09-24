@@ -98,6 +98,7 @@ model PermohonanMediaPartner {
   id                    Int                         @id @default(autoincrement())
   nomorRujukan          String                      @unique @map("nomor_rujukan") @db.VarChar(32)
   fakultasOrganisasi    String                      @map("fakultas_organisasi")
+  email                 String
   namaAcara             String                      @map("nama_acara")
   tanggalRequestUpload  DateTime                    @map("tanggal_request_upload") @db.Date
   kontakPenanggungJawab String                      @map("kontak_penanggung_jawab")
@@ -139,6 +140,7 @@ model PermohonanKerjasama {
   id                    Int                      @id @default(autoincrement())
   nomorRujukan          String                   @unique @map("nomor_rujukan") @db.VarChar(32)
   fakultasOrganisasi    String                   @map("fakultas_organisasi")
+  email                 String
   namaAcara             String                   @map("nama_acara")
   tanggalRequestUpload  DateTime?                @map("tanggal_request_upload") @db.Date
   kontakPenanggungJawab String                   @map("kontak_penanggung_jawab")

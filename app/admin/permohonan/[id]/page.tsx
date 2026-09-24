@@ -100,6 +100,7 @@ export default async function DetailPermohonanPage({
               ) : (
                 <dl className="mt-6 grid gap-x-8 gap-y-5 sm:grid-cols-2">
                   <Info label="Fakultas/Organisasi/Unit" value={item.fakultasOrganisasi} />
+                  <Info label="Email" value={item.email} />
                   <Info label="Nama Acara" value={item.namaAcara} />
                   <Info
                     label="Hari dan Tanggal Request Upload"

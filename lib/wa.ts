@@ -1,4 +1,5 @@
-import { formatTanggal } from "@/lib/status";
+import type { StatusPermohonan } from "@prisma/client";
+import { JENIS_LABEL, type JenisPermohonan, STATUS_LABEL, formatTanggal } from "@/lib/status";
 
 const FONNTE_API = "https://api.fonnte.com/send";
 
@@ -40,7 +41,7 @@ export async function sendWaToUser(input: {
 
   const message = [
     `Hi Tretan UTM!👋`,
-    `pengajuan liputan anda telah kami terima pada:`,
+    `pengajuan liputan anda telah disetujui:`,
     `nama acara: ${input.namaAcara}`,
     `tempat: ${input.tempatAcara}`,
     `tanggal: ${tanggal}`,
@@ -72,7 +73,7 @@ export async function sendWaMediaPartnerToUser(input: {
 
   const message = [
     `Hi Tretan UTM!👋`,
-    `pengajuan media partner anda telah kami terima pada:`,
+    `pengajuan media partner anda telah disetujui:`,
     `nama acara: ${input.namaAcara}`,
     `tanggal request upload: ${tanggal}`,
     `status: disetujui`,
@@ -103,10 +104,42 @@ export async function sendWaKerjasamaToUser(input: {
 
   const message = [
     `Hi Tretan UTM!👋`,
-    `pengajuan kerjasama anda telah kami terima pada:`,
+    `pengajuan kerjasama anda telah disetujui:`,
     `nama acara: ${input.namaAcara}`,
     `tanggal request upload: ${tanggal}`,
     `status: disetujui`,
+    ``,
+    `dengan keterangan:`,
+    `${keterangan}`,
+    ``,
+    `terimakasih, salam hangat UTM-TV.`
+  ].join("\n");
+
+  await sendFonnte(token, input.noWa, message);
+}
+
+export async function sendWaStatusChangedToUser(input: {
+  noWa: string;
+  jenis: JenisPermohonan;
+  status: StatusPermohonan;
+  namaAcara: string;
+  pesan?: string | null;
+}) {
+  const token = process.env.FONNTE_WA_API;
+  if (!token) {
+    console.log("[WA SIMULASI] Token tidak dikonfigurasi.");
+    return;
+  }
+
+  const jenisLabel = JENIS_LABEL[input.jenis];
+  const statusLabel = STATUS_LABEL[input.status];
+  const keterangan = input.pesan || "-";
+
+  const message = [
+    `Hi Tretan UTM!👋`,
+    `status pengajuan ${jenisLabel} anda telah diperbarui.`,
+    `nama acara: ${input.namaAcara}`,
+    `status: ${statusLabel}`,
     ``,
     `dengan keterangan:`,
     `${keterangan}`,
