@@ -304,7 +304,11 @@ export default async function AdminPage({
             </div>
           ) : (
             items.map((item) => (
-              <div key={`${item.jenis}-${item.id}`} className="card p-5">
+              <Link
+                key={`${item.jenis}-${item.id}`}
+                href={`/admin/permohonan/${item.id}?jenis=${item.jenis}`}
+                className="card block p-5 transition-colors duration-150 hover:bg-white/90"
+              >
                 <div className="flex items-start justify-between gap-2">
                   <div className="font-semibold text-brand">{item.nomorRujukan}</div>
                   <StatusBadge status={item.status} />
@@ -314,13 +318,7 @@ export default async function AdminPage({
                 <div className="mt-1 text-sm text-slate-400">
                   {item.tanggal ? formatTanggal(item.tanggal) : "-"} · {JENIS_LABEL[item.jenis]}
                 </div>
-                <Link
-                  className="mt-3 inline-block text-sm font-semibold text-brand transition-colors hover:text-brand-hover"
-                  href={`/admin/permohonan/${item.id}?jenis=${item.jenis}`}
-                >
-                  Detail &rarr;
-                </Link>
-              </div>
+              </Link>
             ))
           )}
         </div>
@@ -337,28 +335,32 @@ export default async function AdminPage({
                   <th className="px-6 py-3.5">Jenis</th>
                   <th className="px-6 py-3.5">Tanggal</th>
                   <th className="px-6 py-3.5">Status</th>
-                  <th className="px-6 py-3.5">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-line/70 bg-white">
                 {items.map((item) => (
-                  <tr key={`${item.jenis}-${item.id}`} className="transition-colors duration-150 hover:bg-slate-50/80">
-                    <td className="px-6 py-4 font-medium">{item.nomorRujukan}</td>
+                  <tr
+                    key={`${item.jenis}-${item.id}`}
+                    className="relative cursor-pointer transition-colors duration-150 hover:bg-slate-50/80"
+                  >
+                    <td className="px-6 py-4 font-medium">
+                      <Link
+                        className="absolute inset-0"
+                        href={`/admin/permohonan/${item.id}?jenis=${item.jenis}`}
+                        aria-label={`Detail ${item.nomorRujukan}`}
+                      />
+                      {item.nomorRujukan}
+                    </td>
                     <td className="px-6 py-4">{item.namaAcara}</td>
                     <td className="px-6 py-4">{item.instansi}</td>
                     <td className="px-6 py-4">{JENIS_LABEL[item.jenis]}</td>
                     <td className="px-6 py-4">{item.tanggal ? formatTanggal(item.tanggal) : "-"}</td>
                     <td className="px-6 py-4"><StatusBadge status={item.status} /></td>
-                    <td className="px-6 py-4">
-                      <Link className="font-semibold text-brand transition-colors hover:text-brand-hover" href={`/admin/permohonan/${item.id}?jenis=${item.jenis}`}>
-                        Detail
-                      </Link>
-                    </td>
                   </tr>
                 ))}
                 {items.length === 0 ? (
                   <tr>
-                    <td className="px-6 py-10 text-center text-slate-400" colSpan={7}>
+                    <td className="px-6 py-10 text-center text-slate-400" colSpan={6}>
                       Belum ada data permohonan.
                     </td>
                   </tr>
