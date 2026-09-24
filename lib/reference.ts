@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 
-export type JenisPrefix = "LIP" | "MP" | "KJ";
+export type JenisPrefix = "LIP" | "MP" | "KJ" | "PP";
 
 export async function generateNomorRujukan(jenis: JenisPrefix, tanggal = new Date()) {
   const year = tanggal.getFullYear();
@@ -18,6 +18,9 @@ export async function generateNomorRujukan(jenis: JenisPrefix, tanggal = new Dat
       break;
     case "KJ":
       count = await prisma.permohonanKerjasama.count({ where });
+      break;
+    case "PP":
+      count = await prisma.permohonanPeminjamanPodcast.count({ where });
       break;
   }
 

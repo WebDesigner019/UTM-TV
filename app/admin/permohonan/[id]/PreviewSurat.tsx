@@ -8,9 +8,10 @@ type Props = {
   jenis: string;
   fileOriginalName: string;
   fileMimeType: string;
+  file?: string;
 };
 
-export function PreviewSurat({ id, jenis, fileOriginalName, fileMimeType }: Props) {
+export function PreviewSurat({ id, jenis, fileOriginalName, fileMimeType, file }: Props) {
   const [open, setOpen] = useState(false);
 
   const isPreviewable =
@@ -59,7 +60,7 @@ export function PreviewSurat({ id, jenis, fileOriginalName, fileMimeType }: Prop
             </div>
             <div className="flex-1">
               <iframe
-                src={`/api/admin/permohonan/${id}/file/preview?jenis=${jenis}`}
+                src={`/api/admin/permohonan/${id}/file/preview?jenis=${jenis}${file ? `&file=${file}` : ""}`}
                 className="h-full w-full"
                 title={fileOriginalName}
               />

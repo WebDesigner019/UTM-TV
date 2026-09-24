@@ -40,12 +40,14 @@ export function FileInput({
   label,
   name,
   hint,
-  required = true
+  required = true,
+  accept
 }: {
   label: string;
   name: string;
   hint?: string;
   required?: boolean;
+  accept?: string;
 }) {
   return (
     <div>
@@ -57,7 +59,10 @@ export function FileInput({
           className="sr-only"
           name={name}
           type="file"
-          accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png"
+          accept={
+            accept ||
+            ".pdf,.doc,.docx,.jpg,.jpeg,.png,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png"
+          }
           required={required}
         />
       </label>

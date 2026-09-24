@@ -1,6 +1,6 @@
 import type { StatusPermohonan } from "@prisma/client";
 
-export const JENIS_OPTIONS = ["liputan", "media_partner", "kerjasama"] as const;
+export const JENIS_OPTIONS = ["liputan", "media_partner", "kerjasama", "peminjaman_podcast"] as const;
 export type JenisPermohonan = (typeof JENIS_OPTIONS)[number];
 
 export const STATUS_OPTIONS: StatusPermohonan[] = [
@@ -20,7 +20,8 @@ export const STATUS_LABEL: Record<StatusPermohonan, string> = {
 export const JENIS_LABEL: Record<JenisPermohonan, string> = {
   liputan: "liputan",
   media_partner: "media partner",
-  kerjasama: "kerjasama"
+  kerjasama: "kerjasama",
+  peminjaman_podcast: "peminjaman ruang podcast"
 };
 
 export function formatTanggal(date: Date | string) {

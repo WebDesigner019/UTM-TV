@@ -331,6 +331,9 @@ export async function sendPermohonanDisetujuiEmail(input: {
   tempatAcara?: string;
   tanggalAcara?: Date;
   tanggalRequestUpload?: Date | null;
+  tanggalPeminjaman?: Date;
+  waktuMulai?: string;
+  waktuSelesai?: string;
   pesan?: string | null;
 }) {
   const jenis = input.jenis || "liputan";
@@ -338,10 +341,25 @@ export async function sendPermohonanDisetujuiEmail(input: {
   const keterangan = input.pesan || "-";
 
   const isLiputan = jenis === "liputan";
-  const tanggal = isLiputan ? formatTanggal(input.tanggalAcara || new Date()) : (input.tanggalRequestUpload ? formatTanggal(input.tanggalRequestUpload) : "-");
+  const isPodcast = jenis === "peminjaman_podcast";
+  const tanggal = isPodcast
+    ? formatTanggal(input.tanggalPeminjaman || new Date())
+    : isLiputan
+      ? formatTanggal(input.tanggalAcara || new Date())
+      : (input.tanggalRequestUpload ? formatTanggal(input.tanggalRequestUpload) : "-");
 
-  const detailRows = isLiputan
+  const detailRows = isPodcast
     ? `
+      <tr>
+        <td>Tanggal</td>
+        <td>${tanggal}</td>
+      </tr>
+      <tr>
+        <td>Waktu</td>
+        <td>${input.waktuMulai || "-"} - ${input.waktuSelesai || "-"}</td>
+      </tr>`
+    : isLiputan
+      ? `
       <tr>
         <td>Tempat</td>
         <td>${input.tempatAcara || "-"}</td>
@@ -350,7 +368,7 @@ export async function sendPermohonanDisetujuiEmail(input: {
         <td>Tanggal</td>
         <td>${tanggal}</td>
       </tr>`
-    : `
+      : `
       <tr>
         <td>Tanggal Request Upload</td>
         <td>${tanggal}</td>
@@ -360,9 +378,11 @@ export async function sendPermohonanDisetujuiEmail(input: {
     `Pengajuan ${jenisLabel} Anda telah disetujui!`,
     "",
     `Nama acara: ${input.namaAcara}`,
-    ...(isLiputan
-      ? [`Tempat: ${input.tempatAcara || "-"}`, `Tanggal: ${tanggal}`]
-      : [`Tanggal request upload: ${tanggal}`]),
+    ...(isPodcast
+      ? [`Tanggal: ${tanggal}`, `Waktu: ${input.waktuMulai || "-"} - ${input.waktuSelesai || "-"}`]
+      : isLiputan
+        ? [`Tempat: ${input.tempatAcara || "-"}`, `Tanggal: ${tanggal}`]
+        : [`Tanggal request upload: ${tanggal}`]),
     "Status: disetujui",
     "",
     `Dengan keterangan: ${keterangan}`,

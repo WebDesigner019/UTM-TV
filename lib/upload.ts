@@ -13,19 +13,30 @@ const allowedMimeTypes = new Set([
 
 const allowedExtensions = new Set([".pdf", ".doc", ".docx", ".jpg", ".jpeg", ".png"]);
 
-export async function saveUploadedFile(file: File) {
+export type UploadOptions = {
+  pdfOnly?: boolean;
+  maxSizeBytes?: number;
+};
+
+export async function saveUploadedFile(file: File, options: UploadOptions = {}) {
   if (!file || file.size === 0) {
     throw new Error("Surat pengajuan wajib diunggah.");
   }
 
-  if (file.size > getMaxFileSizeBytes()) {
-    throw new Error(`Ukuran file maksimal ${process.env.MAX_FILE_SIZE_MB || "5"} MB.`);
+  const maxSizeBytes = options.maxSizeBytes ?? getMaxFileSizeBytes();
+  if (file.size > maxSizeBytes) {
+    const mb = Math.round(maxSizeBytes / (1024 * 1024));
+    throw new Error(`Ukuran file maksimal ${mb} MB.`);
   }
 
   const originalName = file.name || "surat-pengajuan";
   const extension = path.extname(originalName).toLowerCase();
 
-  if (!allowedExtensions.has(extension) || !allowedMimeTypes.has(file.type)) {
+  if (options.pdfOnly) {
+    if (extension !== ".pdf" && (file.type !== "application/pdf" && !file.type.includes("pdf"))) {
+      throw new Error("Format file harus PDF.");
+    }
+  } else if (!allowedExtensions.has(extension) || !allowedMimeTypes.has(file.type)) {
     throw new Error("Format file harus PDF, DOC, DOCX, JPG, atau PNG.");
   }
 

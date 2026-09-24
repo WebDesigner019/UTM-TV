@@ -2,15 +2,15 @@
 RENAME TABLE `permohonan` TO `permohonan_liputan`;
 RENAME TABLE `status_history` TO `status_history_liputan`;
 
--- RenameIndex
-ALTER TABLE `permohonan_liputan` RENAME INDEX `permohonan_email_idx` TO `permohonan_liputan_email_idx`;
-ALTER TABLE `permohonan_liputan` RENAME INDEX `permohonan_status_idx` TO `permohonan_liputan_status_idx`;
-ALTER TABLE `permohonan_liputan` RENAME INDEX `permohonan_created_at_idx` TO `permohonan_liputan_created_at_idx`;
-ALTER TABLE `permohonan_liputan` RENAME INDEX `permohonan_nomor_rujukan_key` TO `permohonan_liputan_nomor_rujukan_key`;
-ALTER TABLE `permohonan_liputan` RENAME INDEX `permohonan_token_lacak_key` TO `permohonan_liputan_token_lacak_key`;
+-- RenameIndex (MariaDB-compatible: DROP + ADD index)
+ALTER TABLE `permohonan_liputan` DROP INDEX `permohonan_email_idx`, ADD INDEX `permohonan_liputan_email_idx`(`email`);
+ALTER TABLE `permohonan_liputan` DROP INDEX `permohonan_status_idx`, ADD INDEX `permohonan_liputan_status_idx`(`status`);
+ALTER TABLE `permohonan_liputan` DROP INDEX `permohonan_created_at_idx`, ADD INDEX `permohonan_liputan_created_at_idx`(`created_at`);
+ALTER TABLE `permohonan_liputan` DROP INDEX `permohonan_nomor_rujukan_key`, ADD UNIQUE INDEX `permohonan_liputan_nomor_rujukan_key`(`nomor_rujukan`);
+ALTER TABLE `permohonan_liputan` DROP INDEX `permohonan_token_lacak_key`, ADD UNIQUE INDEX `permohonan_liputan_token_lacak_key`(`token_lacak`);
 
-ALTER TABLE `status_history_liputan` RENAME INDEX `status_history_permohonan_id_idx` TO `status_history_liputan_permohonan_id_idx`;
-ALTER TABLE `status_history_liputan` RENAME INDEX `status_history_changed_by_admin_id_idx` TO `status_history_liputan_changed_by_admin_id_idx`;
+ALTER TABLE `status_history_liputan` DROP INDEX `status_history_permohonan_id_idx`, ADD INDEX `status_history_liputan_permohonan_id_idx`(`permohonan_id`);
+ALTER TABLE `status_history_liputan` DROP INDEX `status_history_changed_by_admin_id_idx`, ADD INDEX `status_history_liputan_changed_by_admin_id_idx`(`changed_by_admin_id`);
 
 -- RenameForeignKey
 ALTER TABLE `status_history_liputan` DROP FOREIGN KEY `status_history_permohonan_id_fkey`;

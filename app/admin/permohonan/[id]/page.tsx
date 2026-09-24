@@ -14,7 +14,8 @@ export const dynamic = "force-dynamic";
 const JENIS_LABEL: Record<string, string> = {
   liputan: "Pengajuan Liputan",
   media_partner: "Pengajuan Media Partner",
-  kerjasama: "Pengajuan Kerjasama"
+  kerjasama: "Pengajuan Kerjasama",
+  peminjaman_podcast: "Pengajuan Peminjaman Ruang Podcast"
 };
 
 export default async function DetailPermohonanPage({
@@ -61,6 +62,16 @@ export default async function DetailPermohonanPage({
         }
       }
     });
+  } else if (jenis === "peminjaman_podcast") {
+    item = await prisma.permohonanPeminjamanPodcast.findUnique({
+      where: { id },
+      include: {
+        statusHistory: {
+          orderBy: { createdAt: "asc" },
+          include: { admin: { select: { nama: true, email: true } } }
+        }
+      }
+    });
   }
   if (!item) notFound();
 
@@ -97,6 +108,17 @@ export default async function DetailPermohonanPage({
                   <Info label="Diajukan" value={formatTanggalWaktu(item.createdAt)} />
                   <Info label="Nama file" value={item.fileOriginalName} />
                 </dl>
+              ) : jenis === "peminjaman_podcast" ? (
+                <dl className="mt-6 grid gap-x-8 gap-y-5 sm:grid-cols-2">
+                  <Info label="Nama Organisasi/Instansi" value={item.namaInstansi} />
+                  <Info label="Email" value={item.email} />
+                  <Info label="Nama Acara/Tujuan Peminjaman" value={item.namaAcara} />
+                  <Info label="Tanggal Peminjaman" value={formatTanggal(item.tanggalPeminjaman)} />
+                  <Info label="Waktu" value={`${item.waktuMulai} - ${item.waktuSelesai}`} />
+                  <Info label="Kontak Penanggung Jawab" value={item.kontakPenanggungJawab} />
+                  {item.noteDetail ? <Info label="Note Detail" value={item.noteDetail} /> : null}
+                  <Info label="Diajukan" value={formatTanggalWaktu(item.createdAt)} />
+                </dl>
               ) : (
                 <dl className="mt-6 grid gap-x-8 gap-y-5 sm:grid-cols-2">
                   <Info label="Fakultas/Organisasi/Unit" value={item.fakultasOrganisasi} />
@@ -112,21 +134,60 @@ export default async function DetailPermohonanPage({
                 </dl>
               )}
 
-              <div className="mt-7 flex flex-wrap gap-3">
-                <a
-                  className="btn-secondary"
-                  href={fileUrl}
-                >
-                  <Download className="h-4 w-4" />
-                  Unduh Surat
-                </a>
-                <PreviewSurat
-                  id={item.id}
-                  jenis={jenis}
-                  fileOriginalName={item.fileOriginalName}
-                  fileMimeType={item.fileMimeType}
-                />
-              </div>
+              {jenis === "peminjaman_podcast" ? (
+                <div className="mt-7 grid gap-5 sm:grid-cols-2">
+                  <div className="rounded-2xl border border-line/70 p-5">
+                    <p className="text-sm font-semibold text-ink">Surat Rekomendasi BAKK</p>
+                    <p className="mt-0.5 truncate text-sm text-slate-400">{item.fileRekomBakkOriginalName}</p>
+                    <div className="mt-4 flex flex-wrap gap-3">
+                      <a className="btn-secondary" href={`${fileUrl}&file=rekom`}>
+                        <Download className="h-4 w-4" />
+                        Unduh
+                      </a>
+                      <PreviewSurat
+                        id={item.id}
+                        jenis={jenis}
+                        file="rekom"
+                        fileOriginalName={item.fileRekomBakkOriginalName}
+                        fileMimeType={item.fileRekomBakkMimeType}
+                      />
+                    </div>
+                  </div>
+                  <div className="rounded-2xl border border-line/70 p-5">
+                    <p className="text-sm font-semibold text-ink">Surat Pernyataan</p>
+                    <p className="mt-0.5 truncate text-sm text-slate-400">{item.filePernyataanOriginalName}</p>
+                    <div className="mt-4 flex flex-wrap gap-3">
+                      <a className="btn-secondary" href={`${fileUrl}&file=pernyataan`}>
+                        <Download className="h-4 w-4" />
+                        Unduh
+                      </a>
+                      <PreviewSurat
+                        id={item.id}
+                        jenis={jenis}
+                        file="pernyataan"
+                        fileOriginalName={item.filePernyataanOriginalName}
+                        fileMimeType={item.filePernyataanMimeType}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="mt-7 flex flex-wrap gap-3">
+                  <a
+                    className="btn-secondary"
+                    href={fileUrl}
+                  >
+                    <Download className="h-4 w-4" />
+                    Unduh Surat
+                  </a>
+                  <PreviewSurat
+                    id={item.id}
+                    jenis={jenis}
+                    fileOriginalName={item.fileOriginalName}
+                    fileMimeType={item.fileMimeType}
+                  />
+                </div>
+              )}
             </div>
 
             <div className="card p-6 sm:p-8">

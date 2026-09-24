@@ -16,10 +16,11 @@ export async function GET() {
   const start = new Date(year, 0, 1);
   const end = new Date(year + 1, 0, 1);
 
-  const [totalLiputan, totalMp, totalKj, disetujui, pengajuanMasuk] = await Promise.all([
+  const [totalLiputan, totalMp, totalKj, totalPodcast, disetujui, pengajuanMasuk] = await Promise.all([
     prisma.permohonanLiputan.count({ where: { createdAt: { gte: start, lt: end } } }),
     prisma.permohonanMediaPartner.count({ where: { createdAt: { gte: start, lt: end } } }),
     prisma.permohonanKerjasama.count({ where: { createdAt: { gte: start, lt: end } } }),
+    prisma.permohonanPeminjamanPodcast.count({ where: { createdAt: { gte: start, lt: end } } }),
     prisma.permohonanLiputan.count({ where: { status: "disetujui", createdAt: { gte: start, lt: end } } }),
     prisma.permohonanLiputan.count({ where: { status: "diterima", createdAt: { gte: start, lt: end } } })
   ]);
@@ -27,7 +28,7 @@ export async function GET() {
   return NextResponse.json({
     aktif: true,
     tahun: year,
-    total: totalLiputan + totalMp + totalKj,
+    total: totalLiputan + totalMp + totalKj + totalPodcast,
     disetujui,
     pengajuan_masuk: pengajuanMasuk
   });

@@ -14,13 +14,15 @@ const JENIS_OPTIONS = [
   { value: "semua", label: "Semua jenis" },
   { value: "liputan", label: "Pengajuan Liputan" },
   { value: "media_partner", label: "Pengajuan Media Partner" },
-  { value: "kerjasama", label: "Pengajuan Kerjasama" }
+  { value: "kerjasama", label: "Pengajuan Kerjasama" },
+  { value: "peminjaman_podcast", label: "Pengajuan Peminjaman Ruang Podcast" }
 ] as const;
 
 const JENIS_LABEL: Record<string, string> = {
   liputan: "Liputan",
   media_partner: "Media Partner",
-  kerjasama: "Kerjasama"
+  kerjasama: "Kerjasama",
+  peminjaman_podcast: "Peminjaman Ruang Podcast"
 };
 
 type UnifiedItem = {
@@ -53,10 +55,11 @@ export default async function AdminPage({
   const includeLiputan = jenis === "semua" || jenis === "liputan";
   const includeMediaPartner = jenis === "semua" || jenis === "media_partner";
   const includeKerjasama = jenis === "semua" || jenis === "kerjasama";
+  const includePeminjamanPodcast = jenis === "semua" || jenis === "peminjaman_podcast";
 
   const statusFilter = status && STATUS_OPTIONS.includes(status as any) ? { status: status as StatusPermohonan } : {};
 
-  const [liputanItems, mpItems, kjItems] = await Promise.all([
+  const [liputanItems, mpItems, kjItems, ppItems] = await Promise.all([
     includeLiputan
       ? prisma.permohonanLiputan.findMany({
           where: {
@@ -144,6 +147,35 @@ export default async function AdminPage({
             createdAt: true
           }
         })
+      : [],
+    includePeminjamanPodcast
+      ? prisma.permohonanPeminjamanPodcast.findMany({
+          where: {
+            ...statusFilter,
+            ...(q
+              ? {
+                  OR: [
+                    { nomorRujukan: { contains: q } },
+                    { namaAcara: { contains: q } },
+                    { namaInstansi: { contains: q } },
+                    { kontakPenanggungJawab: { contains: q } }
+                  ]
+                }
+              : {})
+          },
+          orderBy: { createdAt: "desc" },
+          skip,
+          take,
+          select: {
+            id: true,
+            nomorRujukan: true,
+            namaInstansi: true,
+            namaAcara: true,
+            tanggalPeminjaman: true,
+            status: true,
+            createdAt: true
+          }
+        })
       : []
   ]);
 
@@ -180,10 +212,21 @@ export default async function AdminPage({
       tanggal: item.tanggalRequestUpload,
       status: item.status,
       createdAt: item.createdAt
+    })),
+    ...ppItems.map((item) => ({
+      id: item.id,
+      jenis: "peminjaman_podcast",
+      nomorRujukan: item.nomorRujukan,
+      instansi: item.namaInstansi,
+      email: null,
+      namaAcara: item.namaAcara,
+      tanggal: item.tanggalPeminjaman,
+      status: item.status,
+      createdAt: item.createdAt
     }))
   ].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
-  const [totalLiputan, totalMp, totalKj] = await Promise.all([
+  const [totalLiputan, totalMp, totalKj, totalPp] = await Promise.all([
     includeLiputan
       ? prisma.permohonanLiputan.count({
           where: {
@@ -234,18 +277,36 @@ export default async function AdminPage({
               : {})
           }
         })
+      : 0,
+    includePeminjamanPodcast
+      ? prisma.permohonanPeminjamanPodcast.count({
+          where: {
+            ...statusFilter,
+            ...(q
+              ? {
+                  OR: [
+                    { nomorRujukan: { contains: q } },
+                    { namaAcara: { contains: q } },
+                    { namaInstansi: { contains: q } },
+                    { kontakPenanggungJawab: { contains: q } }
+                  ]
+                }
+              : {})
+          }
+        })
       : 0
   ]);
-  const total = totalLiputan + totalMp + totalKj;
+  const total = totalLiputan + totalMp + totalKj + totalPp;
 
-  const [liputanCounts, mpCounts, kjCounts] = await Promise.all([
+  const [liputanCounts, mpCounts, kjCounts, ppCounts] = await Promise.all([
     includeLiputan ? prisma.permohonanLiputan.groupBy({ by: ["status"], _count: { status: true } }) : [],
     includeMediaPartner ? prisma.permohonanMediaPartner.groupBy({ by: ["status"], _count: { status: true } }) : [],
-    includeKerjasama ? prisma.permohonanKerjasama.groupBy({ by: ["status"], _count: { status: true } }) : []
+    includeKerjasama ? prisma.permohonanKerjasama.groupBy({ by: ["status"], _count: { status: true } }) : [],
+    includePeminjamanPodcast ? prisma.permohonanPeminjamanPodcast.groupBy({ by: ["status"], _count: { status: true } }) : []
   ]);
 
   const countMap: Record<string, number> = {};
-  [...liputanCounts, ...mpCounts, ...kjCounts].forEach((c) => {
+  [...liputanCounts, ...mpCounts, ...kjCounts, ...ppCounts].forEach((c) => {
     countMap[c.status] = (countMap[c.status] || 0) + c._count.status;
   });
 

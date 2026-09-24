@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Search, ShieldCheck, Video, Handshake, Megaphone, Phone } from "lucide-react";
+import { ArrowRight, Search, ShieldCheck, Video, Handshake, Megaphone, Mic, Phone } from "lucide-react";
 import { CampusWatermark } from "@/components/CampusWatermark";
 import { PublicNav } from "@/components/PublicNav";
 import { LandingAnimations } from "@/components/LandingAnimations";
@@ -14,14 +14,20 @@ async function getStats() {
   const year = new Date().getFullYear();
   const start = new Date(year, 0, 1);
   const end = new Date(year + 1, 0, 1);
-  const [totalLiputan, totalMediaPartner, totalKerjasama, disetujui, pengajuanMasuk] = await Promise.all([
+  const [totalLiputan, totalMediaPartner, totalKerjasama, totalPodcast, disetujui, pengajuanMasuk] = await Promise.all([
     prisma.permohonanLiputan.count({ where: { createdAt: { gte: start, lt: end } } }),
     prisma.permohonanMediaPartner.count({ where: { createdAt: { gte: start, lt: end } } }),
     prisma.permohonanKerjasama.count({ where: { createdAt: { gte: start, lt: end } } }),
+    prisma.permohonanPeminjamanPodcast.count({ where: { createdAt: { gte: start, lt: end } } }),
     prisma.permohonanLiputan.count({ where: { status: "disetujui", createdAt: { gte: start, lt: end } } }),
     prisma.permohonanLiputan.count({ where: { status: "diterima", createdAt: { gte: start, lt: end } } })
   ]);
-  return { year, total: totalLiputan + totalMediaPartner + totalKerjasama, disetujui, pengajuanMasuk };
+  return {
+    year,
+    total: totalLiputan + totalMediaPartner + totalKerjasama + totalPodcast,
+    disetujui,
+    pengajuanMasuk
+  };
 }
 
 export default async function Home() {
@@ -107,7 +113,7 @@ export default async function Home() {
         <section className="mx-auto max-w-6xl px-4 py-16">
           <h2 data-reveal className="text-balance text-3xl font-bold tracking-tight text-ink md:text-4xl">Pilih Jenis Pengajuan</h2>
           <p data-reveal className="mt-3 text-lg text-slate-500">Pilih salah satu jenis pengajuan sesuai kebutuhan Anda bersama UTM TV.</p>
-          <div className="mt-10 grid gap-5 md:grid-cols-3" data-reveal-group>
+          <div className="mt-10 grid gap-5 md:grid-cols-4" data-reveal-group>
             <JenisCard
               icon={<Megaphone className="h-6 w-6" />}
               title="Pengajuan Liputan"
@@ -128,6 +134,13 @@ export default async function Home() {
               text="Ajukan bentuk kerjasama lainnya bersama UTM TV dalam bentuk kolaborasi media."
               href="/ajukan/kerjasama"
               cta="Ajukan Kerjasama"
+            />
+            <JenisCard
+              icon={<Mic className="h-6 w-6" />}
+              title="Pengajuan Peminjaman Ruang Podcast"
+              text="Ajukan peminjaman ruang podcast UTM TV untuk kebutuhan rekaman dan produksi konten Anda."
+              href="/ajukan/peminjaman-podcast"
+              cta="Ajukan Ruang Podcast"
             />
           </div>
         </section>

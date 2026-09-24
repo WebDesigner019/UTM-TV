@@ -157,6 +157,49 @@ export async function GET(request: Request) {
     };
   }
 
+  async function findPeminjamanPodcast() {
+    const where: any = { ...(statusFilter ? { status: statusFilter } : {}) };
+    if (qFilter) {
+      where.OR = [
+        ...qFilter.OR,
+        { namaInstansi: { contains: qSearch } },
+        { kontakPenanggungJawab: { contains: qSearch } }
+      ];
+    }
+    const items = await prisma.permohonanPeminjamanPodcast.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip,
+      take,
+      select: {
+        id: true,
+        nomorRujukan: true,
+        namaInstansi: true,
+        namaAcara: true,
+        tanggalPeminjaman: true,
+        status: true,
+        createdAt: true
+      }
+    });
+    const total = await prisma.permohonanPeminjamanPodcast.count({ where });
+    const counts = await prisma.permohonanPeminjamanPodcast.groupBy({ by: ["status"], _count: { status: true } });
+    return {
+      items: items.map((item) => ({
+        id: item.id,
+        jenis: "peminjaman_podcast" as const,
+        nomorRujukan: item.nomorRujukan,
+        instansi: item.namaInstansi,
+        email: null,
+        namaAcara: item.namaAcara,
+        tanggal: item.tanggalPeminjaman,
+        status: item.status,
+        createdAt: item.createdAt
+      })),
+      total,
+      counts: counts.map((c) => ({ status: c.status, count: c._count.status }))
+    };
+  }
+
   const result: {
     items: any[];
     total: number;
@@ -180,6 +223,12 @@ export async function GET(request: Request) {
     result.items.push(...kj.items);
     result.total += kj.total;
     result.counts.push(...kj.counts);
+  }
+  if (jenis === "peminjaman_podcast" || !jenis || jenis === "semua") {
+    const pp = await findPeminjamanPodcast();
+    result.items.push(...pp.items);
+    result.total += pp.total;
+    result.counts.push(...pp.counts);
   }
 
   result.items.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());

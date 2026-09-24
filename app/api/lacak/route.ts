@@ -5,7 +5,7 @@ import { normalizeEmail } from "@/lib/env";
 import { getClientIp, rateLimit } from "@/lib/rate-limit";
 
 const schema = z.object({
-  jenis_permohonan: z.enum(["liputan", "media_partner", "kerjasama"]),
+  jenis_permohonan: z.enum(["liputan", "media_partner", "kerjasama", "peminjaman_podcast"]),
   nomor_rujukan: z.string().min(5),
   email: z.string().email().optional()
 });
@@ -62,6 +62,33 @@ export async function POST(request: Request) {
           namaAcara: true,
           tanggalRequestUpload: true,
           kontakPenanggungJawab: true,
+          status: true,
+          pesanPemohon: true,
+          createdAt: true,
+          statusHistory: {
+            orderBy: { createdAt: "asc" },
+            select: {
+              statusLama: true,
+              statusBaru: true,
+              pesan: true,
+              createdAt: true
+            }
+          }
+        }
+      });
+    } else if (body.jenis_permohonan === "peminjaman_podcast") {
+      permohonan = await prisma.permohonanPeminjamanPodcast.findFirst({
+        where: { nomorRujukan },
+        select: {
+          nomorRujukan: true,
+          namaInstansi: true,
+          namaAcara: true,
+          tanggalPeminjaman: true,
+          waktuMulai: true,
+          waktuSelesai: true,
+          kontakPenanggungJawab: true,
+          noteDetail: true,
+          email: true,
           status: true,
           pesanPemohon: true,
           createdAt: true,

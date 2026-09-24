@@ -118,6 +118,39 @@ export async function sendWaKerjasamaToUser(input: {
   await sendFonnte(token, input.noWa, message);
 }
 
+export async function sendWaPeminjamanPodcastToUser(input: {
+  noWa: string;
+  namaAcara: string;
+  tanggalPeminjaman: Date;
+  waktuMulai: string;
+  waktuSelesai: string;
+  pesan?: string | null;
+}) {
+  const token = process.env.FONNTE_WA_API;
+  if (!token) {
+    console.log("[WA SIMULASI] Token tidak dikonfigurasi.");
+    return;
+  }
+
+  const keterangan = input.pesan || "-";
+
+  const message = [
+    `Hi Tretan UTM!👋`,
+    `pengajuan peminjaman ruang podcast anda telah disetujui:`,
+    `nama acara: ${input.namaAcara}`,
+    `tanggal: ${formatTanggal(input.tanggalPeminjaman)}`,
+    `waktu: ${input.waktuMulai} - ${input.waktuSelesai}`,
+    `status: disetujui`,
+    ``,
+    `dengan keterangan:`,
+    `${keterangan}`,
+    ``,
+    `terimakasih, salam hangat UTM-TV.`
+  ].join("\n");
+
+  await sendFonnte(token, input.noWa, message);
+}
+
 export async function sendWaStatusChangedToUser(input: {
   noWa: string;
   jenis: JenisPermohonan;
@@ -233,6 +266,39 @@ export async function sendWaGroupNotificationKerjasama(input: {
     `nama acara: ${input.namaAcara}`,
     `tanggal request upload: ${input.tanggalRequestUpload ? formatTanggal(input.tanggalRequestUpload) : "-"}`,
     `kontak penanggung jawab: ${input.kontakPenanggungJawab}`
+  ].join("\n");
+
+  await sendToGroup(token, groupId, message);
+}
+
+export async function sendWaGroupNotificationPeminjamanPodcast(input: {
+  namaInstansi: string;
+  namaAcara: string;
+  tanggalPeminjaman: Date;
+  waktuMulai: string;
+  waktuSelesai: string;
+  kontakPenanggungJawab: string;
+  noteDetail: string;
+  email: string;
+}) {
+  const token = process.env.FONNTE_WA_API;
+  const groupId = process.env.FONNTE_GROUP_ID;
+  if (!token || !groupId) {
+    console.log("[WA SIMULASI] Token atau Group ID tidak dikonfigurasi.");
+    return;
+  }
+
+  const message = [
+    "Hi UTM-TV!",
+    "ada permohonan peminjaman ruang podcast berikut detailnya:",
+    "",
+    `nama instansi/organisasi: ${input.namaInstansi}`,
+    `nama acara/tujuan: ${input.namaAcara}`,
+    `tanggal: ${formatTanggal(input.tanggalPeminjaman)}`,
+    `waktu: ${input.waktuMulai} - ${input.waktuSelesai}`,
+    `kontak penanggung jawab: ${input.kontakPenanggungJawab}`,
+    `note detail: ${input.noteDetail || "-"}`,
+    `email: ${input.email}`
   ].join("\n");
 
   await sendToGroup(token, groupId, message);

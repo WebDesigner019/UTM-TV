@@ -8,6 +8,7 @@ import {
   sendWaToUser,
   sendWaMediaPartnerToUser,
   sendWaKerjasamaToUser,
+  sendWaPeminjamanPodcastToUser,
   sendWaStatusChangedToUser
 } from "@/lib/wa";
 
@@ -50,6 +51,16 @@ export async function GET(request: Request, { params }: { params: { id: string }
     });
   } else if (jenis === "kerjasama") {
     permohonan = await prisma.permohonanKerjasama.findUnique({
+      where: { id },
+      include: {
+        statusHistory: {
+          orderBy: { createdAt: "asc" },
+          include: { admin: { select: { nama: true, email: true } } }
+        }
+      }
+    });
+  } else if (jenis === "peminjaman_podcast") {
+    permohonan = await prisma.permohonanPeminjamanPodcast.findUnique({
       where: { id },
       include: {
         statusHistory: {
@@ -149,6 +160,27 @@ export async function PATCH(request: Request, { params }: { params: { id: string
         });
         return item;
       });
+    } else if (jenis === "peminjaman_podcast") {
+      existing = await prisma.permohonanPeminjamanPodcast.findUnique({ where: { id } });
+      if (!existing) return NextResponse.json({ message: "Data tidak ditemukan." }, { status: 404 });
+      updated = await prisma.$transaction(async (tx) => {
+        const item = await tx.permohonanPeminjamanPodcast.update({
+          where: { id },
+          data: {
+            status: body.status,
+            pesanPemohon: body.pesan_pemohon || null,
+            catatanInternal: body.catatan_internal || null
+          }
+        });
+        await tx.statusHistoryPeminjamanPodcast.create({
+          data: {
+            permohonanId: id,
+            statusLama: existing.status,
+            ...historyData
+          }
+        });
+        return item;
+      });
     } else {
       return NextResponse.json({ message: "Jenis permohonan tidak valid." }, { status: 400 });
     }
@@ -188,6 +220,26 @@ export async function PATCH(request: Request, { params }: { params: { id: string
               noWa: extractWaFromKontak(updated.kontakPenanggungJawab),
               namaAcara: updated.namaAcara,
               tanggalRequestUpload: updated.tanggalRequestUpload,
+              pesan: body.pesan_pemohon
+            }).catch((error) => console.error("Gagal mengirim WA ke user:", error))
+          ]);
+        } else if (jenis === "peminjaman_podcast") {
+          await Promise.all([
+            sendPermohonanDisetujuiEmail({
+              email: updated.email,
+              jenis: jenisTyped,
+              namaAcara: updated.namaAcara,
+              tanggalPeminjaman: updated.tanggalPeminjaman,
+              waktuMulai: updated.waktuMulai,
+              waktuSelesai: updated.waktuSelesai,
+              pesan: body.pesan_pemohon
+            }).catch((error) => console.error("Gagal mengirim email disetujui:", error)),
+            sendWaPeminjamanPodcastToUser({
+              noWa: extractWaFromKontak(updated.kontakPenanggungJawab),
+              namaAcara: updated.namaAcara,
+              tanggalPeminjaman: updated.tanggalPeminjaman,
+              waktuMulai: updated.waktuMulai,
+              waktuSelesai: updated.waktuSelesai,
               pesan: body.pesan_pemohon
             }).catch((error) => console.error("Gagal mengirim WA ke user:", error))
           ]);

@@ -14,8 +14,12 @@ type Result = {
   namaAcara: string;
   tanggalAcara?: string;
   tanggalRequestUpload?: string | null;
+  tanggalPeminjaman?: string;
+  waktuMulai?: string;
+  waktuSelesai?: string;
   tempatAcara?: string;
   kontakPenanggungJawab?: string;
+  noteDetail?: string;
   status: StatusPermohonan;
   pesanPemohon?: string | null;
   createdAt: string;
@@ -30,7 +34,8 @@ type Result = {
 const JENIS_OPTIONS = [
   { value: "liputan", label: "Pengajuan Liputan" },
   { value: "media_partner", label: "Pengajuan Media Partner" },
-  { value: "kerjasama", label: "Pengajuan Kerjasama" }
+  { value: "kerjasama", label: "Pengajuan Kerjasama" },
+  { value: "peminjaman_podcast", label: "Pengajuan Peminjaman Ruang Podcast" }
 ] as const;
 
 export function LacakForm() {
@@ -112,10 +117,13 @@ export function LacakForm() {
                 {result.namaInstansi || result.fakultasOrganisasi || "-"}
                 {result.tanggalAcara ? ` - ${formatTanggal(result.tanggalAcara)}` : ""}
                 {result.tanggalRequestUpload ? ` - ${formatTanggal(result.tanggalRequestUpload)}` : ""}
+                {result.tanggalPeminjaman ? ` - ${formatTanggal(result.tanggalPeminjaman)}` : ""}
+                {result.waktuMulai && result.waktuSelesai ? ` - ${result.waktuMulai} - ${result.waktuSelesai}` : ""}
                 {result.tempatAcara ? ` - ${result.tempatAcara}` : ""}
               </p>
               {result.noWa ? <p className="text-sm text-slate-400">WA: {result.noWa}</p> : null}
               {result.kontakPenanggungJawab ? <p className="text-sm text-slate-400">Kontak: {result.kontakPenanggungJawab}</p> : null}
+              {result.noteDetail ? <p className="text-sm text-slate-400">Note: {result.noteDetail}</p> : null}
             </div>
             <StatusBadge status={result.status} />
           </div>

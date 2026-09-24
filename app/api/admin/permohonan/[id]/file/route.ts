@@ -13,6 +13,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
   const id = Number(params.id);
   const url = new URL(request.url);
   const jenis = url.searchParams.get("jenis") || "liputan";
+  const fileKey = url.searchParams.get("file");
 
   let permohonan: any = null;
   if (jenis === "liputan") {
@@ -21,14 +22,26 @@ export async function GET(request: Request, { params }: { params: { id: string }
     permohonan = await prisma.permohonanMediaPartner.findUnique({ where: { id } });
   } else if (jenis === "kerjasama") {
     permohonan = await prisma.permohonanKerjasama.findUnique({ where: { id } });
+  } else if (jenis === "peminjaman_podcast") {
+    permohonan = await prisma.permohonanPeminjamanPodcast.findUnique({ where: { id } });
   }
   if (!permohonan) return NextResponse.json({ message: "Data tidak ditemukan." }, { status: 404 });
 
-  const file = await fs.readFile(resolveUploadPath(permohonan.filePath));
+  let filePath = permohonan.filePath;
+  let fileMimeType = permohonan.fileMimeType;
+  let fileOriginalName = permohonan.fileOriginalName;
+  if (jenis === "peminjaman_podcast") {
+    const isPernyataan = fileKey === "pernyataan";
+    filePath = isPernyataan ? permohonan.filePernyataanPath : permohonan.fileRekomBakkPath;
+    fileMimeType = isPernyataan ? permohonan.filePernyataanMimeType : permohonan.fileRekomBakkMimeType;
+    fileOriginalName = isPernyataan ? permohonan.filePernyataanOriginalName : permohonan.fileRekomBakkOriginalName;
+  }
+
+  const file = await fs.readFile(resolveUploadPath(filePath));
   return new NextResponse(file, {
     headers: {
-      "Content-Type": permohonan.fileMimeType,
-      "Content-Disposition": `attachment; filename="${encodeURIComponent(permohonan.fileOriginalName)}"`
+      "Content-Type": fileMimeType,
+      "Content-Disposition": `attachment; filename="${encodeURIComponent(fileOriginalName)}"`
     }
   });
 }
