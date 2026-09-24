@@ -14,6 +14,7 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  scroll-behavior: smooth;
 }
 
 body {
@@ -35,7 +36,7 @@ button {
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-brand-hover active:scale-[0.98] active:bg-brand-active disabled:cursor-not-allowed disabled:opacity-60;
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-brand-hover hover:shadow-[0_8px_24px_rgba(0,113,227,0.35)] active:scale-[0.98] active:bg-brand-active disabled:cursor-not-allowed disabled:opacity-60;
   }
 
   .btn-secondary {
@@ -54,5 +55,11 @@ button {
 
   .tile-icon {
     @apply inline-flex h-12 w-12 items-center justify-center rounded-full bg-brand/10 text-brand;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
   }
 }
