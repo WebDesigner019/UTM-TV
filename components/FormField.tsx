@@ -68,6 +68,39 @@ function describeAccept(accept: string) {
   return rules.join(", ").toUpperCase();
 }
 
+export function TextareaField({
+  label,
+  name,
+  placeholder,
+  rows = 3,
+  required = true,
+  hint
+}: {
+  label: string;
+  name: string;
+  placeholder?: string;
+  rows?: number;
+  required?: boolean;
+  hint?: string;
+}) {
+  return (
+    <div>
+      <label className="mb-2 block text-[15px] font-semibold text-ink" htmlFor={name}>
+        {label}
+      </label>
+      <textarea
+        className="focus-ring input-field"
+        id={name}
+        name={name}
+        placeholder={placeholder}
+        required={required}
+        rows={rows}
+      />
+      {hint ? <p className="mt-1.5 text-[13px] text-slate-500">{hint}</p> : null}
+    </div>
+  );
+}
+
 export function FormField({
   label,
   name,

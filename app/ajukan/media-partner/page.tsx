@@ -1,7 +1,7 @@
 import { PublicNav } from "@/components/PublicNav";
 import { CampusWatermark } from "@/components/CampusWatermark";
 import { getMaxFileSizeBytes } from "@/lib/env";
-import { MediaPartnerForm } from "./MediaPartnerForm";
+import { PermohonanForm } from "@/components/PermohonanForm";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +18,7 @@ export default function MediaPartnerPage() {
           Lengkapi data acara dan unggah surat permohonan media partner. Simpan nomor rujukan untuk pelacakan.
         </p>
         <div className="mt-10">
-          <MediaPartnerForm maxSizeMb={maxSizeMb} />
+          <PermohonanForm jenis="media_partner" maxSizeMb={maxSizeMb} variant="public" />
         </div>
       </main>
     </>

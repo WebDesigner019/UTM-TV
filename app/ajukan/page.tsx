@@ -1,7 +1,7 @@
 import { PublicNav } from "@/components/PublicNav";
 import { CampusWatermark } from "@/components/CampusWatermark";
+import { PermohonanForm } from "@/components/PermohonanForm";
 import { getMaxFileSizeBytes } from "@/lib/env";
-import { AjukanForm } from "./AjukanForm";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +18,7 @@ export default function AjukanPage() {
           Lengkapi data acara dan unggah surat pengajuan. Konfirmasi akan dikirim ke email kampus Anda.
         </p>
         <div className="mt-10">
-          <AjukanForm maxSizeMb={maxSizeMb} />
+          <PermohonanForm jenis="liputan" maxSizeMb={maxSizeMb} variant="public" />
         </div>
       </main>
     </>

@@ -1,8 +1,6 @@
-import fs from "fs/promises";
 import { NextResponse } from "next/server";
 import { getCurrentAdmin } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
-import { resolveUploadPath } from "@/lib/upload";
+import { ambilBerkasPermohonan } from "@/lib/permohonan-file";
 
 export const dynamic = "force-dynamic";
 
@@ -10,38 +8,30 @@ export async function GET(request: Request, { params }: { params: { id: string }
   const admin = await getCurrentAdmin();
   if (!admin) return NextResponse.json({ message: "Tidak berwenang." }, { status: 401 });
 
-  const id = Number(params.id);
   const url = new URL(request.url);
-  const jenis = url.searchParams.get("jenis") || "liputan";
-  const fileKey = url.searchParams.get("file");
+  const hasil = await ambilBerkasPermohonan(
+    url.searchParams.get("jenis") || "liputan",
+    Number(params.id),
+    url.searchParams.get("file")
+  );
 
-  let permohonan: any = null;
-  if (jenis === "liputan") {
-    permohonan = await prisma.permohonanLiputan.findUnique({ where: { id } });
-  } else if (jenis === "media_partner") {
-    permohonan = await prisma.permohonanMediaPartner.findUnique({ where: { id } });
-  } else if (jenis === "kerjasama") {
-    permohonan = await prisma.permohonanKerjasama.findUnique({ where: { id } });
-  } else if (jenis === "peminjaman_podcast") {
-    permohonan = await prisma.permohonanPeminjamanPodcast.findUnique({ where: { id } });
+  if (hasil === "permohonan") {
+    return NextResponse.json({ message: "Data tidak ditemukan." }, { status: 404 });
   }
-  if (!permohonan) return NextResponse.json({ message: "Data tidak ditemukan." }, { status: 404 });
-
-  let filePath = permohonan.filePath;
-  let fileMimeType = permohonan.fileMimeType;
-  let fileOriginalName = permohonan.fileOriginalName;
-  if (jenis === "peminjaman_podcast") {
-    const isPernyataan = fileKey === "pernyataan";
-    filePath = isPernyataan ? permohonan.filePernyataanPath : permohonan.fileRekomBakkPath;
-    fileMimeType = isPernyataan ? permohonan.filePernyataanMimeType : permohonan.fileRekomBakkMimeType;
-    fileOriginalName = isPernyataan ? permohonan.filePernyataanOriginalName : permohonan.fileRekomBakkOriginalName;
+  if (hasil === "file") {
+    return NextResponse.json({ message: "Tidak ada lampiran untuk data ini." }, { status: 404 });
+  }
+  if (hasil === "hilang") {
+    return NextResponse.json(
+      { message: "Berkas lampiran tidak ditemukan di server. Hubungi administrator." },
+      { status: 410 }
+    );
   }
 
-  const file = await fs.readFile(resolveUploadPath(filePath));
-  return new NextResponse(file, {
+  return new NextResponse(hasil.body, {
     headers: {
-      "Content-Type": fileMimeType,
-      "Content-Disposition": `inline; filename="${encodeURIComponent(fileOriginalName)}"`
+      "Content-Type": hasil.mimeType,
+      "Content-Disposition": `inline; filename="${encodeURIComponent(hasil.originalName)}"`
     }
   });
 }

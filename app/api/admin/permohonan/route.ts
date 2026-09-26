@@ -1,9 +1,47 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { getCurrentAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { STATUS_OPTIONS } from "@/lib/status";
+import { isJenisPermohonan } from "@/lib/permohonan-schema";
+import { createPermohonanByAdmin } from "@/lib/permohonan-admin-create";
 
 export const dynamic = "force-dynamic";
+
+/**
+ * Input manual oleh admin. Tanpa rate limit karena sudah di balik autentikasi,
+ * dan tanpa email maupun notifikasi WhatsApp.
+ */
+export async function POST(request: Request) {
+  const admin = await getCurrentAdmin();
+  if (!admin) return NextResponse.json({ message: "Tidak berwenang." }, { status: 401 });
+
+  try {
+    const formData = await request.formData();
+    const jenis = formData.get("jenis");
+    if (!isJenisPermohonan(jenis)) {
+      return NextResponse.json({ message: "Jenis permohonan tidak valid." }, { status: 400 });
+    }
+
+    const result = await createPermohonanByAdmin({ jenis, formData, admin });
+
+    return NextResponse.json({
+      id: result.id,
+      nomor_rujukan: result.nomorRujukan,
+      jenis: result.jenis
+    });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { message: error.errors[0]?.message || "Data tidak valid." },
+        { status: 400 }
+      );
+    }
+
+    const message = error instanceof Error ? error.message : "Permohonan gagal disimpan.";
+    return NextResponse.json({ message }, { status: 400 });
+  }
+}
 
 export async function GET(request: Request) {
   const admin = await getCurrentAdmin();

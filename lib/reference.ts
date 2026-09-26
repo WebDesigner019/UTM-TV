@@ -2,27 +2,40 @@ import { prisma } from "@/lib/prisma";
 
 export type JenisPrefix = "LIP" | "MP" | "KJ" | "PP";
 
-export async function generateNomorRujukan(jenis: JenisPrefix, tanggal = new Date()) {
-  const year = tanggal.getFullYear();
-  const start = new Date(year, 0, 1);
-  const end = new Date(year + 1, 0, 1);
-  const where = { createdAt: { gte: start, lt: end } };
+/**
+ * Nomor rujukan terbesar yang sudah dipakai untuk satu prefix dan tahun.
+ *
+ * Pencarian dilakukan pada nomor rujukan, bukan pada jumlah baris, karena
+ * penghapusan satu record akan membuat hitungan meleset dan menghasilkan nomor
+ * yang sudah terpakai. Urutannya zero-padded, jadi urutan leksikografis sama
+ * dengan urutan numerik.
+ */
+async function findNomorTerakhir(jenis: JenisPrefix, prefix: string): Promise<string | null> {
+  const args = {
+    where: { nomorRujukan: { startsWith: prefix } },
+    orderBy: { nomorRujukan: "desc" as const },
+    select: { nomorRujukan: true }
+  };
 
-  let count: number;
   switch (jenis) {
     case "LIP":
-      count = await prisma.permohonanLiputan.count({ where });
-      break;
+      return (await prisma.permohonanLiputan.findFirst(args))?.nomorRujukan ?? null;
     case "MP":
-      count = await prisma.permohonanMediaPartner.count({ where });
-      break;
+      return (await prisma.permohonanMediaPartner.findFirst(args))?.nomorRujukan ?? null;
     case "KJ":
-      count = await prisma.permohonanKerjasama.count({ where });
-      break;
+      return (await prisma.permohonanKerjasama.findFirst(args))?.nomorRujukan ?? null;
     case "PP":
-      count = await prisma.permohonanPeminjamanPodcast.count({ where });
-      break;
+      return (await prisma.permohonanPeminjamanPodcast.findFirst(args))?.nomorRujukan ?? null;
   }
+}
 
-  return `UTMTV-${jenis}-${year}-${String(count + 1).padStart(4, "0")}`;
+export async function generateNomorRujukan(jenis: JenisPrefix, tanggal = new Date()) {
+  const year = tanggal.getFullYear();
+  const prefix = `UTMTV-${jenis}-${year}-`;
+
+  const terakhir = await findNomorTerakhir(jenis, prefix);
+  const parsed = terakhir ? Number.parseInt(terakhir.slice(prefix.length), 10) : 0;
+  const urutan = Number.isFinite(parsed) ? parsed : 0;
+
+  return `${prefix}${String(urutan + 1).padStart(4, "0")}`;
 }

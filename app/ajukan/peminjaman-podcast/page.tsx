@@ -1,8 +1,13 @@
 import { PublicNav } from "@/components/PublicNav";
 import { CampusWatermark } from "@/components/CampusWatermark";
-import { PeminjamanPodcastForm } from "./PeminjamanPodcastForm";
+import { PermohonanForm } from "@/components/PermohonanForm";
+import { getMaxFileSizeBytes } from "@/lib/env";
+
+export const dynamic = "force-dynamic";
 
 export default function PeminjamanPodcastPage() {
+  const maxSizeMb = Math.round(getMaxFileSizeBytes() / (1024 * 1024));
+
   return (
     <>
       <CampusWatermark />
@@ -13,7 +18,7 @@ export default function PeminjamanPodcastPage() {
           Lengkapi data peminjaman dan unggah surat rekomendasi BAKK serta surat pernyataan. Simpan nomor rujukan untuk pelacakan.
         </p>
         <div className="mt-10">
-          <PeminjamanPodcastForm />
+          <PermohonanForm jenis="peminjaman_podcast" maxSizeMb={maxSizeMb} variant="public" />
         </div>
       </main>
     </>

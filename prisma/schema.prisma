@@ -55,19 +55,20 @@ model PermohonanLiputan {
   id                   Int                    @id @default(autoincrement())
   nomorRujukan         String                 @unique @map("nomor_rujukan") @db.VarChar(32)
   namaInstansi         String                 @map("nama_instansi")
-  email                String
-  noWa                 String                 @map("no_wa")
+  email                String?
+  noWa                 String?                @map("no_wa")
   namaAcara            String                 @map("nama_acara")
   tanggalAcara         DateTime               @map("tanggal_acara") @db.Date
   tempatAcara          String                 @map("tempat_acara")
   detailPesertaAudiens String?                @map("detail_peserta_audiens") @db.Text
-  filePath             String                 @map("file_path")
-  fileOriginalName     String                 @map("file_original_name")
-  fileMimeType         String                 @map("file_mime_type")
-  fileSizeBytes        Int                    @map("file_size_bytes")
+  filePath             String?                @map("file_path")
+  fileOriginalName     String?                @map("file_original_name")
+  fileMimeType         String?                @map("file_mime_type")
+  fileSizeBytes        Int?                   @map("file_size_bytes")
   status               StatusPermohonan       @default(diterima)
   pesanPemohon         String?                @map("pesan_pemohon") @db.Text
   catatanInternal      String?                @map("catatan_internal") @db.Text
+  inputManuallyEntered Boolean                 @default(false) @map("input_manually_entered")
   tokenLacak           String?                @unique @map("token_lacak")
   tokenLacakExpiresAt  DateTime?              @map("token_lacak_expires_at")
   createdAt            DateTime               @default(now()) @map("created_at")
@@ -100,17 +101,18 @@ model PermohonanMediaPartner {
   id                    Int                         @id @default(autoincrement())
   nomorRujukan          String                      @unique @map("nomor_rujukan") @db.VarChar(32)
   fakultasOrganisasi    String                      @map("fakultas_organisasi")
-  email                 String
+  email                 String?
   namaAcara             String                      @map("nama_acara")
   tanggalRequestUpload  DateTime                    @map("tanggal_request_upload") @db.Date
   kontakPenanggungJawab String                      @map("kontak_penanggung_jawab")
-  filePath              String                      @map("file_path")
-  fileOriginalName      String                      @map("file_original_name")
-  fileMimeType          String                      @map("file_mime_type")
-  fileSizeBytes         Int                         @map("file_size_bytes")
+  filePath              String?                     @map("file_path")
+  fileOriginalName      String?                     @map("file_original_name")
+  fileMimeType          String?                     @map("file_mime_type")
+  fileSizeBytes         Int?                        @map("file_size_bytes")
   status                StatusPermohonan            @default(diterima)
   pesanPemohon          String?                     @map("pesan_pemohon") @db.Text
   catatanInternal       String?                     @map("catatan_internal") @db.Text
+  inputManuallyEntered  Boolean                     @default(false) @map("input_manually_entered")
   tokenLacak            String?                     @unique @map("token_lacak")
   tokenLacakExpiresAt   DateTime?                   @map("token_lacak_expires_at")
   createdAt             DateTime                    @default(now()) @map("created_at")
@@ -142,17 +144,18 @@ model PermohonanKerjasama {
   id                    Int                      @id @default(autoincrement())
   nomorRujukan          String                   @unique @map("nomor_rujukan") @db.VarChar(32)
   fakultasOrganisasi    String                   @map("fakultas_organisasi")
-  email                 String
+  email                 String?
   namaAcara             String                   @map("nama_acara")
   tanggalRequestUpload  DateTime?                @map("tanggal_request_upload") @db.Date
   kontakPenanggungJawab String                   @map("kontak_penanggung_jawab")
-  filePath              String                   @map("file_path")
-  fileOriginalName      String                   @map("file_original_name")
-  fileMimeType          String                   @map("file_mime_type")
-  fileSizeBytes         Int                      @map("file_size_bytes")
+  filePath              String?                   @map("file_path")
+  fileOriginalName      String?                   @map("file_original_name")
+  fileMimeType          String?                   @map("file_mime_type")
+  fileSizeBytes         Int?                      @map("file_size_bytes")
   status                StatusPermohonan         @default(diterima)
   pesanPemohon          String?                  @map("pesan_pemohon") @db.Text
   catatanInternal       String?                  @map("catatan_internal") @db.Text
+  inputManuallyEntered  Boolean                  @default(false) @map("input_manually_entered")
   tokenLacak            String?                  @unique @map("token_lacak")
   tokenLacakExpiresAt   DateTime?                @map("token_lacak_expires_at")
   createdAt             DateTime                 @default(now()) @map("created_at")
@@ -190,18 +193,19 @@ model PermohonanPeminjamanPodcast {
   waktuSelesai                 String                       @map("waktu_selesai") @db.VarChar(5)
   kontakPenanggungJawab        String                       @map("kontak_penanggung_jawab")
   noteDetail                   String                       @map("note_detail") @db.Text
-  email                        String
-  fileRekomBakkPath            String                       @map("file_rekom_bakk_path")
-  fileRekomBakkOriginalName    String                       @map("file_rekom_bakk_original_name")
-  fileRekomBakkMimeType        String                       @map("file_rekom_bakk_mime_type")
-  fileRekomBakkSizeBytes       Int                          @map("file_rekom_bakk_size_bytes")
-  filePernyataanPath           String                       @map("file_pernyataan_path")
-  filePernyataanOriginalName   String                       @map("file_pernyataan_original_name")
-  filePernyataanMimeType       String                       @map("file_pernyataan_mime_type")
-  filePernyataanSizeBytes      Int                          @map("file_pernyataan_size_bytes")
+  email                        String?
+  fileRekomBakkPath            String?                      @map("file_rekom_bakk_path")
+  fileRekomBakkOriginalName    String?                      @map("file_rekom_bakk_original_name")
+  fileRekomBakkMimeType        String?                      @map("file_rekom_bakk_mime_type")
+  fileRekomBakkSizeBytes       Int?                         @map("file_rekom_bakk_size_bytes")
+  filePernyataanPath           String?                      @map("file_pernyataan_path")
+  filePernyataanOriginalName   String?                      @map("file_pernyataan_original_name")
+  filePernyataanMimeType       String?                      @map("file_pernyataan_mime_type")
+  filePernyataanSizeBytes      Int?                         @map("file_pernyataan_size_bytes")
   status                       StatusPermohonan             @default(diterima)
   pesanPemohon                 String?                      @map("pesan_pemohon") @db.Text
   catatanInternal              String?                      @map("catatan_internal") @db.Text
+  inputManuallyEntered         Boolean                      @default(false) @map("input_manually_entered")
   tokenLacak                   String?                      @unique @map("token_lacak")
   tokenLacakExpiresAt          DateTime?                    @map("token_lacak_expires_at")
   createdAt                    DateTime                     @default(now()) @map("created_at")

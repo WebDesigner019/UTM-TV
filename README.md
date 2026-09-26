@@ -14,10 +14,12 @@ Proyek ini memakai Next.js 14 App Router, Prisma, MySQL, Tailwind CSS, JWT cooki
 - Nomor rujukan otomatis: `UTMTV-TAHUN-0001`.
 - Halaman lacak memakai nomor rujukan + email.
 - Login admin, dashboard, filter, statistik per status.
+- Input manual oleh admin lewat tombol "Tambah Data" untuk keempat jenis permohonan, memakai form yang sama dengan form publik.
 - Lupa password admin dan pembuatan password baru melalui tautan reset.
 - Detail permohonan, unduh file, ubah status, pesan pemohon, catatan internal.
 - Semua perubahan status tercatat di `status_history`.
 - Email konfirmasi dan email perubahan status. Jika SMTP belum diatur, email dicatat ke console.
+- Data yang dicatat manual ditandai `input_manually_entered` dan tidak pernah memicu email atau notifikasi WhatsApp, karena tidak ada email maupun nomor WhatsApp yang dikumpulkan.
 - Rate limiting sederhana untuk submit, lacak, dan login.
 
 ## Persyaratan
@@ -85,8 +87,9 @@ docker compose exec app npm run db:seed
 ## Struktur Penting
 
 - `app/` - halaman UI dan API routes Next.js.
-- `components/` - komponen UI bersama.
+- `components/` - komponen UI bersama. `components/PermohonanForm.tsx` adalah satu-satunya implementasi form pengajuan, dipakai bersama oleh halaman publik dan modal input manual admin.
 - `lib/` - Prisma, auth, email, upload, validasi env, rate limit.
+- `lib/permohonan-form.ts` - definisi field per jenis permohonan, dipakai bersama oleh form, skema validasi, dan route.
 - `public/assets/` - logo UTM TV, favicon, dan gambar watermark.
 - `prisma/schema.prisma` - skema ORM.
 - `prisma/migrations/20260520000000_init/migration.sql` - migration SQL MySQL.

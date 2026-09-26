@@ -185,99 +185,101 @@ export async function PATCH(request: Request, { params }: { params: { id: string
       return NextResponse.json({ message: "Jenis permohonan tidak valid." }, { status: 400 });
     }
 
-    if (existing.status !== updated.status || body.pesan_pemohon) {
+    // Data yang dicatat manual oleh admin tidak punya email maupun nomor
+    // WhatsApp, dan sesuai requirement tidak pernah mengirim notifikasi.
+    const bolehNotifikasi = !existing.inputManuallyEntered;
+
+    if (bolehNotifikasi && (existing.status !== updated.status || body.pesan_pemohon)) {
       const jenisTyped = jenis as JenisPermohonan;
+      const noWa: string | null =
+        jenis === "liputan"
+          ? updated.noWa ?? null
+          : extractWaFromKontak(updated.kontakPenanggungJawab);
+      const email: string | null = updated.email ?? null;
+
+      const tasks: Promise<unknown>[] = [];
 
       if (updated.status === "disetujui") {
-        if (jenis === "liputan") {
-          await Promise.all([
+        if (email) {
+          tasks.push(
             sendPermohonanDisetujuiEmail({
-              email: updated.email,
+              email,
               jenis: jenisTyped,
               namaAcara: updated.namaAcara,
               tempatAcara: updated.tempatAcara,
               tanggalAcara: updated.tanggalAcara,
-              pesan: body.pesan_pemohon
-            }).catch((error) => console.error("Gagal mengirim email disetujui:", error)),
-            sendWaToUser({
-              noWa: updated.noWa,
-              namaAcara: updated.namaAcara,
-              tempatAcara: updated.tempatAcara,
-              tanggalAcara: updated.tanggalAcara,
-              pesan: body.pesan_pemohon
-            }).catch((error) => console.error("Gagal mengirim WA ke user:", error))
-          ]);
-        } else if (jenis === "media_partner") {
-          await Promise.all([
-            sendPermohonanDisetujuiEmail({
-              email: updated.email,
-              jenis: jenisTyped,
-              namaAcara: updated.namaAcara,
               tanggalRequestUpload: updated.tanggalRequestUpload,
-              pesan: body.pesan_pemohon
-            }).catch((error) => console.error("Gagal mengirim email disetujui:", error)),
-            sendWaMediaPartnerToUser({
-              noWa: extractWaFromKontak(updated.kontakPenanggungJawab),
-              namaAcara: updated.namaAcara,
-              tanggalRequestUpload: updated.tanggalRequestUpload,
-              pesan: body.pesan_pemohon
-            }).catch((error) => console.error("Gagal mengirim WA ke user:", error))
-          ]);
-        } else if (jenis === "peminjaman_podcast") {
-          await Promise.all([
-            sendPermohonanDisetujuiEmail({
-              email: updated.email,
-              jenis: jenisTyped,
-              namaAcara: updated.namaAcara,
               tanggalPeminjaman: updated.tanggalPeminjaman,
               waktuMulai: updated.waktuMulai,
               waktuSelesai: updated.waktuSelesai,
               pesan: body.pesan_pemohon
-            }).catch((error) => console.error("Gagal mengirim email disetujui:", error)),
-            sendWaPeminjamanPodcastToUser({
-              noWa: extractWaFromKontak(updated.kontakPenanggungJawab),
-              namaAcara: updated.namaAcara,
-              tanggalPeminjaman: updated.tanggalPeminjaman,
-              waktuMulai: updated.waktuMulai,
-              waktuSelesai: updated.waktuSelesai,
-              pesan: body.pesan_pemohon
-            }).catch((error) => console.error("Gagal mengirim WA ke user:", error))
-          ]);
-        } else {
-          await Promise.all([
-            sendPermohonanDisetujuiEmail({
-              email: updated.email,
-              jenis: jenisTyped,
-              namaAcara: updated.namaAcara,
-              tanggalRequestUpload: updated.tanggalRequestUpload,
-              pesan: body.pesan_pemohon
-            }).catch((error) => console.error("Gagal mengirim email disetujui:", error)),
-            sendWaKerjasamaToUser({
-              noWa: extractWaFromKontak(updated.kontakPenanggungJawab),
-              namaAcara: updated.namaAcara,
-              tanggalRequestUpload: updated.tanggalRequestUpload,
-              pesan: body.pesan_pemohon
-            }).catch((error) => console.error("Gagal mengirim WA ke user:", error))
-          ]);
+            }).catch((error) => console.error("Gagal mengirim email disetujui:", error))
+          );
+        }
+
+        if (noWa) {
+          const pesan = body.pesan_pemohon;
+          const namaAcara = updated.namaAcara;
+          const waTask =
+            jenis === "liputan"
+              ? sendWaToUser({
+                  noWa,
+                  namaAcara,
+                  tempatAcara: updated.tempatAcara,
+                  tanggalAcara: updated.tanggalAcara,
+                  pesan
+                })
+              : jenis === "media_partner"
+                ? sendWaMediaPartnerToUser({
+                    noWa,
+                    namaAcara,
+                    tanggalRequestUpload: updated.tanggalRequestUpload,
+                    pesan
+                  })
+                : jenis === "peminjaman_podcast"
+                  ? sendWaPeminjamanPodcastToUser({
+                      noWa,
+                      namaAcara,
+                      tanggalPeminjaman: updated.tanggalPeminjaman,
+                      waktuMulai: updated.waktuMulai,
+                      waktuSelesai: updated.waktuSelesai,
+                      pesan
+                    })
+                  : sendWaKerjasamaToUser({
+                      noWa,
+                      namaAcara,
+                      tanggalRequestUpload: updated.tanggalRequestUpload,
+                      pesan
+                    });
+          tasks.push(waTask.catch((error) => console.error("Gagal mengirim WA ke user:", error)));
         }
       } else {
-        await Promise.all([
-          sendStatusChangedEmail({
-            email: updated.email,
-            nomorRujukan: updated.nomorRujukan,
-            status: updated.status,
-            pesan: body.pesan_pemohon,
-            jenis: jenisTyped
-          }).catch((error) => console.error("Gagal mengirim email status:", error)),
-          sendWaStatusChangedToUser({
-            noWa: jenis === "liputan" ? updated.noWa : extractWaFromKontak(updated.kontakPenanggungJawab),
-            jenis: jenisTyped,
-            status: updated.status,
-            namaAcara: updated.namaAcara,
-            pesan: body.pesan_pemohon
-          }).catch((error) => console.error("Gagal mengirim WA status:", error))
-        ]);
+        if (email) {
+          tasks.push(
+            sendStatusChangedEmail({
+              email,
+              nomorRujukan: updated.nomorRujukan,
+              status: updated.status,
+              pesan: body.pesan_pemohon,
+              jenis: jenisTyped
+            }).catch((error) => console.error("Gagal mengirim email status:", error))
+          );
+        }
+
+        if (noWa) {
+          tasks.push(
+            sendWaStatusChangedToUser({
+              noWa,
+              jenis: jenisTyped,
+              status: updated.status,
+              namaAcara: updated.namaAcara,
+              pesan: body.pesan_pemohon
+            }).catch((error) => console.error("Gagal mengirim WA status:", error))
+          );
+        }
       }
+
+      await Promise.all(tasks);
     }
 
     return NextResponse.json({ permohonan: updated });
@@ -286,7 +288,8 @@ export async function PATCH(request: Request, { params }: { params: { id: string
   }
 }
 
-function extractWaFromKontak(kontak: string): string {
+function extractWaFromKontak(kontak: string | null | undefined): string | null {
+  if (!kontak) return null;
   const match = kontak.match(/\+?\d[\d\s-]{7,}/);
   return match ? match[0].replace(/[\s-]/g, "") : kontak;
 }
