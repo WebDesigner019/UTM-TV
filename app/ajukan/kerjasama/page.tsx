@@ -1,8 +1,13 @@
 import { PublicNav } from "@/components/PublicNav";
 import { CampusWatermark } from "@/components/CampusWatermark";
+import { getMaxFileSizeBytes } from "@/lib/env";
 import { KerjasamaForm } from "./KerjasamaForm";
 
+export const dynamic = "force-dynamic";
+
 export default function KerjasamaPage() {
+  const maxSizeMb = Math.round(getMaxFileSizeBytes() / (1024 * 1024));
+
   return (
     <>
       <CampusWatermark />
@@ -13,7 +18,7 @@ export default function KerjasamaPage() {
           Lengkapi data acara dan unggah surat permohonan kerjasama. Simpan nomor rujukan untuk pelacakan.
         </p>
         <div className="mt-10">
-          <KerjasamaForm />
+          <KerjasamaForm maxSizeMb={maxSizeMb} />
         </div>
       </main>
     </>

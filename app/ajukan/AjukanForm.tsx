@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Send } from "lucide-react";
 import { FormField, FileInput } from "@/components/FormField";
 
-export function AjukanForm() {
+export function AjukanForm({ maxSizeMb }: { maxSizeMb: number }) {
   const router = useRouter();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -61,7 +61,8 @@ export function AjukanForm() {
       <FileInput
         label="Surat pengajuan"
         name="surat_pengajuan"
-        hint="Format PDF, DOC, DOCX, JPG, atau PNG. Maksimal 5 MB."
+        maxSizeMb={maxSizeMb}
+        hint={`Format PDF, DOC, DOCX, JPG, atau PNG. Maksimal ${maxSizeMb} MB.`}
       />
       <button disabled={loading} className="btn-primary w-full py-3 sm:w-52">
         <Send className="h-4 w-4" />

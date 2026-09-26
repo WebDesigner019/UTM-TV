@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Send } from "lucide-react";
 import { FormField, FileInput } from "@/components/FormField";
 
-export function MediaPartnerForm() {
+export function MediaPartnerForm({ maxSizeMb }: { maxSizeMb: number }) {
   const router = useRouter();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -63,7 +63,8 @@ export function MediaPartnerForm() {
       <FileInput
         label="Surat Permohonan Media Partner"
         name="surat_media_partner"
-        hint="Format PDF, DOC, DOCX, JPG, atau PNG. Maksimal 5 MB."
+        maxSizeMb={maxSizeMb}
+        hint={`Format PDF, DOC, DOCX, JPG, atau PNG. Maksimal ${maxSizeMb} MB.`}
       />
       <button disabled={loading} className="btn-primary w-full py-3 sm:w-52">
         <Send className="h-4 w-4" />

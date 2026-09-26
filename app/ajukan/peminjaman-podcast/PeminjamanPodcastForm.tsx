@@ -84,12 +84,14 @@ export function PeminjamanPodcastForm() {
         label="Surat Rekomendasi BAKK"
         name="surat_rekom_bakk"
         accept=".pdf,application/pdf"
+        maxSizeMb={10}
         hint="Format PDF. Maksimal 10 MB."
       />
       <FileInput
         label="Surat Pernyataan"
         name="surat_pernyataan"
         accept=".pdf,application/pdf"
+        maxSizeMb={10}
         hint="Format PDF. Maksimal 10 MB."
       />
       <button disabled={loading} className="btn-primary w-full py-3 sm:w-52">
