@@ -17,9 +17,13 @@ Proyek ini memakai Next.js 14 App Router, Prisma, MySQL, Tailwind CSS, JWT cooki
 - Input manual oleh admin lewat tombol "Tambah Data" untuk keempat jenis permohonan, memakai form yang sama dengan form publik.
 - Lupa password admin dan pembuatan password baru melalui tautan reset.
 - Detail permohonan, unduh file, ubah status, pesan pemohon, catatan internal.
+- Ubah data permohonan lewat tombol "Ubah Data" pada halaman detail, memakai form yang sama dengan form publik. Status, pesan pemohon, dan catatan internal tetap diubah lewat form status, dan nomor rujukan tidak pernah berubah.
+- Pergantian lampiran saat ubah data: lampiran baru opsional, berkas lama dihapus setelah penyimpanan berhasil, dan berkas baru ikut dibersihkan kalau penyimpanan gagal.
+- Setiap perubahan data tercatat di `status_history` dengan status lama dan baru yang sama, sehingga riwayat perubahan data terlihat di timeline tanpa tabel baru.
 - Semua perubahan status tercatat di `status_history`.
-- Email konfirmasi dan email perubahan status. Jika SMTP belum diatur, email dicatat ke console.
-- Data yang dicatat manual ditandai `input_manually_entered` dan tidak pernah memicu email atau notifikasi WhatsApp, karena tidak ada email maupun nomor WhatsApp yang dikumpulkan.
+- Email konfirmasi, email perubahan status, dan email perubahan data. Email perubahan data memuat daftar field yang berubah beserta nilai lama dan barunya. Jika SMTP belum diatur, email dicatat ke console.
+- Data yang dicatat manual ditandai `input_manually_entered` dan tidak pernah memicu email atau notifikasi WhatsApp, karena tidak ada email maupun nomor WhatsApp yang dikumpulkan. Kolom kontak juga tidak dibuka pada form ubah data untuk record seperti ini.
+- Notifikasi perubahan data dikirim lewat email dan WhatsApp, hanya bila ada field yang benar-benar berubah, dan bisa dimatikan lewat checkbox "Kirim notifikasi ke pemohon".
 - Rate limiting sederhana untuk submit, lacak, dan login.
 
 ## Persyaratan
@@ -87,9 +91,12 @@ docker compose exec app npm run db:seed
 ## Struktur Penting
 
 - `app/` - halaman UI dan API routes Next.js.
-- `components/` - komponen UI bersama. `components/PermohonanForm.tsx` adalah satu-satunya implementasi form pengajuan, dipakai bersama oleh halaman publik dan modal input manual admin.
+- `components/` - komponen UI bersama. `components/PermohonanForm.tsx` adalah satu-satunya implementasi form pengajuan, dipakai bersama oleh halaman publik, modal input manual admin, dan modal ubah data admin.
 - `lib/` - Prisma, auth, email, upload, validasi env, rate limit.
-- `lib/permohonan-form.ts` - definisi field per jenis permohonan, dipakai bersama oleh form, skema validasi, dan route.
+- `lib/permohonan-form.ts` - definisi field per jenis permohonan, dipakai bersama oleh form, skema validasi, dan route. Kolom database tiap field ikut didefinisikan di sini sebagai sumber tunggal untuk prefill form admin, payload update, dan diff notifikasi.
+- `lib/permohonan-record.ts` - satu-satunya tempat pemetaan jenis permohonan ke model Prisma dan tabel status history-nya, dipakai bersama oleh route, lib upload, dan halaman detail.
+- `lib/permohonan-edit.ts` - alur ubah data permohonan: validasi, payload kolom, penggantian lampiran, dan pencatatan riwayat perubahan.
+- `lib/permohonan-notify.ts` - pengiriman notifikasi email dan WhatsApp, dipakai bersama oleh perubahan status dan perubahan data.
 - `public/assets/` - logo UTM TV, favicon, dan gambar watermark.
 - `prisma/schema.prisma` - skema ORM.
 - `prisma/migrations/20260520000000_init/migration.sql` - migration SQL MySQL.

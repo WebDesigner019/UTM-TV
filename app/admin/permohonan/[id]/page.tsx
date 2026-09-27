@@ -1,21 +1,32 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { Download, Eye } from "lucide-react";
+import { Download } from "lucide-react";
 import { AdminHeader } from "@/components/AdminHeader";
 import { PreviewSurat } from "./PreviewSurat";
 import { getCurrentAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { isJenisPermohonan } from "@/lib/permohonan-schema";
+import { findPermohonan } from "@/lib/permohonan-record";
+import { getCurrentFileNames, getFormValuesFromRecord } from "@/lib/permohonan-edit";
 import {
   JENIS_TITLE,
-  STATUS_LABEL,
   formatTanggal,
   formatTanggalWaktu,
   type JenisPermohonan
 } from "@/lib/status";
 import { StatusBadge, StatusIcon } from "@/components/StatusBadge";
 import { StatusForm } from "./StatusForm";
+import { UbahDataModal } from "./UbahDataModal";
 
 export const dynamic = "force-dynamic";
+
+/** Riwayat ikut diambil untuk timeline di halaman ini. */
+const includeRiwayat = {
+  statusHistory: {
+    orderBy: { createdAt: "asc" },
+    include: { admin: { select: { nama: true, email: true } } }
+  }
+};
 
 export default async function DetailPermohonanPage({
   params,
@@ -28,56 +39,27 @@ export default async function DetailPermohonanPage({
   if (!admin) redirect("/admin/login");
 
   const id = Number(params.id);
-  const jenis = searchParams.jenis || "liputan";
-  const jenisLabel =
-    JENIS_TITLE[jenis as JenisPermohonan] ??
-    `Pengajuan ${jenis.charAt(0).toUpperCase()}${jenis.slice(1)}`;
+  const jenisParam = searchParams.jenis || "liputan";
+  const jenisLabel = isJenisPermohonan(jenisParam)
+    ? JENIS_TITLE[jenisParam]
+    : `Pengajuan ${jenisParam.charAt(0).toUpperCase()}${jenisParam.slice(1)}`;
 
-  let item: any = null;
-  if (jenis === "liputan") {
-    item = await prisma.permohonanLiputan.findUnique({
-      where: { id },
-      include: {
-        statusHistory: {
-          orderBy: { createdAt: "asc" },
-          include: { admin: { select: { nama: true, email: true } } }
-        }
-      }
-    });
-  } else if (jenis === "media_partner") {
-    item = await prisma.permohonanMediaPartner.findUnique({
-      where: { id },
-      include: {
-        statusHistory: {
-          orderBy: { createdAt: "asc" },
-          include: { admin: { select: { nama: true, email: true } } }
-        }
-      }
-    });
-  } else if (jenis === "kerjasama") {
-    item = await prisma.permohonanKerjasama.findUnique({
-      where: { id },
-      include: {
-        statusHistory: {
-          orderBy: { createdAt: "asc" },
-          include: { admin: { select: { nama: true, email: true } } }
-        }
-      }
-    });
-  } else if (jenis === "peminjaman_podcast") {
-    item = await prisma.permohonanPeminjamanPodcast.findUnique({
-      where: { id },
-      include: {
-        statusHistory: {
-          orderBy: { createdAt: "asc" },
-          include: { admin: { select: { nama: true, email: true } } }
-        }
-      }
-    });
-  }
+  // Jenis yang tidak dikenal tidak bisa di-read dari database mana pun, jadi
+  // halaman ini langsung 404 daripada menampilkan record jenis lain.
+  const item: any = isJenisPermohonan(jenisParam)
+    ? await findPermohonan(jenisParam, id, { include: includeRiwayat })
+    : null;
   if (!item) notFound();
 
+  const jenis = jenisParam as JenisPermohonan;
   const fileUrl = `/api/admin/permohonan/${item.id}/file?jenis=${jenis}`;
+
+  // Data yang dicatat manual oleh admin tidak punya kontak pemohon dan tidak
+  // pernah memicu notifikasi, jadi form ubah data juga tidak membuka kolom
+  // kontak untuk record seperti ini.
+  const manual = Boolean(item.inputManuallyEntered);
+  const defaultValues = getFormValuesFromRecord(jenis, item, !manual);
+  const currentFiles = getCurrentFileNames(jenis, item);
 
   // Data yang dicatat manual oleh admin tidak punya lampiran surat, sehingga
   // seluruh blok berkas disembunyikan bila kolomnya kosong.
@@ -208,7 +190,7 @@ export default async function DetailPermohonanPage({
                 </div>
               ) : (
                 <p className="mt-7 rounded-2xl border border-dashed border-line bg-slate-50/60 px-4 py-5 text-sm text-slate-500">
-                  Data ini dicatat manual oleh admin, jadi tidak ada lampiran surat.
+                  Belum ada lampiran surat. Admin bisa menambahkannya lewat &quot;Ubah Data&quot;.
                 </p>
               )}
             </div>
@@ -236,7 +218,16 @@ export default async function DetailPermohonanPage({
             </div>
           </section>
 
-          <aside>
+          <aside className="space-y-4">
+            <UbahDataModal
+              currentFiles={currentFiles}
+              defaultValues={defaultValues}
+              id={item.id}
+              jenis={jenis}
+              nomorRujukan={item.nomorRujukan}
+              showKontak={!manual}
+              tanpaNotifikasi={manual}
+            />
             <StatusForm
               id={item.id}
               jenis={jenis}

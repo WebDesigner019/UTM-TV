@@ -1,8 +1,9 @@
 import fs from "fs/promises";
-import { prisma } from "@/lib/prisma";
 import { resolveUploadPath } from "@/lib/upload";
 import type { JenisPermohonan } from "@/lib/status";
 import { isJenisPermohonan } from "@/lib/permohonan-schema";
+import { getFileFields } from "@/lib/permohonan-form";
+import { findPermohonan } from "@/lib/permohonan-record";
 
 export type FileTidakDitemukan = "permohonan" | "file" | "hilang";
 
@@ -13,21 +14,32 @@ export type BerkasPermohonan = {
   originalName: string;
 };
 
-/** Ambil satu field file milik sebuah jenis, atau undefined bila kosong. */
-function pickFileFields(item: Record<string, unknown>, jenis: JenisPermohonan, fileKey: string | null) {
-  if (jenis === "peminjaman_podcast") {
-    const prefix = fileKey === "pernyataan" ? "filePernyataan" : "fileRekomBakk";
-    return {
-      filePath: item[`${prefix}Path`] as string | null,
-      fileMimeType: item[`${prefix}MimeType`] as string | null,
-      fileOriginalName: item[`${prefix}OriginalName`] as string | null
-    };
+/**
+ * Ambil nama kolom file yang diminta.
+ *
+ * Peminjaman podcast punya dua lampiran, jadi fileKey memilih salah satunya.
+ * Nama kolomnya diambil dari definisi field, bukan dirangkai dari prefix
+ * string supaya tidak harus diubah dua kali bila kolomnya berganti nama.
+ */
+function pickFileFields(
+  item: Record<string, unknown>,
+  jenis: JenisPermohonan,
+  fileKey: string | null
+) {
+  const files = getFileFields(jenis);
+  const wanted =
+    jenis === "peminjaman_podcast" && fileKey === "pernyataan" ? "surat_pernyataan" : null;
+  const field = wanted ? files.find((def) => def.name === wanted) : files[0];
+
+  const columns = field?.fileColumns;
+  if (!columns) {
+    return { filePath: null, fileMimeType: null, fileOriginalName: null };
   }
 
   return {
-    filePath: item.filePath as string | null,
-    fileMimeType: item.fileMimeType as string | null,
-    fileOriginalName: item.fileOriginalName as string | null
+    filePath: item[columns.path] as string | null,
+    fileMimeType: item[columns.mimeType] as string | null,
+    fileOriginalName: item[columns.originalName] as string | null
   };
 }
 
@@ -48,16 +60,7 @@ export async function ambilBerkasPermohonan(
 ): Promise<BerkasPermohonan | FileTidakDitemukan> {
   if (!isJenisPermohonan(jenis)) return "permohonan";
 
-  const item = (await (jenis === "liputan"
-    ? prisma.permohonanLiputan.findUnique({ where: { id } })
-    : jenis === "media_partner"
-      ? prisma.permohonanMediaPartner.findUnique({ where: { id } })
-      : jenis === "kerjasama"
-        ? prisma.permohonanKerjasama.findUnique({ where: { id } })
-        : prisma.permohonanPeminjamanPodcast.findUnique({ where: { id } }))) as Record<
-    string,
-    unknown
-  > | null;
+  const item = (await findPermohonan(jenis, id)) as Record<string, unknown> | null;
 
   if (!item) return "permohonan";
 

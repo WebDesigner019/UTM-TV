@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle2, ExternalLink, Megaphone, Plus, Radio, Users, X } from "lucide-react";
@@ -8,6 +8,7 @@ import {
   PermohonanForm,
   type PermohonanSubmitResult
 } from "@/components/PermohonanForm";
+import { useModalDismiss } from "@/components/useModalDismiss";
 import {
   JENIS_DESCRIPTION,
   JENIS_OPTIONS,
@@ -37,23 +38,7 @@ export function TambahDataModal({ filterAktif }: { filterAktif: boolean }) {
     setStep({ name: "pilih" });
   }, []);
 
-  // Kunci scroll body dan tutup dengan Escape selama modal terbuka.
-  useEffect(() => {
-    if (!open) return;
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") close();
-    };
-
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    document.addEventListener("keydown", onKeyDown);
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      document.removeEventListener("keydown", onKeyDown);
-    };
-  }, [open, close]);
+  useModalDismiss(open, close);
 
   function onSuccess(result: PermohonanSubmitResult) {
     setStep({ name: "selesai", result });

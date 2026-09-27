@@ -2,17 +2,21 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getCurrentAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { STATUS_OPTIONS, type JenisPermohonan } from "@/lib/status";
-import { sendStatusChangedEmail, sendPermohonanDisetujuiEmail } from "@/lib/email";
-import {
-  sendWaToUser,
-  sendWaMediaPartnerToUser,
-  sendWaKerjasamaToUser,
-  sendWaPeminjamanPodcastToUser,
-  sendWaStatusChangedToUser
-} from "@/lib/wa";
+import { STATUS_OPTIONS } from "@/lib/status";
+import { isJenisPermohonan } from "@/lib/permohonan-schema";
+import { findPermohonan, getPermohonanDelegate, getRiwayatDelegate } from "@/lib/permohonan-record";
+import { kirimNotifikasiStatus, kirimNotifikasiPerubahan } from "@/lib/permohonan-notify";
+import { PermohonanEditError, updatePermohonanData } from "@/lib/permohonan-edit";
 
 export const dynamic = "force-dynamic";
+
+/** Riwayat ikut diambil apa adanya untuk halaman detail. */
+const includeRiwayat = {
+  statusHistory: {
+    orderBy: { createdAt: "asc" },
+    include: { admin: { select: { nama: true, email: true } } }
+  }
+};
 
 const updateSchema = z.object({
   status: z.enum(["diterima", "disetujui", "ditolak", "selesai"]),
@@ -20,276 +24,154 @@ const updateSchema = z.object({
   catatan_internal: z.string().optional().nullable()
 });
 
+/** Jenis dibaca dari query param dan divalidasi, bukan dipercaya mentah. */
+function resolveJenis(request: Request) {
+  const jenis = new URL(request.url).searchParams.get("jenis") || "liputan";
+  return isJenisPermohonan(jenis) ? jenis : null;
+}
+
+function resolveId(params: { id: string }) {
+  const id = Number(params.id);
+  return Number.isInteger(id) && id > 0 ? id : null;
+}
+
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   const admin = await getCurrentAdmin();
   if (!admin) return NextResponse.json({ message: "Tidak berwenang." }, { status: 401 });
 
-  const id = Number(params.id);
-  const url = new URL(request.url);
-  const jenis = url.searchParams.get("jenis") || "liputan";
+  const jenis = resolveJenis(request);
+  if (!jenis) return NextResponse.json({ message: "Jenis permohonan tidak valid." }, { status: 400 });
 
-  let permohonan: any = null;
-  if (jenis === "liputan") {
-    permohonan = await prisma.permohonanLiputan.findUnique({
-      where: { id },
-      include: {
-        statusHistory: {
-          orderBy: { createdAt: "asc" },
-          include: { admin: { select: { nama: true, email: true } } }
-        }
-      }
-    });
-  } else if (jenis === "media_partner") {
-    permohonan = await prisma.permohonanMediaPartner.findUnique({
-      where: { id },
-      include: {
-        statusHistory: {
-          orderBy: { createdAt: "asc" },
-          include: { admin: { select: { nama: true, email: true } } }
-        }
-      }
-    });
-  } else if (jenis === "kerjasama") {
-    permohonan = await prisma.permohonanKerjasama.findUnique({
-      where: { id },
-      include: {
-        statusHistory: {
-          orderBy: { createdAt: "asc" },
-          include: { admin: { select: { nama: true, email: true } } }
-        }
-      }
-    });
-  } else if (jenis === "peminjaman_podcast") {
-    permohonan = await prisma.permohonanPeminjamanPodcast.findUnique({
-      where: { id },
-      include: {
-        statusHistory: {
-          orderBy: { createdAt: "asc" },
-          include: { admin: { select: { nama: true, email: true } } }
-        }
-      }
-    });
-  }
+  const id = resolveId(params);
+  if (!id) return NextResponse.json({ message: "Data tidak valid." }, { status: 400 });
 
+  const permohonan = await findPermohonan(jenis, id, { include: includeRiwayat });
   if (!permohonan) return NextResponse.json({ message: "Data tidak ditemukan." }, { status: 404 });
+
   return NextResponse.json({ permohonan, jenis });
 }
 
+/**
+ * Ubah status, pesan pemohon, dan catatan internal. Field data lainnya tidak
+ * tersentuh di sini; perubahan data lewat PUT.
+ */
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
   const admin = await getCurrentAdmin();
   if (!admin) return NextResponse.json({ message: "Tidak berwenang." }, { status: 401 });
 
+  const jenis = resolveJenis(request);
+  if (!jenis) return NextResponse.json({ message: "Jenis permohonan tidak valid." }, { status: 400 });
+
+  const id = resolveId(params);
+  if (!id) return NextResponse.json({ message: "Data tidak valid." }, { status: 400 });
+
   try {
-    const id = Number(params.id);
-    const url = new URL(request.url);
-    const jenis = url.searchParams.get("jenis") || "liputan";
     const body = updateSchema.parse(await request.json());
     if (!STATUS_OPTIONS.includes(body.status)) {
       return NextResponse.json({ message: "Status tidak valid." }, { status: 400 });
     }
 
-    let updated: any = null;
-    let existing: any = null;
+    const existing = await getPermohonanDelegate(jenis).findUnique({ where: { id } });
+    if (!existing) return NextResponse.json({ message: "Data tidak ditemukan." }, { status: 404 });
 
-    const historyData = {
-      statusBaru: body.status,
-      pesan: body.pesan_pemohon || null,
-      changedByAdminId: admin.id
-    };
+    const updated = await prisma.$transaction(async (tx) => {
+      const item = await getPermohonanDelegate(jenis, tx).update({
+        where: { id },
+        data: {
+          status: body.status,
+          pesanPemohon: body.pesan_pemohon || null,
+          catatanInternal: body.catatan_internal || null
+        }
+      });
 
-    if (jenis === "liputan") {
-      existing = await prisma.permohonanLiputan.findUnique({ where: { id } });
-      if (!existing) return NextResponse.json({ message: "Data tidak ditemukan." }, { status: 404 });
-      updated = await prisma.$transaction(async (tx) => {
-        const item = await tx.permohonanLiputan.update({
-          where: { id },
-          data: {
-            status: body.status,
-            pesanPemohon: body.pesan_pemohon || null,
-            catatanInternal: body.catatan_internal || null
-          }
-        });
-        await tx.statusHistoryLiputan.create({
-          data: {
-            permohonanId: id,
-            statusLama: existing.status,
-            ...historyData
-          }
-        });
-        return item;
+      await getRiwayatDelegate(jenis, tx).create({
+        data: {
+          permohonanId: id,
+          statusLama: existing.status,
+          statusBaru: body.status,
+          pesan: body.pesan_pemohon || null,
+          changedByAdminId: admin.id
+        }
       });
-    } else if (jenis === "media_partner") {
-      existing = await prisma.permohonanMediaPartner.findUnique({ where: { id } });
-      if (!existing) return NextResponse.json({ message: "Data tidak ditemukan." }, { status: 404 });
-      updated = await prisma.$transaction(async (tx) => {
-        const item = await tx.permohonanMediaPartner.update({
-          where: { id },
-          data: {
-            status: body.status,
-            pesanPemohon: body.pesan_pemohon || null,
-            catatanInternal: body.catatan_internal || null
-          }
-        });
-        await tx.statusHistoryMediaPartner.create({
-          data: {
-            permohonanId: id,
-            statusLama: existing.status,
-            ...historyData
-          }
-        });
-        return item;
-      });
-    } else if (jenis === "kerjasama") {
-      existing = await prisma.permohonanKerjasama.findUnique({ where: { id } });
-      if (!existing) return NextResponse.json({ message: "Data tidak ditemukan." }, { status: 404 });
-      updated = await prisma.$transaction(async (tx) => {
-        const item = await tx.permohonanKerjasama.update({
-          where: { id },
-          data: {
-            status: body.status,
-            pesanPemohon: body.pesan_pemohon || null,
-            catatanInternal: body.catatan_internal || null
-          }
-        });
-        await tx.statusHistoryKerjasama.create({
-          data: {
-            permohonanId: id,
-            statusLama: existing.status,
-            ...historyData
-          }
-        });
-        return item;
-      });
-    } else if (jenis === "peminjaman_podcast") {
-      existing = await prisma.permohonanPeminjamanPodcast.findUnique({ where: { id } });
-      if (!existing) return NextResponse.json({ message: "Data tidak ditemukan." }, { status: 404 });
-      updated = await prisma.$transaction(async (tx) => {
-        const item = await tx.permohonanPeminjamanPodcast.update({
-          where: { id },
-          data: {
-            status: body.status,
-            pesanPemohon: body.pesan_pemohon || null,
-            catatanInternal: body.catatan_internal || null
-          }
-        });
-        await tx.statusHistoryPeminjamanPodcast.create({
-          data: {
-            permohonanId: id,
-            statusLama: existing.status,
-            ...historyData
-          }
-        });
-        return item;
-      });
-    } else {
-      return NextResponse.json({ message: "Jenis permohonan tidak valid." }, { status: 400 });
-    }
+
+      return item;
+    });
 
     // Data yang dicatat manual oleh admin tidak punya email maupun nomor
     // WhatsApp, dan sesuai requirement tidak pernah mengirim notifikasi.
-    const bolehNotifikasi = !existing.inputManuallyEntered;
+    const adaPerubahan = existing.status !== updated.status || Boolean(body.pesan_pemohon);
+    const notifikasi =
+      !existing.inputManuallyEntered && adaPerubahan
+        ? await kirimNotifikasiStatus({
+            jenis,
+            record: updated,
+            status: updated.status,
+            pesan: body.pesan_pemohon
+          })
+        : "dilewati";
 
-    if (bolehNotifikasi && (existing.status !== updated.status || body.pesan_pemohon)) {
-      const jenisTyped = jenis as JenisPermohonan;
-      const noWa: string | null =
-        jenis === "liputan"
-          ? updated.noWa ?? null
-          : extractWaFromKontak(updated.kontakPenanggungJawab);
-      const email: string | null = updated.email ?? null;
-
-      const tasks: Promise<unknown>[] = [];
-
-      if (updated.status === "disetujui") {
-        if (email) {
-          tasks.push(
-            sendPermohonanDisetujuiEmail({
-              email,
-              jenis: jenisTyped,
-              namaAcara: updated.namaAcara,
-              tempatAcara: updated.tempatAcara,
-              tanggalAcara: updated.tanggalAcara,
-              tanggalRequestUpload: updated.tanggalRequestUpload,
-              tanggalPeminjaman: updated.tanggalPeminjaman,
-              waktuMulai: updated.waktuMulai,
-              waktuSelesai: updated.waktuSelesai,
-              pesan: body.pesan_pemohon
-            }).catch((error) => console.error("Gagal mengirim email disetujui:", error))
-          );
-        }
-
-        if (noWa) {
-          const pesan = body.pesan_pemohon;
-          const namaAcara = updated.namaAcara;
-          const waTask =
-            jenis === "liputan"
-              ? sendWaToUser({
-                  noWa,
-                  namaAcara,
-                  tempatAcara: updated.tempatAcara,
-                  tanggalAcara: updated.tanggalAcara,
-                  pesan
-                })
-              : jenis === "media_partner"
-                ? sendWaMediaPartnerToUser({
-                    noWa,
-                    namaAcara,
-                    tanggalRequestUpload: updated.tanggalRequestUpload,
-                    pesan
-                  })
-                : jenis === "peminjaman_podcast"
-                  ? sendWaPeminjamanPodcastToUser({
-                      noWa,
-                      namaAcara,
-                      tanggalPeminjaman: updated.tanggalPeminjaman,
-                      waktuMulai: updated.waktuMulai,
-                      waktuSelesai: updated.waktuSelesai,
-                      pesan
-                    })
-                  : sendWaKerjasamaToUser({
-                      noWa,
-                      namaAcara,
-                      tanggalRequestUpload: updated.tanggalRequestUpload,
-                      pesan
-                    });
-          tasks.push(waTask.catch((error) => console.error("Gagal mengirim WA ke user:", error)));
-        }
-      } else {
-        if (email) {
-          tasks.push(
-            sendStatusChangedEmail({
-              email,
-              nomorRujukan: updated.nomorRujukan,
-              status: updated.status,
-              pesan: body.pesan_pemohon,
-              jenis: jenisTyped
-            }).catch((error) => console.error("Gagal mengirim email status:", error))
-          );
-        }
-
-        if (noWa) {
-          tasks.push(
-            sendWaStatusChangedToUser({
-              noWa,
-              jenis: jenisTyped,
-              status: updated.status,
-              namaAcara: updated.namaAcara,
-              pesan: body.pesan_pemohon
-            }).catch((error) => console.error("Gagal mengirim WA status:", error))
-          );
-        }
-      }
-
-      await Promise.all(tasks);
-    }
-
-    return NextResponse.json({ permohonan: updated });
+    return NextResponse.json({ permohonan: updated, notifikasi });
   } catch {
     return NextResponse.json({ message: "Data tidak valid." }, { status: 400 });
   }
 }
 
-function extractWaFromKontak(kontak: string | null | undefined): string | null {
-  if (!kontak) return null;
-  const match = kontak.match(/\+?\d[\d\s-]{7,}/);
-  return match ? match[0].replace(/[\s-]/g, "") : kontak;
+/**
+ * Ubah data permohonan oleh admin. Multipart karena lampiran boleh diganti.
+ *
+ * Tidak ada rate limit karena sudah di balik autentikasi, sama seperti POST
+ * input manual. Status, pesan pemohon, dan catatan internal bukan bagian dari
+ * endpoint ini; keduanya milik PATCH.
+ */
+export async function PUT(request: Request, { params }: { params: { id: string } }) {
+  const admin = await getCurrentAdmin();
+  if (!admin) return NextResponse.json({ message: "Tidak berwenang." }, { status: 401 });
+
+  const jenis = resolveJenis(request);
+  if (!jenis) return NextResponse.json({ message: "Jenis permohonan tidak valid." }, { status: 400 });
+
+  const id = resolveId(params);
+  if (!id) return NextResponse.json({ message: "Data tidak valid." }, { status: 400 });
+
+  try {
+    const formData = await request.formData();
+    const result = await updatePermohonanData({ jenis, id, formData, admin });
+
+    // Checkbox "Kirim notifikasi ke pemohon" tidak terkirim saat dilepas.
+    // Record manual tidak punya kontak, jadi tidak ada yang perlu dikirim.
+    // Lampiran ikut masuk daftar perubahan: admin yang hanya mengganti surat
+    // tetap harus diberi tahu, karena berkas yang mereka unduh berubah.
+    const perubahan = [...result.perubahan, ...result.perubahanLampiran];
+
+    // Checkbox "Kirim notifikasi ke pemohon" tidak terkirim saat dilepas.
+    // Record manual tidak punya kontak, jadi tidak ada yang perlu dikirim.
+    const mauNotifikasi = formData.get("kirim_notifikasi") === "1";
+    const notifikasi =
+      result.withKontak && mauNotifikasi && perubahan.length > 0
+        ? await kirimNotifikasiPerubahan({ jenis, record: result.updated, perubahan })
+        : "dilewati";
+
+    return NextResponse.json({
+      id,
+      nomor_rujukan: result.nomorRujukan,
+      jenis,
+      perubahan: perubahan.map((item) => item.label),
+      notifikasi
+    });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { message: error.errors[0]?.message || "Data tidak valid." },
+        { status: 400 }
+      );
+    }
+
+    if (error instanceof PermohonanEditError) {
+      const notFound = error.message === "Data tidak ditemukan.";
+      return NextResponse.json({ message: error.message }, { status: notFound ? 404 : 400 });
+    }
+
+    const message = error instanceof Error ? error.message : "Perubahan gagal disimpan.";
+    return NextResponse.json({ message }, { status: 400 });
+  }
 }

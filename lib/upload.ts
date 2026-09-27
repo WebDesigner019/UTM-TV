@@ -64,3 +64,22 @@ export function resolveUploadPath(relativePath: string) {
   }
   return absolute;
 }
+
+/**
+ * Hapus berkas unggahan, mis. setelah admin mengganti lampiran.
+ *
+ * Kegagalan sengaja ditelan: pemanggil memanggilnya setelah transaksi
+ * database selesai, jadi berkas yang sudah tidak terpakai tidak boleh
+ * membuat permintaan gagal. ENOENT berarti berkas sudah hilang di luar
+ * aplikasi, juga bukan error.
+ */
+export async function deleteUploadedFile(relativePath: string | null | undefined) {
+  if (!relativePath) return;
+
+  try {
+    await fs.unlink(resolveUploadPath(relativePath));
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return;
+    console.error(`[HAPUS BERKAS GAGAL] ${relativePath}:`, error);
+  }
+}

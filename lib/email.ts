@@ -35,6 +35,21 @@ function smtpReady() {
   return Boolean(process.env.SMTP_HOST && process.env.SMTP_PORT && process.env.SMTP_FROM);
 }
 
+/**
+ * HTML di template email dibangun dengan interpolasi string, jadi nilai yang
+ * berasal dari input pengguna harus di-escape lebih dulu. Nilai di bawah ini
+ * bisa berisi tag, dan email ini dibaca di banyak client yang tidak selalu
+ * menyaring HTML.
+ */
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 async function sendMail(
   to: string,
   subject: string,
@@ -76,7 +91,6 @@ function buildEmailHtml(content: string, logoCid?: string) {
   const logoHtml = logoCid
     ? `<img src="cid:${logoCid}" alt="UTM-TV" style="max-width:130px;height:auto;display:block;margin:0 auto;" />`
     : "";
-
   return `<!DOCTYPE html>
 <html lang="id">
 <head>
@@ -322,6 +336,86 @@ export async function sendStatusChangedEmail(input: {
   `, "logo");
 
   await sendMail(input.email, `Status permohonan ${jenisLabel} diperbarui - ${input.nomorRujukan}`, text, html, getLogoAttachment());
+}
+
+/**
+ * Email untuk perubahan data oleh admin, bukan perubahan status.
+ *
+ * Pemohon mendapat daftar field yang berubah beserta nilai lama dan barunya,
+ * karena "data Anda diperbarui" tanpa rincian tidak bisa ditindaklanjuti
+ * pemohon. Nilai di-escape karena berasal dari isian form admin.
+ */
+export async function sendPermohonanDiperbaruiEmail(input: {
+  email: string;
+  nomorRujukan: string;
+  jenis: JenisPermohonan;
+  namaAcara: string;
+  perubahan: { label: string; dari: string; ke: string }[];
+}) {
+  const jenisLabel = JENIS_LABEL[input.jenis];
+  const lacakUrl = `${getAppUrl()}/lacak`;
+
+  const text = [
+    `Data pengajuan ${jenisLabel} Anda diperbarui oleh tim UTM-TV.`,
+    "",
+    `Nomor rujukan: ${input.nomorRujukan}`,
+    `Nama acara: ${input.namaAcara}`,
+    "",
+    "Detail perubahan:",
+    ...input.perubahan.map((item) => `- ${item.label}: "${item.dari}" -> "${item.ke}"`),
+    "",
+    `Cek status permohonan: ${lacakUrl}`
+  ].join("\n");
+
+  const rows = input.perubahan
+    .map(
+      (item) => `
+      <tr>
+        <td>${escapeHtml(item.label)}</td>
+        <td>${escapeHtml(item.dari)}</td>
+        <td>${escapeHtml(item.ke)}</td>
+      </tr>`
+    )
+    .join("");
+
+  const html = buildEmailHtml(`
+    <div class="text-center">
+      <h1>Data Permohonan Diperbarui</h1>
+      <p style="color:#64748b;font-size:15px;">Ada bagian dari pengajuan ${jenisLabel} Anda yang dikoreksi oleh tim UTM-TV.</p>
+    </div>
+    <table class="info-table">
+      <tr>
+        <td>Nomor Rujukan</td>
+        <td><strong style="color:${THEME.brand};">${escapeHtml(input.nomorRujukan)}</strong></td>
+      </tr>
+      <tr>
+        <td>Nama Acara</td>
+        <td>${escapeHtml(input.namaAcara)}</td>
+      </tr>
+    </table>
+    <div class="divider"></div>
+    <p style="font-size:14px;font-weight:600;">Yang berubah:</p>
+    <table class="info-table">
+      <tr>
+        <td>Field</td>
+        <td>Sebelumnya</td>
+        <td>Sekarang</td>
+      </tr>
+      ${rows}
+    </table>
+    <p style="font-size:14px;">Bila data ini tidak sesuai dengan keadaan sebenarnya, balas email ini atau hubungi UTM-TV.</p>
+    <div class="text-center mt-16">
+      <a href="${lacakUrl}" class="btn">Lacak Permohonan</a>
+    </div>
+  `, "logo");
+
+  await sendMail(
+    input.email,
+    `Data pengajuan ${jenisLabel} diperbarui - ${input.nomorRujukan}`,
+    text,
+    html,
+    getLogoAttachment()
+  );
 }
 
 export async function sendPermohonanDisetujuiEmail(input: {

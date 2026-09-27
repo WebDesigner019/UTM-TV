@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { JENIS_OPTIONS, type JenisPermohonan } from "@/lib/status";
-import { getFileFields } from "@/lib/permohonan-form";
+import { getFileFields, type FieldDef } from "@/lib/permohonan-form";
 
 const wajib = (message: string, min = 1) => z.string().min(min, message);
 
@@ -57,6 +57,24 @@ export function getSkemaAdmin(jenis: JenisPermohonan): z.ZodTypeAny {
   return z.object(shape);
 }
 
+/**
+ * Versi edit: seperti versi admin, tapi field kontak ikut dikembalikan ketika
+ * withKontak benar. Field kontak diambil kembali dari skema publik, bukan
+ * ditulis ulang, sehingga aturan validasinya tidak mungkin melenceng dari
+ * formulir publik. Validasi domain kampus tetap di route, sama seperti
+ * formulir publik, karena isAllowedCampusEmail() butuh daftar domain env.
+ */
+export function getSkemaEdit(jenis: JenisPermohonan, withKontak: boolean): z.ZodTypeAny {
+  const base = getSkemaAdmin(jenis) as z.ZodObject<z.ZodRawShape>;
+  if (!withKontak) return base;
+
+  const penuh = skemaPermohonan[jenis] as z.ZodObject<z.ZodRawShape>;
+  const shape: z.ZodRawShape = { ...base.shape };
+  if (penuh.shape.email) shape.email = penuh.shape.email;
+  if (penuh.shape.no_wa) shape.no_wa = penuh.shape.no_wa;
+  return z.object(shape);
+}
+
 export function isJenisPermohonan(value: unknown): value is JenisPermohonan {
   return typeof value === "string" && (JENIS_OPTIONS as readonly string[]).includes(value);
 }
@@ -87,6 +105,20 @@ export function pickFiles(formData: FormData, jenis: JenisPermohonan): File[] {
       throw new FileWajibError(`${field.label} wajib diunggah.`);
     }
     files.push(value);
+  }
+  return files;
+}
+
+/**
+ * Versi longgar dari pickFiles untuk penggantian lampiran oleh admin: field
+ * yang kosong berarti "jangan ganti", bukan error. Field def ikut dikembalikan
+ * supaya route bisa memakai aturan pdfOnly milik field tersebut.
+ */
+export function pickFilesOptional(formData: FormData, jenis: JenisPermohonan) {
+  const files: { field: FieldDef; file: File }[] = [];
+  for (const field of getFileFields(jenis)) {
+    const value = formData.get(field.name);
+    if (value instanceof File && value.size > 0) files.push({ field, file: value });
   }
   return files;
 }

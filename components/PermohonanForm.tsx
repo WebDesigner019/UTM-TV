@@ -2,13 +2,16 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, CheckCircle2, Send } from "lucide-react";
+import { ArrowLeft, BellRing, CheckCircle2, Send } from "lucide-react";
 import { FormField, FileInput, TextareaField } from "@/components/FormField";
 import { JENIS_TITLE, STATUS_LABEL, STATUS_OPTIONS, todayISO, type JenisPermohonan } from "@/lib/status";
 import {
   ACCEPT_DOC_IMAGE,
   ACCEPT_PDF,
   MAX_FILE_SIZE_MB_FALLBACK,
+  getEditEndpoint,
+  getEditableFields,
+  getFileFields,
   getSubmitEndpoint,
   getVisibleFields,
   type FieldDef,
@@ -19,6 +22,9 @@ export type PermohonanSubmitResult = {
   id: number;
   nomorRujukan: string;
   jenis: JenisPermohonan;
+  /** Nama field yang berubah, hanya untuk variant edit. */
+  perubahan?: string[];
+  notifikasi?: string;
 };
 
 type Props = {
@@ -26,31 +32,51 @@ type Props = {
   variant: FormVariant;
   /** Batas ukuran unggahan dalam MB. Hanya relevan untuk variant public. */
   maxSizeMb?: number;
-  /** Hanya untuk variant admin. */
+  /** Isi awal field, dipakai untuk prefill variant edit. */
+  defaultValues?: Record<string, string>;
+  /** Id record yang diubah, wajib untuk variant edit. */
+  recordId?: number;
+  /** Tampilkan field kontak. Hanya variant edit. */
+  showKontak?: boolean;
+  /** Data ini dicatat manual, jadi tidak ada kontak dan tidak ada notifikasi. */
+  tanpaNotifikasi?: boolean;
+  /** Nama lampiran tersimpan per field file, dipakai variant edit. */
+  currentFiles?: Record<string, string>;
+  /** Hanya untuk variant admin dan edit. */
   onSuccess?: (result: PermohonanSubmitResult) => void;
   /** Hanya untuk variant admin: tampilkan select status awal. */
   showStatusAwal?: boolean;
-  /** Hanya untuk variant admin: tombol kembali ke langkah sebelumnya. */
+  /** Tombol kembali, mis. ganti jenis atau tutup modal. */
   onBack?: () => void;
   className?: string;
   submitLabel?: string;
 };
 
-function renderField(field: FieldDef, maxSizeMb: number | undefined, minToday: boolean) {
+type RenderContext = {
+  maxSizeMb: number | undefined;
+  minToday: boolean;
+  defaultValue?: string;
+  currentFileName?: string;
+  fileRequired: boolean;
+};
+
+function renderField(field: FieldDef, ctx: RenderContext) {
   if (field.type === "file") {
     const accept = field.pdfOnly ? ACCEPT_PDF : ACCEPT_DOC_IMAGE;
     return (
       <FileInput
         key={field.name}
         accept={accept}
+        currentFileName={ctx.currentFileName}
         hint={
           field.pdfOnly
-            ? `Format PDF. Maksimal ${maxSizeMb} MB.`
-            : `Format PDF, DOC, DOCX, JPG, atau PNG. Maksimal ${maxSizeMb} MB.`
+            ? `Format PDF. Maksimal ${ctx.maxSizeMb} MB.`
+            : `Format PDF, DOC, DOCX, JPG, atau PNG. Maksimal ${ctx.maxSizeMb} MB.`
         }
         label={field.label}
-        maxSizeMb={maxSizeMb ?? MAX_FILE_SIZE_MB_FALLBACK}
+        maxSizeMb={ctx.maxSizeMb ?? MAX_FILE_SIZE_MB_FALLBACK}
         name={field.name}
+        required={ctx.fileRequired}
       />
     );
   }
@@ -59,6 +85,7 @@ function renderField(field: FieldDef, maxSizeMb: number | undefined, minToday: b
     return (
       <TextareaField
         key={field.name}
+        defaultValue={ctx.defaultValue}
         hint={field.hint}
         label={field.label}
         name={field.name}
@@ -72,9 +99,10 @@ function renderField(field: FieldDef, maxSizeMb: number | undefined, minToday: b
   return (
     <FormField
       key={field.name}
+      defaultValue={ctx.defaultValue}
       hint={field.hint}
       label={field.label}
-      min={field.minToday && minToday ? todayISO() : undefined}
+      min={field.minToday && ctx.minToday ? todayISO() : undefined}
       name={field.name}
       placeholder={field.placeholder}
       required={field.required !== false}
@@ -85,13 +113,18 @@ function renderField(field: FieldDef, maxSizeMb: number | undefined, minToday: b
 
 /**
  * Satu-satunya implementasi formulir pengajuan. Dipakai oleh halaman publik
- * (/ajukan/*) dan oleh modal input manual admin, sehingga definisi field,
- * upload, dan alur submit tidak terduplikasi.
+ * (/ajukan/*), modal input manual admin, dan modal ubah data admin, sehingga
+ * definisi field, upload, dan alur submit tidak terduplikasi.
  */
 export function PermohonanForm({
   jenis,
   variant,
   maxSizeMb,
+  defaultValues,
+  recordId,
+  showKontak = false,
+  tanpaNotifikasi = false,
+  currentFiles,
   onSuccess,
   showStatusAwal = false,
   onBack,
@@ -103,8 +136,19 @@ export function PermohonanForm({
   const [loading, setLoading] = useState(false);
 
   const isAdmin = variant === "admin";
-  const fields = getVisibleFields(jenis, variant);
-  const label = submitLabel || (isAdmin ? "Simpan Data" : "Kirim Permohonan");
+  const isEdit = variant === "edit";
+
+  const fields = isEdit
+    ? [...getEditableFields(jenis, showKontak), ...getFileFields(jenis)]
+    : getVisibleFields(jenis, isAdmin ? "admin" : "public");
+
+  const label =
+    submitLabel || (isEdit ? "Simpan Perubahan" : isAdmin ? "Simpan Data" : "Kirim Permohonan");
+
+  // minToday hanya untuk formulir publik. Form admin boleh mengisi tanggal
+  // lampau, dan saat mengubah data yang acaranya sudah lewat admin justru
+  // perlu bisa mengoreksinya.
+  const minToday = !isAdmin && !isEdit;
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -113,7 +157,7 @@ export function PermohonanForm({
 
     const formData = new FormData(event.currentTarget);
 
-    if (!isAdmin) {
+    if (!isAdmin && !isEdit) {
       const email = String(formData.get("email") || "").toLowerCase();
       if (!email.endsWith("@student.trunojoyo.ac.id") && !email.endsWith("@trunojoyo.ac.id")) {
         setError("Gunakan email kampus @student.trunojoyo.ac.id atau @trunojoyo.ac.id.");
@@ -124,10 +168,14 @@ export function PermohonanForm({
 
     if (isAdmin) formData.set("jenis", jenis);
 
+    const endpoint = isEdit
+      ? getEditEndpoint(jenis, recordId ?? 0)
+      : getSubmitEndpoint(jenis, isAdmin ? "admin" : "public");
+
     let response: Response;
     try {
-      response = await fetch(getSubmitEndpoint(jenis, variant), {
-        method: "POST",
+      response = await fetch(endpoint, {
+        method: isEdit ? "PUT" : "POST",
         body: formData
       });
     } catch {
@@ -144,11 +192,13 @@ export function PermohonanForm({
       return;
     }
 
-    if (isAdmin) {
+    if (isAdmin || isEdit) {
       onSuccess?.({
-        id: Number(data.id),
+        id: Number(data.id ?? recordId),
         nomorRujukan: data.nomor_rujukan,
-        jenis
+        jenis,
+        perubahan: data.perubahan,
+        notifikasi: data.notifikasi
       });
       return;
     }
@@ -184,6 +234,36 @@ export function PermohonanForm({
         </div>
       ) : null}
 
+      {isEdit ? (
+        <div className="rounded-xl border border-brand/25 bg-brand/5 px-4 py-3 text-[13px] leading-5 text-ink">
+          {tanpaNotifikasi
+            ? "Data ini dicatat manual oleh admin dan tidak punya kontak pemohon, jadi tidak ada email atau WhatsApp yang dikirim."
+            : "Nomor rujukan dan status tidak diubah dari sini. Setelah disimpan, pemohon diberi tahu melalui email dan WhatsApp dengan daftar field yang berubah."}
+        </div>
+      ) : null}
+
+      {isEdit && !tanpaNotifikasi ? (
+        <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-white/70 px-4 py-3">
+          <input
+            className="mt-1 h-4 w-4 shrink-0 rounded border-line text-brand focus:ring-brand"
+            defaultChecked
+            name="kirim_notifikasi"
+            type="checkbox"
+            value="1"
+          />
+          <span>
+            <span className="flex items-center gap-1.5 text-[15px] font-semibold text-ink">
+              <BellRing className="h-4 w-4 text-brand" />
+              Kirim notifikasi ke pemohon
+            </span>
+            <span className="mt-0.5 block text-[13px] leading-5 text-slate-500">
+              Berisi daftar field yang berubah. Lepas centang bila hanya ingin menyimpan tanpa
+              memberi tahu.
+            </span>
+          </span>
+        </label>
+      ) : null}
+
       {showStatusAwal ? (
         <div>
           <label className="mb-2 block text-[15px] font-semibold text-ink" htmlFor="status_awal">
@@ -202,25 +282,35 @@ export function PermohonanForm({
         </div>
       ) : null}
 
-      {rows.map((row, index) =>
-        row.length === 2 ? (
+      {rows.map((row, index) => {
+        const ctxFor = (field: FieldDef): RenderContext => ({
+          maxSizeMb,
+          minToday,
+          defaultValue: isEdit ? defaultValues?.[field.name] : undefined,
+          currentFileName: isEdit ? currentFiles?.[field.name] : undefined,
+          // Saat mengganti lampiran, berkas boleh dikosongkan karena artinya
+          // "pertahankan yang sekarang".
+          fileRequired: !isEdit
+        });
+
+        return row.length === 2 ? (
           <div className="grid gap-5 sm:grid-cols-2" key={`row-${index}`}>
-            {row.map((field) => renderField(field, maxSizeMb, !isAdmin))}
+            {row.map((field) => renderField(field, ctxFor(field)))}
           </div>
         ) : (
-          <div key={`row-${index}`}>{row.map((field) => renderField(field, maxSizeMb, !isAdmin))}</div>
-        )
-      )}
+          <div key={`row-${index}`}>{row.map((field) => renderField(field, ctxFor(field)))}</div>
+        );
+      })}
 
       <div className="flex flex-wrap items-center gap-3 pt-1">
         {onBack ? (
           <button className="btn-secondary" onClick={onBack} type="button">
             <ArrowLeft className="h-4 w-4" />
-            Ganti jenis
+            {isEdit ? "Batal" : "Ganti jenis"}
           </button>
         ) : null}
         <button className="btn-primary py-3 sm:w-52" disabled={loading} type="submit">
-          {isAdmin ? <CheckCircle2 className="h-4 w-4" /> : <Send className="h-4 w-4" />}
+          {isAdmin || isEdit ? <CheckCircle2 className="h-4 w-4" /> : <Send className="h-4 w-4" />}
           {loading ? "Menyimpan..." : label}
         </button>
         <span className="text-[13px] text-slate-400">{JENIS_TITLE[jenis]}</span>

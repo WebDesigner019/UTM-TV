@@ -183,10 +183,46 @@ export async function sendWaStatusChangedToUser(input: {
   await sendFonnte(token, input.noWa, message);
 }
 
+/**
+ * WhatsApp untuk perubahan data oleh admin.
+ *
+ * Isinya daftar field yang berubah, bukan sekadar "data diperbarui", supaya
+ * pemohon tahu persis apa yang dikoreksi tanpa perlu membuka email.
+ */
+export async function sendWaDataDiperbaruiToUser(input: {
+  noWa: string;
+  jenis: JenisPermohonan;
+  nomorRujukan: string;
+  namaAcara: string;
+  perubahan: { label: string; dari: string; ke: string }[];
+}) {
+  const token = process.env.FONNTE_WA_API;
+  if (!token) {
+    console.log("[WA SIMULASI] Token tidak dikonfigurasi.");
+    return;
+  }
+
+  const jenisLabel = JENIS_LABEL[input.jenis];
+
+  const message = [
+    `Hi Tretan UTM!👋`,
+    `data pengajuan ${jenisLabel} anda diperbarui oleh tim UTM-TV.`,
+    `nomor rujukan: ${input.nomorRujukan}`,
+    `nama acara: ${input.namaAcara}`,
+    ``,
+    `yang berubah:`,
+    ...input.perubahan.map((item) => `- ${item.label}: "${item.dari}" -> "${item.ke}"`),
+    ``,
+    `bila ini tidak sesuai, hubungi kami ya.`,
+    `terimakasih, salam hangat UTM-TV.`
+  ].join("\n");
+
+  await sendFonnte(token, input.noWa, message);
+}
+
 async function sendToGroup(token: string, groupId: string, message: string) {
   await sendFonnte(token, groupId, message);
 }
-
 export async function sendWaGroupNotification(input: {
   namaInstansi: string;
   namaAcara: string;

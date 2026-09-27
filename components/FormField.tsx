@@ -74,7 +74,8 @@ export function TextareaField({
   placeholder,
   rows = 3,
   required = true,
-  hint
+  hint,
+  defaultValue
 }: {
   label: string;
   name: string;
@@ -82,6 +83,7 @@ export function TextareaField({
   rows?: number;
   required?: boolean;
   hint?: string;
+  defaultValue?: string;
 }) {
   return (
     <div>
@@ -90,6 +92,7 @@ export function TextareaField({
       </label>
       <textarea
         className="focus-ring input-field"
+        defaultValue={defaultValue}
         id={name}
         name={name}
         placeholder={placeholder}
@@ -108,7 +111,8 @@ export function FormField({
   placeholder,
   min,
   required = true,
-  hint
+  hint,
+  defaultValue
 }: {
   label: string;
   name: string;
@@ -117,6 +121,7 @@ export function FormField({
   min?: string;
   required?: boolean;
   hint?: string;
+  defaultValue?: string;
 }) {
   return (
     <div>
@@ -125,6 +130,7 @@ export function FormField({
       </label>
       <input
         className="focus-ring input-field"
+        defaultValue={defaultValue}
         id={name}
         name={name}
         type={type}
@@ -143,7 +149,8 @@ export function FileInput({
   hint,
   required = true,
   accept = DEFAULT_ACCEPT,
-  maxSizeMb = 5
+  maxSizeMb = 5,
+  currentFileName
 }: {
   label: string;
   name: string;
@@ -151,6 +158,8 @@ export function FileInput({
   required?: boolean;
   accept?: string;
   maxSizeMb?: number;
+  /** Nama lampiran yang sudah tersimpan, dipakai saat admin menggantinya. */
+  currentFileName?: string;
 }) {
   const id = useId();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -159,6 +168,7 @@ export function FileInput({
   const [previewUrl, setPreviewUrl] = useState("");
   const [dragging, setDragging] = useState(false);
   const [error, setError] = useState("");
+  const modeGanti = Boolean(currentFileName);
 
   useEffect(() => {
     if (!file || !file.type.startsWith("image/")) {
@@ -220,6 +230,12 @@ export function FileInput({
       <label className="mb-2 block text-[15px] font-semibold text-ink" htmlFor={id}>
         {label}
       </label>
+      {modeGanti && !file ? (
+        <p className="mb-2 text-[13px] leading-5 text-slate-500">
+          <span className="font-semibold text-ink">Lampiran saat ini: {currentFileName}.</span>{" "}
+          Biarkan kosong bila tidak ingin menggantinya.
+        </p>
+      ) : null}
       <div
         className={shellClassName}
         onDragEnter={(event) => {
@@ -286,7 +302,7 @@ export function FileInput({
               </p>
               <p className="mt-0.5 flex items-center gap-1 text-[13px] font-medium text-emerald-600">
                 <CheckCircle2 className="h-3.5 w-3.5" />
-                Siap diunggah
+                {modeGanti ? "Siap menggantikan lampiran" : "Siap diunggah"}
               </p>
             </div>
 
@@ -308,7 +324,9 @@ export function FileInput({
             <UploadCloud
               className={`h-8 w-8 transition-colors duration-200 ${dragging ? "text-brand" : "text-slate-400 group-hover:text-brand"}`}
             />
-            <span className="text-sm font-semibold text-ink">Pilih berkas untuk diunggah</span>
+            <span className="text-sm font-semibold text-ink">
+              {modeGanti ? "Pilih berkas untuk mengganti lampiran" : "Pilih berkas untuk diunggah"}
+            </span>
             <span className="text-[13px] text-slate-500">atau tarik &amp; lepas berkas ke sini</span>
           </label>
         )}
