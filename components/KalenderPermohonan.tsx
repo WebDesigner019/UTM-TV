@@ -164,7 +164,7 @@ export function KalenderPermohonan({
                             key={event.key}
                             title={event.namaAcara}
                           >
-                            {JENIS_KALENDER[event.jenis].badge}
+                            {JENIS_KALENDER[event.jenis].label}
                           </span>
                         ))}
                         {jumlah > MAKS_BADGE_PER_SEL ? (
