@@ -134,8 +134,6 @@ Format yang diterima:
 
 Batas ukuran dikendalikan oleh `MAX_FILE_SIZE_MB`, default 10 MB.
 
-Pemeriksaan utama: `npx tsc --noEmit`, `npm run lint`, dan `npm run build`.
-
 ## Catatan Keamanan
 
 - Query database melalui Prisma.

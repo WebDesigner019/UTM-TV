@@ -9,6 +9,7 @@
     "start:local": "node scripts/start-local-server.mjs",
     "lint": "next lint",
     "prisma:generate": "prisma generate",
+    "check:kalender": "tsx scripts/check-kalender.ts",
     "prisma:migrate": "tsx scripts/prisma-with-env.ts migrate dev",
     "prisma:deploy": "tsx scripts/prisma-with-env.ts migrate deploy",
     "db:seed": "tsx prisma/seed.ts"
