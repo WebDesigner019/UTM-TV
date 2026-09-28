@@ -1,35 +1,25 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { CalendarDays, X } from "lucide-react";
+import { X } from "lucide-react";
 import { useModalDismiss } from "@/components/useModalDismiss";
-import {
-  HARI_MINGGU,
-  buildGridBulan,
-  buildGridMinggu,
-  judulBulan,
-  judulMinggu,
-  tanggalDariKey,
-  type EventKalender
-} from "@/lib/kalender-grid";
+import { HARI_MINGGU, buildGridBulan, tanggalDariKey, type EventKalender } from "@/lib/kalender-grid";
 import { JENIS_KALENDER, JENIS_OPTIONS, formatTanggal, type JenisPermohonan } from "@/lib/status";
 
 /** Berapa badge yang masih muat di dalam satu sel sebelum jadi "+X lagi". */
 const MAKS_BADGE_PER_SEL = 2;
 
-type Tampilan = "bulan" | "minggu";
-
 /**
  * Kalender pengajuan untuk landing page.
  *
  * Data sudah diambil server dan dikirim lewat prop, jadi komponen ini tidak
- * melakukan fetch apa pun: hanya menyaring dan menggambar. Saringan jenis dan
- * pilihan tampilan sengaja disimpan di state, bukan di query param, supaya URL
- * landing page tetap bersih dan tidak menambah satu route API lagi.
+ * melakukan fetch apa pun: hanya menyaring dan menggambar. Saringan jenis
+ * sengaja disimpan di state, bukan di query param, supaya URL landing page
+ * tetap bersih dan tidak menambah satu route API lagi.
  *
- * Titik jangkar bulan dan minggu dikirim sebagai prop "anchor" supaya render di
- * server dan hidrasi di klien menghasilkan grid yang sama persis, termasuk di
- * batas pergantian bulan.
+ * Titik jangkar bulan dikirim sebagai prop "anchor" supaya render di server dan
+ * hidrasi di klien menghasilkan grid yang sama persis, termasuk di batas
+ * pergantian bulan.
  */
 export function KalenderPermohonan({
   events,
@@ -39,16 +29,12 @@ export function KalenderPermohonan({
   /** "YYYY-MM-DD" tanggal server memakai sebagai bulan berjalan. */
   anchor: string;
 }) {
-  const [tampilan, setTampilan] = useState<Tampilan>("bulan");
   const [jenisAktif, setJenisAktif] = useState<JenisPermohonan[]>([...JENIS_OPTIONS]);
   const [hariDipilih, setHariDipilih] = useState<string | null>(null);
 
   const anchorTanggal = useMemo(() => tanggalDariKey(anchor), [anchor]);
 
-  const grid = useMemo(
-    () => (tampilan === "bulan" ? buildGridBulan(anchorTanggal) : [buildGridMinggu(anchorTanggal)]),
-    [tampilan, anchorTanggal]
-  );
+  const grid = useMemo(() => buildGridBulan(anchorTanggal), [anchorTanggal]);
 
   const eventPerTanggal = useMemo(() => {
     const map = new Map<string, EventKalender[]>();
@@ -60,11 +46,6 @@ export function KalenderPermohonan({
     }
     return map;
   }, [events, jenisAktif]);
-
-  const totalDitampilkan = useMemo(
-    () => Array.from(eventPerTanggal.values()).reduce((jumlah, list) => jumlah + list.length, 0),
-    [eventPerTanggal]
-  );
 
   const tutupModal = useCallback(() => setHariDipilih(null), []);
   useModalDismiss(hariDipilih !== null, tutupModal);
@@ -94,49 +75,7 @@ export function KalenderPermohonan({
 
   return (
     <div className="card overflow-hidden">
-      <div className="flex flex-col gap-4 border-b border-line/70 px-5 py-5 sm:px-7 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex items-center gap-3">
-          <span className="tile-icon h-11 w-11">
-            <CalendarDays className="h-5 w-5" />
-          </span>
-          <div>
-            <h2 className="text-lg font-bold tracking-tight text-ink sm:text-xl">
-              Jadwal Pengajuan Disetujui
-            </h2>
-            <p className="mt-0.5 text-sm text-slate-500">
-              {totalDitampilkan} pengajuan pada{" "}
-              {tampilan === "bulan" ? judulBulan(anchorTanggal) : judulMinggu(anchorTanggal)}.
-            </p>
-          </div>
-        </div>
-
-        <div
-          aria-label="Tampilan kalender"
-          className="inline-flex self-start rounded-full border border-line bg-white/70 p-1"
-          role="group"
-        >
-          {(["bulan", "minggu"] as const).map((item) => (
-            <button
-              key={item}
-              aria-pressed={tampilan === item}
-              className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors duration-150 ${
-                tampilan === item
-                  ? "bg-brand text-white"
-                  : "text-slate-600 hover:bg-slate-100 hover:text-ink"
-              }`}
-              onClick={() => setTampilan(item)}
-              type="button"
-            >
-              {item === "bulan" ? "Bulan ini" : "Minggu ini"}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="border-b border-line/70 px-5 py-4 sm:px-7">
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
-          Saring jenis pengajuan
-        </p>
+      <div className="border-b border-line/70 px-5 py-4 sm:px-7" role="group" aria-label="Saring jenis pengajuan">
         <div className="flex flex-wrap gap-2">
           {JENIS_OPTIONS.map((jenis) => {
             const aktif = jenisAktif.includes(jenis);
@@ -225,9 +164,7 @@ export function KalenderPermohonan({
                             key={event.key}
                             title={event.namaAcara}
                           >
-                            {tampilan === "minggu"
-                              ? event.namaAcara
-                              : JENIS_KALENDER[event.jenis].badge}
+                            {JENIS_KALENDER[event.jenis].badge}
                           </span>
                         ))}
                         {jumlah > MAKS_BADGE_PER_SEL ? (

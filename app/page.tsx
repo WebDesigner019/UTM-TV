@@ -104,17 +104,7 @@ export default async function Home() {
         {kalender ? (
           <section className="border-y border-line/70 bg-white/60 backdrop-blur">
             <div className="mx-auto max-w-6xl px-4 py-12 md:py-16" data-reveal>
-              <p className="text-sm font-semibold uppercase tracking-widest text-brand">Kalender</p>
-              <h2 className="mt-3 text-balance text-3xl font-bold tracking-tight text-ink md:text-4xl">
-                Pengajuan yang Disetujui
-              </h2>
-              <p className="mt-3 max-w-3xl text-lg text-slate-500">
-                Daftar kegiatan liputan, kerja sama, media partner, dan peminjaman ruang podcast yang
-                sudah disetujui UTM TV. Klik salah satu hari untuk melihat rinciannya.
-              </p>
-              <div className="mt-8">
-                <KalenderPermohonan anchor={kalender.anchor} events={kalender.events} />
-              </div>
+              <KalenderPermohonan anchor={kalender.anchor} events={kalender.events} />
             </div>
           </section>
         ) : null}
