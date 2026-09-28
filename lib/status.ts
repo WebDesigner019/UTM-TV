@@ -38,54 +38,6 @@ export const JENIS_TITLE_SHORT: Record<JenisPermohonan, string> = {
   peminjaman_podcast: "Peminjaman Ruang Podcast"
 };
 
-/**
- * Tampilan kalender publik untuk tiap jenis.
- *
- * Ditaruh di sini, bukan di komponen kalender, supaya badge, filter, dan
- * legenda membaca satu sumber yang sama. Class Tailwind ditulis utuh, bukan
- * dirakit dari nama warna, supaya JIT memindainya di file yang sama.
- *
- * `label` untuk filter, legenda, dan modal hari. `badge` untuk sel kalender.
- * Keduanya sengaja terpisah: "Peminjaman Ruang Podcast" tidak muat di sel
- * 1/7 lebar layar ponsel, jadi sel memakai "Podcast".
- *
- * Kuning medpart memakai amber, bukan yellow, supaya teksnya tetap terbaca di
- * atas kartu berlatar putih.
- */
-export const JENIS_KALENDER: Record<
-  JenisPermohonan,
-  { label: string; badge: string; badgeClass: string; chipClass: string; dotClass: string }
-> = {
-  kerjasama: {
-    label: "Kerjasama",
-    badge: "Collab",
-    badgeClass: "border border-purple-200 bg-purple-50 text-purple-700",
-    chipClass: "border-purple-300 bg-purple-50 text-purple-800",
-    dotClass: "bg-purple-600"
-  },
-  liputan: {
-    label: "Liputan",
-    badge: "Liputan",
-    badgeClass: "border border-blue-200 bg-blue-50 text-blue-700",
-    chipClass: "border-blue-300 bg-blue-50 text-blue-800",
-    dotClass: "bg-blue-600"
-  },
-  media_partner: {
-    label: "Media Partner",
-    badge: "Medpart",
-    badgeClass: "border border-amber-300 bg-amber-50 text-amber-800",
-    chipClass: "border-amber-400 bg-amber-50 text-amber-900",
-    dotClass: "bg-amber-500"
-  },
-  peminjaman_podcast: {
-    label: "Peminjaman Ruang Podcast",
-    badge: "Podcast",
-    badgeClass: "border border-emerald-200 bg-emerald-50 text-emerald-700",
-    chipClass: "border-emerald-300 bg-emerald-50 text-emerald-800",
-    dotClass: "bg-emerald-600"
-  }
-};
-
 export const JENIS_DESCRIPTION: Record<JenisPermohonan, string> = {
   liputan: "Pencatatan liputan acara, lengkap dengan nama instansi, tanggal, dan tempat acara.",
   media_partner: "Pencatatan permintaan kerja sama media partner untuk sebuah acara.",
