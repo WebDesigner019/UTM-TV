@@ -65,35 +65,6 @@ export function LandingAnimations() {
         );
       });
 
-      gsap.utils.toArray<HTMLElement>("[data-counter]").forEach((element) => {
-        const target = Number(element.dataset.counter || "0");
-        const counter = { value: 0 };
-        const label = element.parentElement?.querySelector("[data-counter-label]");
-        if (!label) return;
-
-        gsap.timeline({
-          scrollTrigger: {
-            trigger: element,
-            start: "top 88%",
-            once: true
-          }
-        })
-          .to(counter, {
-            value: target,
-            duration: 2,
-            ease: "power2.out",
-            onUpdate: () => {
-              element.textContent = String(Math.round(counter.value));
-            }
-          })
-          .fromTo(
-            label,
-            { autoAlpha: 0, y: 12 },
-            { autoAlpha: 1, y: 0, duration: 0.5, ease: "power2.out" },
-            "-=0.6"
-          );
-      });
-
       ScrollTrigger.refresh();
     }, document.getElementById("landing-animations-root") || undefined);
 

@@ -11,6 +11,7 @@ import type { JenisPermohonan } from "@/lib/status";
  */
 export type PermohonanDelegate = {
   findUnique(args: any): Promise<any>;
+  findMany(args: any): Promise<any[]>;
   update(args: any): Promise<any>;
 };
 

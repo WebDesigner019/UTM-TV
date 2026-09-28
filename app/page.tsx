@@ -2,36 +2,37 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Search, ShieldCheck, Video, Handshake, Megaphone, Mic, Phone } from "lucide-react";
 import { CampusWatermark } from "@/components/CampusWatermark";
+import { KalenderPermohonan } from "@/components/KalenderPermohonan";
 import { PublicNav } from "@/components/PublicNav";
 import { LandingAnimations } from "@/components/LandingAnimations";
-import { prisma } from "@/lib/prisma";
+import { getKalenderPermohonan, isKalenderPublikAktif } from "@/lib/kalender";
+import { rentangGrid, tanggalDariKey } from "@/lib/kalender-grid";
+import { todayISO } from "@/lib/status";
 
 export const dynamic = "force-dynamic";
 
-async function getStats() {
-  const setting = await prisma.pengaturan.findUnique({ where: { key: "tampilkan_statistik_landing" } });
-  if (setting?.value !== "true") return null;
-  const year = new Date().getFullYear();
-  const start = new Date(year, 0, 1);
-  const end = new Date(year + 1, 0, 1);
-  const [totalLiputan, totalMediaPartner, totalKerjasama, totalPodcast, disetujui, pengajuanMasuk] = await Promise.all([
-    prisma.permohonanLiputan.count({ where: { createdAt: { gte: start, lt: end } } }),
-    prisma.permohonanMediaPartner.count({ where: { createdAt: { gte: start, lt: end } } }),
-    prisma.permohonanKerjasama.count({ where: { createdAt: { gte: start, lt: end } } }),
-    prisma.permohonanPeminjamanPodcast.count({ where: { createdAt: { gte: start, lt: end } } }),
-    prisma.permohonanLiputan.count({ where: { status: "disetujui", createdAt: { gte: start, lt: end } } }),
-    prisma.permohonanLiputan.count({ where: { status: "diterima", createdAt: { gte: start, lt: end } } })
-  ]);
-  return {
-    year,
-    total: totalLiputan + totalMediaPartner + totalKerjasama + totalPodcast,
-    disetujui,
-    pengajuanMasuk
-  };
+/**
+ * Satu bulan kalender, dihitung sekali lalu dipakai untuk query maupun grid.
+ *
+ * `anchor` dikirim ke komponen supaya render server dan hidrasi klien
+ * menggambar bulan yang sama persis. Kalau new Date() dipanggil terpisah di
+ * kedua sisi, pergantian bulan tepat tengah malam bisa membuat mismatch.
+ *
+ * Satu bulan sudah cukup untuk dua tampilan: minggu berjalan selalu berada di
+ * dalam grid bulan berjalan, karena grid mulai dari Senin pada atau sebelum
+ * tanggal 1 dan berakhir pada Minggu pada atau setelah tanggal akhir.
+ */
+async function getKalender() {
+  const aktif = await isKalenderPublikAktif();
+  if (!aktif) return null;
+
+  const anchor = todayISO();
+  const events = await getKalenderPermohonan(rentangGrid(tanggalDariKey(anchor)));
+  return { anchor, events };
 }
 
 export default async function Home() {
-  const stats = await getStats().catch(() => null);
+  const kalender = await getKalender().catch(() => null);
 
   return (
     <>
@@ -100,12 +101,20 @@ export default async function Home() {
           </div>
         </section>
 
-        {stats ? (
+        {kalender ? (
           <section className="border-y border-line/70 bg-white/60 backdrop-blur">
-            <div className="mx-auto grid max-w-6xl gap-4 px-4 py-10 sm:grid-cols-3" data-reveal-group>
-              <Stat label={`Total pengajuan ${stats.year}`} value={stats.total} />
-              <Stat label="Disetujui" value={stats.disetujui} />
-              <Stat label="Pengajuan masuk" value={stats.pengajuanMasuk} />
+            <div className="mx-auto max-w-6xl px-4 py-12 md:py-16" data-reveal>
+              <p className="text-sm font-semibold uppercase tracking-widest text-brand">Kalender</p>
+              <h2 className="mt-3 text-balance text-3xl font-bold tracking-tight text-ink md:text-4xl">
+                Pengajuan yang Disetujui
+              </h2>
+              <p className="mt-3 max-w-3xl text-lg text-slate-500">
+                Daftar kegiatan liputan, kerja sama, media partner, dan peminjaman ruang podcast yang
+                sudah disetujui UTM TV. Klik salah satu hari untuk melihat rinciannya.
+              </p>
+              <div className="mt-8">
+                <KalenderPermohonan anchor={kalender.anchor} events={kalender.events} />
+              </div>
             </div>
           </section>
         ) : null}
@@ -167,19 +176,6 @@ export default async function Home() {
         UTM TV - Universitas Trunojoyo Madura
       </footer>
     </>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="card p-6 text-center" data-reveal-item>
-      <div className="text-4xl font-bold tracking-tight text-ink" data-counter={value}>
-        {value}
-      </div>
-      <div className="mt-1 text-sm text-slate-500" data-counter-label>
-        {label}
-      </div>
-    </div>
   );
 }
 
