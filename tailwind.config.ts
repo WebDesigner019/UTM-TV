@@ -1,7 +1,16 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
-  content: ["./app/**/*.{js,ts,jsx,tsx}", "./components/**/*.{js,ts,jsx,tsx}"],
+  // lib ikut dipindai karena lib/status.ts menyimpan class Tailwind untuk badge
+  // kalender, chip filter, dan legenda. Tanpa baris ini kelas di file itu tidak
+  // pernah dibuat, dan gejalanya badge jadi tidak punya warna sama sekali tanpa
+  // ada error build. Class di sini ditulis utuh, bukan dirakit dari nama warna,
+  // supaya bisa ditemukan pemindaian.
+  content: [
+    "./app/**/*.{js,ts,jsx,tsx}",
+    "./components/**/*.{js,ts,jsx,tsx}",
+    "./lib/**/*.{js,ts,jsx,tsx}"
+  ],
   theme: {
     extend: {
       colors: {

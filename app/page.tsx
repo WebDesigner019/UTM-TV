@@ -14,21 +14,21 @@ export const dynamic = "force-dynamic";
 /**
  * Satu bulan kalender, dihitung sekali lalu dipakai untuk query maupun grid.
  *
- * `anchor` dikirim ke komponen supaya render server dan hidrasi klien
+ * `today` dikirim ke komponen supaya render server dan hidrasi klien
  * menggambar bulan yang sama persis. Kalau new Date() dipanggil terpisah di
  * kedua sisi, pergantian bulan tepat tengah malam bisa membuat mismatch.
  *
- * Satu bulan sudah cukup untuk dua tampilan: minggu berjalan selalu berada di
- * dalam grid bulan berjalan, karena grid mulai dari Senin pada atau sebelum
- * tanggal 1 dan berakhir pada Minggu pada atau setelah tanggal akhir.
+ * Hanya bulan berjalan yang dikirim. Bulan lain diambil klien dari
+ * /api/kalender ketika pengguna menekan panah, jadi halaman ini tidak
+ * membawa data bulan lain yang tidak sedang dilihat.
  */
 async function getKalender() {
   const aktif = await isKalenderPublikAktif();
   if (!aktif) return null;
 
-  const anchor = todayISO();
-  const events = await getKalenderPermohonan(rentangGrid(tanggalDariKey(anchor)));
-  return { anchor, events };
+  const today = todayISO();
+  const events = await getKalenderPermohonan(rentangGrid(tanggalDariKey(today)));
+  return { today, events };
 }
 
 export default async function Home() {
@@ -103,8 +103,8 @@ export default async function Home() {
 
         {kalender ? (
           <section className="border-y border-line/70 bg-white/60 backdrop-blur">
-            <div className="mx-auto max-w-6xl px-4 py-12 md:py-16" data-reveal>
-              <KalenderPermohonan anchor={kalender.anchor} events={kalender.events} />
+            <div className="mx-auto max-w-6xl px-4 py-8 md:py-10" data-reveal>
+              <KalenderPermohonan events={kalender.events} today={kalender.today} />
             </div>
           </section>
         ) : null}

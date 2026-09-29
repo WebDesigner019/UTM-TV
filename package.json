@@ -12,7 +12,8 @@
     "check:kalender": "tsx scripts/check-kalender.ts",
     "prisma:migrate": "tsx scripts/prisma-with-env.ts migrate dev",
     "prisma:deploy": "tsx scripts/prisma-with-env.ts migrate deploy",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "db:seed:dummy": "tsx scripts/seed-dummy.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",

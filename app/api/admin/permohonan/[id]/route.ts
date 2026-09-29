@@ -7,6 +7,7 @@ import { isJenisPermohonan } from "@/lib/permohonan-schema";
 import { findPermohonan, getPermohonanDelegate, getRiwayatDelegate } from "@/lib/permohonan-record";
 import { kirimNotifikasiStatus, kirimNotifikasiPerubahan } from "@/lib/permohonan-notify";
 import { PermohonanEditError, updatePermohonanData } from "@/lib/permohonan-edit";
+import { PermohonanHapusError, hapusPermohonan } from "@/lib/permohonan-delete";
 
 export const dynamic = "force-dynamic";
 
@@ -172,6 +173,41 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     }
 
     const message = error instanceof Error ? error.message : "Perubahan gagal disimpan.";
+    return NextResponse.json({ message }, { status: 400 });
+  }
+}
+
+/**
+ * Hapus satu permohonan beserta riwayat status dan lampirannya.
+ *
+ * Terpisah dari PUT dan PATCH karena sifatnya tidak sama: yang lain bisa
+ * diulang, yang ini sekali jalan dan tidak ada tombol batal. Verifikasi
+ * "¿yakin?" ada di sisi UI (HapusDataModal), bukan di sini, supaya endpoint
+ * ini tetap bisa dipakai script tanpa perlu tanda kutip konfirmasi.
+ *
+ * Tidak ada rate limit, sama seperti POST dan PUT: semuanya sudah di balik
+ * autentikasi admin.
+ */
+export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+  const admin = await getCurrentAdmin();
+  if (!admin) return NextResponse.json({ message: "Tidak berwenang." }, { status: 401 });
+
+  const jenis = resolveJenis(request);
+  if (!jenis) return NextResponse.json({ message: "Jenis permohonan tidak valid." }, { status: 400 });
+
+  const id = resolveId(params);
+  if (!id) return NextResponse.json({ message: "Data tidak valid." }, { status: 400 });
+
+  try {
+    const result = await hapusPermohonan({ jenis, id, admin });
+    return NextResponse.json({ ok: true, id, jenis, nomor_rujukan: result.nomorRujukan });
+  } catch (error) {
+    if (error instanceof PermohonanHapusError) {
+      const notFound = error.message === "Data tidak ditemukan.";
+      return NextResponse.json({ message: error.message }, { status: notFound ? 404 : 400 });
+    }
+
+    const message = error instanceof Error ? error.message : "Data gagal dihapus.";
     return NextResponse.json({ message }, { status: 400 });
   }
 }

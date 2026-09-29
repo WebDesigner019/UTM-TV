@@ -4,8 +4,12 @@ import {
   awalMingguSenin,
   buildGridBulan,
   buildGridMinggu,
+  geserBulan,
+  jarakBulan,
   keTanggalKey,
+  kunciBulan,
   rentangGrid,
+  tanggalDariBulan,
   tanggalDariKey,
   tambahHari
 } from "../lib/kalender-grid";
@@ -175,6 +179,125 @@ cek("sampai selalu eksklusif dan mencakup semua sel grid", () => {
       const tengahMalam = utcSel(sel);
       assert.ok(tengahMalam >= dari, `${sel.key} di luar batas dari`);
       assert.ok(tengahMalam < sampai, `${sel.key} di luar batas sampai`);
+    }
+  }
+});
+
+console.log("\nnavigasi bulan:");
+
+cek("geserBulan selalu mendarat di tanggal 1", () => {
+  for (let i = -40; i <= 40; i += 1) {
+    const hasil = geserBulan(new Date(2026, 8, 30), i);
+    assert.equal(hasil.getDate(), 1, `tanggal bukan 1 pada geser ${i}`);
+  }
+});
+
+cek("geserBulan melewati akhir tahun ke arah yang benar", () => {
+  assert.equal(keTanggalKey(geserBulan(new Date(2026, 11, 1), 1)), "2027-01-01");
+  assert.equal(keTanggalKey(geserBulan(new Date(2026, 0, 1), -1)), "2025-12-01");
+  assert.equal(keTanggalKey(geserBulan(new Date(2026, 0, 1), -13)), "2024-12-01");
+  // Dua kali melewati pergantian tahun, bukan hanya sekali.
+  assert.equal(keTanggalKey(geserBulan(new Date(2026, 0, 1), 24)), "2028-01-01");
+  assert.equal(keTanggalKey(geserBulan(new Date(2026, 0, 1), 25)), "2028-02-01");
+});
+
+cek("geserBulan bolak-balik selalu kembali ke bulan asal", () => {
+  const dasar = new Date(2026, 8, 1);
+  for (let i = 1; i <= 30; i += 1) {
+    for (const [pergi, kembali] of [
+      [i, -i],
+      [-i, i]
+    ]) {
+      const asal = geserBulan(dasar, pergi);
+      const balik = geserBulan(asal, kembali);
+      assert.equal(keTanggalKey(balik), keTanggalKey(dasar), `tidak kembali pada geser ${pergi}`);
+    }
+  }
+});
+
+cek("kunciBulan mengabaikan hari dalam bulan", () => {
+  // Hanya hari yang benar-benar ada. new Date() akan merolover "Februari 30"
+  // ke Maret, jadi angka seperti itu tidak bisa dipakai sebagai masukan.
+  for (let bulan = 0; bulan < 12; bulan += 1) {
+    for (const hari of [1, 15, 28]) {
+      assert.equal(
+        kunciBulan(new Date(2026, bulan, hari)),
+        keTanggalKey(new Date(2026, bulan, 1)),
+        `gagal di ${bulan + 1} hari ${hari}`
+      );
+    }
+  }
+  // Bulan 31 hari boleh dipakai di bulan yang memang punya 31 hari.
+  assert.equal(kunciBulan(new Date(2026, 0, 31)), "2026-01-01");
+  assert.equal(kunciBulan(new Date(2026, 8, 30)), "2026-09-01");
+  assert.equal(kunciBulan(new Date(2026, 11, 31)), "2026-12-01");
+});
+
+cek("jarakBulan negatif ke belakang, nol untuk bulan yang sama", () => {
+  const bulanIni = new Date(2026, 8, 1);
+  assert.equal(jarakBulan(bulanIni, bulanIni), 0);
+  assert.equal(jarakBulan(bulanIni, geserBulan(bulanIni, 1)), 1);
+  assert.equal(jarakBulan(bulanIni, geserBulan(bulanIni, -1)), -1);
+  assert.equal(jarakBulan(bulanIni, geserBulan(bulanIni, 24)), 24);
+  assert.equal(jarakBulan(bulanIni, geserBulan(bulanIni, -24)), -24);
+});
+
+cek("jarakBulan mengabaikan hari, jadi batas navigasi tidak bergeser", () => {
+  // Batas dihitung dari tanggal 1. Kalau ikut hari, tanggal 30 bisa keluar
+  // jalur sebulan sooner atau lebih lambat tergantung tanggalnya.
+  const awal = new Date(2026, 8, 1);
+  for (const hari of [1, 2, 15, 30]) {
+    assert.equal(jarakBulan(awal, geserBulan(new Date(2026, 8, hari), 24)), 24, `hari ${hari}`);
+  }
+});
+
+cek("tanggalDariBulan menolak bentuk yang salah, bukan merolover diam-diam", () => {
+  for (const buruk of [
+    "",
+    "abc",
+    "2026",
+    "2026-",
+    "-09",
+    "2026-9",
+    "2026-09-01",
+    "2026-13",
+    "2026-00",
+    "2026-99",
+    "2026-09-15",
+    "2026/09",
+    "2026-09-01T00:00",
+    " 2026-09",
+    "2026-09 ",
+    "22026-09",
+    "abcd-ef",
+    "2026-0a"
+  ]) {
+    assert.equal(tanggalDariBulan(buruk), null, `harus ditolak: ${JSON.stringify(buruk)}`);
+  }
+});
+
+cek("tanggalDariBulan menerima bulan yang benar dan selalu tanggal 1", () => {
+  for (let bulan = 1; bulan <= 12; bulan += 1) {
+    const teks = `2026-${String(bulan).padStart(2, "0")}`;
+    const hasil = tanggalDariBulan(teks);
+    assert.ok(hasil, `harus diterima: ${teks}`);
+    assert.equal(keTanggalKey(hasil), `${teks}-01`, `tanggal bukan 1: ${teks}`);
+  }
+});
+
+cek("kunciBulan sesuai dengan grid bulan yang dibangun dari kunci itu", () => {
+  // Komponen memakai kunciBulan(today) sebagai bulan yang tampil, lalu
+  // buildGridBulan() menggambar gridnya. Keduanya harus sepakat soal bulan:
+  // grid untuk September tidak boleh memuat satu pun hari dari Oktober.
+  for (let i = -30; i <= 30; i += 1) {
+    const kunci = kunciBulan(geserBulan(new Date(2026, 8, 1), i));
+    const dalamBulan = buildGridBulan(tanggalDariKey(kunci)).flat().filter((s) => s.bulanIni);
+    const jumlahHari = new Date(2026, 8 + i + 1, 0).getDate();
+
+    assert.equal(dalamBulan[0].key, kunci, `awal bulan meleset pada geser ${i}`);
+    assert.equal(dalamBulan.length, jumlahHari, `jumlah hari meleset pada geser ${i}`);
+    for (const sel of dalamBulan) {
+      assert.ok(sel.key.startsWith(kunci.slice(0, 7)), `${sel.key} di luar bulan pada geser ${i}`);
     }
   }
 });

@@ -21,6 +21,15 @@ export const HARI_MINGGU = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];
 /** Jumlah baris tetap enam supaya tinggi kalender tidak bergeser tiap bulan. */
 export const BARIS_KALENDER = 6;
 
+/**
+ * Berapa bulan kalender publik boleh digeser dari bulan berjalan.
+ *
+ * Dipakai dua pihak: route /api/kalender menolak di luar batas ini, dan
+ * komponen mematikan tombol panahnya di ujung. Satu konstanta supaya keduanya
+ * tidak bisa berbeda.
+ */
+export const MAKS_GESER_BULAN = 24;
+
 export const BULAN_PANJANG = [
   "Januari",
   "Februari",
@@ -87,6 +96,47 @@ export function tanggalDariKey(key: string) {
 /** Tanggal lokal, digeser sejumlah hari. new Date() menormalkan roll over. */
 export function tambahHari(date: Date, jumlah: number) {
   return tanggalLokal(date.getFullYear(), date.getMonth(), date.getDate() + jumlah);
+}
+
+/**
+ * "YYYY-MM" dari query publik jadi tanggal 1 bulan itu, atau null kalau
+ * bentuknya salah.
+ *
+ * Ini satu-satunya pintu masuk tanggal dari luar, jadi validasinya ketat dan
+ * dilakukan di sini, di modul yang bebas dari framework, supaya route bisa
+ * memakainya tanpa menarik dependensi apa pun dan bisa diuji tanpa HTTP.
+ * new Date("2026-13") justru mengembalikan Invalid Date, bukan bulan ke-13,
+ * sehingga pola harus dicek lebih dulu.
+ */
+export function tanggalDariBulan(bulan: string) {
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(bulan)) return null;
+  return tanggalDariKey(`${bulan}-01`);
+}
+
+/** Tanggal 1 bulan yang memuat `date`. */
+export function awalBulan(date: Date) {
+  return tanggalLokal(date.getFullYear(), date.getMonth(), 1);
+}
+
+/**
+ * Tanggal 1 bulan, `jumlah` bulan dari `anchor`.
+ *
+ * new Date(y, m, 1) sudah menormalkan bulan 12 menjadi Januari tahun depan,
+ * jadi tidak perlu menghitung tahun sendiri. Selaluolah tanggal 1 supaya
+ * "Agustus 2026" tidak bergeser ke September hanya karena hari 31.
+ */
+export function geserBulan(anchor: Date, jumlah: number) {
+  return tanggalLokal(anchor.getFullYear(), anchor.getMonth() + jumlah, 1);
+}
+
+/** Kunci "YYYY-MM-01" dari tanggal mana pun. */
+export function kunciBulan(date: Date) {
+  return keTanggalKey(awalBulan(date));
+}
+
+/** Jarak bulan dari satu tanggal ke tanggal lain, negatif berarti ke belakang. */
+export function jarakBulan(dari: Date, sampai: Date) {
+  return (sampai.getFullYear() - dari.getFullYear()) * 12 + (sampai.getMonth() - dari.getMonth());
 }
 
 /** Senin pada minggu yang memuat tanggal tersebut. */

@@ -24,6 +24,7 @@ Proyek ini memakai Next.js 14 App Router, Prisma, MySQL, Tailwind CSS, JWT cooki
 - Email konfirmasi, email perubahan status, dan email perubahan data. Email perubahan data memuat daftar field yang berubah beserta nilai lama dan barunya. Jika SMTP belum diatur, email dicatat ke console.
 - Data yang dicatat manual ditandai `input_manually_entered` dan tidak pernah memicu email atau notifikasi WhatsApp, karena tidak ada email maupun nomor WhatsApp yang dikumpulkan. Kolom kontak juga tidak dibuka pada form ubah data untuk record seperti ini.
 - Notifikasi perubahan data dikirim lewat email dan WhatsApp, hanya bila ada field yang benar-benar berubah, dan bisa dimatikan lewat checkbox "Kirim notifikasi ke pemohon".
+- Hapus permohonan lewat tombol "Hapus Data" pada halaman detail, dengan dialog konfirmasi yang meminta admin mengetik HAPUS. Penghapusan bersifat permanen: record, riwayat status, dan berkas lampiran ikut terhapus, sehingga tidak ada jalur pembatalan di dalam aplikasi.
 - Rate limiting sederhana untuk submit, lacak, dan login.
 
 ## Persyaratan
@@ -63,7 +64,15 @@ npm run prisma:migrate
 npm run db:seed
 ```
 
-5. Jalankan aplikasi:
+5. Opsional: isi data contoh untuk mencoba dashboard, kalender, dan filter:
+
+```bash
+npm run db:seed:dummy                 # 24 record contoh, semua di bulan berjalan
+npm run db:seed:dummy -- --jumlah 40 # jumlah lain
+npm run db:seed:dummy -- --bersihkan # hapus lagi data contoh
+```
+
+6. Jalankan aplikasi:
 
 ```bash
 npm run dev
@@ -96,11 +105,13 @@ docker compose exec app npm run db:seed
 - `lib/permohonan-form.ts` - definisi field per jenis permohonan, dipakai bersama oleh form, skema validasi, dan route. Kolom database tiap field ikut didefinisikan di sini sebagai sumber tunggal untuk prefill form admin, payload update, dan diff notifikasi.
 - `lib/permohonan-record.ts` - satu-satunya tempat pemetaan jenis permohonan ke model Prisma dan tabel status history-nya, dipakai bersama oleh route, lib upload, dan halaman detail.
 - `lib/permohonan-edit.ts` - alur ubah data permohonan: validasi, payload kolom, penggantian lampiran, dan pencatatan riwayat perubahan.
+- `lib/permohonan-delete.ts` - alur hapus permohonan: penghapusan record, kebersihan lampiran, dan batasannya soal jejak audit.
 - `lib/permohonan-notify.ts` - pengiriman notifikasi email dan WhatsApp, dipakai bersama oleh perubahan status dan perubahan data.
 - `public/assets/` - logo UTM TV, favicon, dan gambar watermark.
 - `prisma/schema.prisma` - skema ORM.
 - `prisma/migrations/20260520000000_init/migration.sql` - migration SQL MySQL.
 - `prisma/seed.ts` - seed admin dari environment variable.
+- `scripts/seed-dummy.ts` - data contoh untuk mencoba aplikasi: 24 record di bulan berjalan, tersebar di keempat jenis, lengkap dengan lampiran PDF, riwayat status, dan satu record yang dicatat manual. Setiap record ditandai `[dummy]` pada `catatan_internal`, jadi `npm run db:seed:dummy -- --bersihkan` hanya menghapus data contoh dan tidak pernah menyentuh data asli.
 - `uploads/` - direktori upload lokal, tidak masuk git.
 
 ## Environment Variables

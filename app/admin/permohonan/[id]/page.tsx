@@ -17,6 +17,7 @@ import {
 import { StatusBadge, StatusIcon } from "@/components/StatusBadge";
 import { StatusForm } from "./StatusForm";
 import { UbahDataModal } from "./UbahDataModal";
+import { HapusDataModal } from "./HapusDataModal";
 
 export const dynamic = "force-dynamic";
 
@@ -234,6 +235,13 @@ export default async function DetailPermohonanPage({
               status={item.status}
               pesanPemohon={item.pesanPemohon}
               catatanInternal={item.catatanInternal}
+            />
+            <HapusDataModal
+              adaLampiran={adaLampiran}
+              id={item.id}
+              jenis={jenis}
+              namaAcara={item.namaAcara}
+              nomorRujukan={item.nomorRujukan}
             />
           </aside>
         </div>

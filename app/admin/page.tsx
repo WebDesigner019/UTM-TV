@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Search } from "lucide-react";
+import { CheckCircle2, Search } from "lucide-react";
 import { AdminHeader } from "@/components/AdminHeader";
 import { TambahDataModal } from "./TambahDataModal";
 import { getCurrentAdmin } from "@/lib/auth";
@@ -39,7 +39,7 @@ type UnifiedItem = {
 export default async function AdminPage({
   searchParams
 }: {
-  searchParams: { status?: string; q?: string; jenis?: string; page?: string };
+  searchParams: { status?: string; q?: string; jenis?: string; page?: string; terhapus?: string };
 }) {
   const admin = await getCurrentAdmin();
   if (!admin) redirect("/admin/login");
@@ -48,6 +48,10 @@ export default async function AdminPage({
   const q = searchParams.q?.trim();
   const jenis = searchParams.jenis || "semua";
   const page = Math.max(Number(searchParams.page || "1"), 1);
+  // Ditulis HapusDataModal setelah delete berhasil. Menempel di query param,
+  // bukan state, karena admin diarahkan ke dashboard lewat router.push dan
+  // halaman ini tidak punya tempat menyimpan toast.
+  const terhapus = searchParams.terhapus?.trim();
   const take = 15;
   const skip = (page - 1) * take;
 
@@ -231,6 +235,16 @@ export default async function AdminPage({
     <>
       <AdminHeader nama={admin.nama} />
       <main className="mx-auto max-w-6xl px-4 py-10">
+        {terhapus ? (
+          <div className="mb-6 flex items-start gap-3 rounded-2xl border border-emerald-200/80 bg-emerald-50/80 px-4 py-3.5">
+            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
+            <p className="text-sm text-emerald-800">
+              Permohonan <span className="font-semibold">{terhapus}</span> beserta riwayat
+              status dan lampirannya sudah dihapus permanen.
+            </p>
+          </div>
+        ) : null}
+
         <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
           <div>
             <h1 className="text-balance text-3xl font-bold tracking-tight text-ink sm:text-4xl">Dashboard Permohonan</h1>
