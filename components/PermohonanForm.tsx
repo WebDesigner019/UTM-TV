@@ -4,7 +4,14 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, BellRing, CheckCircle2, Send } from "lucide-react";
 import { FormField, FileInput, TextareaField } from "@/components/FormField";
-import { JENIS_TITLE, STATUS_LABEL, STATUS_OPTIONS, todayISO, type JenisPermohonan } from "@/lib/status";
+import {
+  JENIS_TITLE,
+  STATUS_AWAL_ADMIN,
+  STATUS_LABEL,
+  STATUS_OPTIONS,
+  todayISO,
+  type JenisPermohonan
+} from "@/lib/status";
 import {
   ACCEPT_DOC_IMAGE,
   ACCEPT_PDF,
@@ -269,7 +276,12 @@ export function PermohonanForm({
           <label className="mb-2 block text-[15px] font-semibold text-ink" htmlFor="status_awal">
             Status awal
           </label>
-          <select className="focus-ring input-field" defaultValue="diterima" id="status_awal" name="status_awal">
+          <select
+            className="focus-ring input-field"
+            defaultValue={STATUS_AWAL_ADMIN}
+            id="status_awal"
+            name="status_awal"
+          >
             {STATUS_OPTIONS.map((status) => (
               <option key={status} value={status}>
                 {STATUS_LABEL[status]}
@@ -277,7 +289,8 @@ export function PermohonanForm({
             ))}
           </select>
           <p className="mt-1.5 text-[13px] text-slate-500">
-            Pilih status sesuai kondisi saat data dicatat, bukan selalu &quot;Pengajuan masuk&quot;.
+            Bawaannya &quot;{STATUS_LABEL[STATUS_AWAL_ADMIN]}&quot;. Pilih status lain bila
+            data dicatat dengan kondisi yang berbeda.
           </p>
         </div>
       ) : null}

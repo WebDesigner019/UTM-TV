@@ -17,6 +17,19 @@ export const STATUS_LABEL: Record<StatusPermohonan, string> = {
   selesai: "Selesai"
 };
 
+/**
+ * Status bawaan saat admin mencatat pengajuan lewat "Tambah Data".
+ *
+ * Catatan manual biasanya untuk acara yang sudah lolos verifikasi, jadi
+ * bawaannya "disetujui" supaya langsung ikut tampil di kalender publik. Status
+ * lain masih bisa dipilih admin, dan form publik tetap tidak punya pilihan ini
+ * sehingga pengajuan dari pemohon selalu mulai sebagai "diterima".
+ *
+ * Satu konstanta dipakai bersama oleh select di form dan oleh route admin,
+ * karena select yang lupa diubah akan membuat tampilan dan database berbeda.
+ */
+export const STATUS_AWAL_ADMIN: StatusPermohonan = "disetujui";
+
 export const JENIS_LABEL: Record<JenisPermohonan, string> = {
   liputan: "liputan",
   media_partner: "media partner",

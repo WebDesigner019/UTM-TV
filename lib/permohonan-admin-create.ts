@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { STATUS_OPTIONS, type JenisPermohonan } from "@/lib/status";
+import { STATUS_AWAL_ADMIN, STATUS_OPTIONS, type JenisPermohonan } from "@/lib/status";
 import { PERMOHONAN_FORM } from "@/lib/permohonan-form";
 import { getSkemaAdmin, parsePayload } from "@/lib/permohonan-schema";
 import { createWithNomorRujukan } from "@/lib/permohonan-create";
@@ -28,7 +28,9 @@ export async function createPermohonanByAdmin(input: {
   const { jenis, formData, admin } = input;
   const config = PERMOHONAN_FORM[jenis];
 
-  const statusAwal = statusAwalSchema.safeParse(formData.get("status_awal") ?? "diterima");
+  // Fallback memakai konstanta yang sama dengan select di form, jadi field
+  // yang hilang dari FormData tidak diam-diam membuat status "diterima".
+  const statusAwal = statusAwalSchema.safeParse(formData.get("status_awal") ?? STATUS_AWAL_ADMIN);
   if (!statusAwal.success || !STATUS_OPTIONS.includes(statusAwal.data)) {
     throw new PermohonanCreateError("Status awal tidak valid.");
   }
