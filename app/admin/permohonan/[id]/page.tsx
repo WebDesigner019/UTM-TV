@@ -73,20 +73,20 @@ export default async function DetailPermohonanPage({
   return (
     <>
       <AdminHeader nama={admin.nama} />
-      <main className="mx-auto max-w-6xl px-4 py-10">
-        <Link className="text-sm font-semibold text-brand transition-colors hover:text-brand-hover" href="/admin">
+      <main className="mx-auto max-w-6xl px-4 py-8 sm:py-10">
+        <Link className="inline-flex items-center gap-1.5 py-2 text-sm font-semibold text-brand transition-colors hover:text-brand-hover" href="/admin">
           Kembali ke dashboard
         </Link>
         <div className="mt-5 grid gap-6 lg:grid-cols-[1fr_380px]">
-          <section className="space-y-6">
-            <div className="card p-6 sm:p-8">
+          <section className="order-1">
+            <div className="card p-5 sm:p-8">
               <div className="flex flex-col justify-between gap-3 border-b border-line/70 pb-5 sm:flex-row">
                 <div>
-                  <p className="text-[13px] font-medium uppercase tracking-wide text-slate-400">
-                    {item.nomorRujukan} · {jenisLabel}
+                  <p className="break-words text-sm font-medium uppercase tracking-wide text-slate-400 sm:text-[13px]">
+                    {item.nomorRujukan} Â· {jenisLabel}
                   </p>
                   {item.inputManuallyEntered ? (
-                    <p className="mt-1.5 inline-block rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                    <p className="mt-1.5 inline-block rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-slate-500 sm:text-[11px]">
                       Dicatat manual oleh admin
                     </p>
                   ) : null}
@@ -96,7 +96,7 @@ export default async function DetailPermohonanPage({
               </div>
 
               {jenis === "liputan" ? (
-                <dl className="mt-6 grid gap-x-8 gap-y-5 sm:grid-cols-2">
+                <dl className="mt-6 grid gap-x-0 gap-y-5 sm:grid-cols-2 sm:gap-x-8">
                   <Info label="Instansi" value={item.namaInstansi} />
                   {item.email ? <Info label="Email" value={item.email} /> : null}
                   {item.noWa ? <Info label="No. WhatsApp" value={item.noWa} /> : null}
@@ -108,7 +108,7 @@ export default async function DetailPermohonanPage({
                   {item.fileOriginalName ? <Info label="Nama file" value={item.fileOriginalName} /> : null}
                 </dl>
               ) : jenis === "peminjaman_podcast" ? (
-                <dl className="mt-6 grid gap-x-8 gap-y-5 sm:grid-cols-2">
+                <dl className="mt-6 grid gap-x-0 gap-y-5 sm:grid-cols-2 sm:gap-x-8">
                   <Info label="Nama Organisasi/Instansi" value={item.namaInstansi} />
                   {item.email ? <Info label="Email" value={item.email} /> : null}
                   <Info label="Nama Acara/Tujuan Peminjaman" value={item.namaAcara} />
@@ -121,7 +121,7 @@ export default async function DetailPermohonanPage({
                   <Info label="Diajukan" value={formatTanggalWaktu(item.createdAt)} />
                 </dl>
               ) : (
-                <dl className="mt-6 grid gap-x-8 gap-y-5 sm:grid-cols-2">
+                <dl className="mt-6 grid gap-x-0 gap-y-5 sm:grid-cols-2 sm:gap-x-8">
                   <Info label="Fakultas/Organisasi/Unit" value={item.fakultasOrganisasi} />
                   {item.email ? <Info label="Email" value={item.email} /> : null}
                   <Info label="Nama Acara" value={item.namaAcara} />
@@ -142,7 +142,7 @@ export default async function DetailPermohonanPage({
                   {fileRekom ? (
                     <div className="rounded-2xl border border-line/70 p-5">
                       <p className="text-sm font-semibold text-ink">Surat Rekomendasi BAKK</p>
-                      <p className="mt-0.5 truncate text-sm text-slate-400">{item.fileRekomBakkOriginalName}</p>
+                      <p className="mt-0.5 break-all text-sm text-slate-400">{item.fileRekomBakkOriginalName}</p>
                       <div className="mt-4 flex flex-wrap gap-3">
                         <a className="btn-secondary" href={`${fileUrl}&file=rekom`}>
                           <Download className="h-4 w-4" />
@@ -161,7 +161,7 @@ export default async function DetailPermohonanPage({
                   {filePernyataan ? (
                     <div className="rounded-2xl border border-line/70 p-5">
                       <p className="text-sm font-semibold text-ink">Surat Pernyataan</p>
-                      <p className="mt-0.5 truncate text-sm text-slate-400">{item.filePernyataanOriginalName}</p>
+                      <p className="mt-0.5 break-all text-sm text-slate-400">{item.filePernyataanOriginalName}</p>
                       <div className="mt-4 flex flex-wrap gap-3">
                         <a className="btn-secondary" href={`${fileUrl}&file=pernyataan`}>
                           <Download className="h-4 w-4" />
@@ -200,31 +200,9 @@ export default async function DetailPermohonanPage({
                 </p>
               )}
             </div>
-
-            <div className="card p-6 sm:p-8">
-              <h2 className="text-xl font-bold tracking-tight text-ink">Riwayat status</h2>
-              <div className="mt-5">
-                {item.statusHistory.map((history: any, index: number) => (
-                  <div key={history.id} className="relative flex gap-4 pb-6 last:pb-0">
-                    <div className="flex flex-col items-center">
-                      <span className="h-3 w-3 shrink-0 rounded-full bg-brand ring-4 ring-brand/15" />
-                      {index < item.statusHistory.length - 1 ? <span className="w-px flex-1 bg-line" /> : null}
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-medium text-ink"><StatusIcon status={history.statusBaru} /></div>
-                      <div className="mt-0.5 text-sm text-slate-400">
-                        {formatTanggalWaktu(history.createdAt)}
-                        {history.admin ? ` - ${history.admin.nama}` : " - Sistem"}
-                      </div>
-                      {history.pesan ? <p className="mt-1.5 text-sm leading-6 text-slate-600">{history.pesan}</p> : null}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
           </section>
 
-          <aside className="space-y-4">
+          <aside className="order-2 space-y-4 lg:order-none">
             <UbahDataModal
               currentFiles={currentFiles}
               defaultValues={defaultValues}
@@ -249,6 +227,32 @@ export default async function DetailPermohonanPage({
               nomorRujukan={item.nomorRujukan}
             />
           </aside>
+
+          <section className="order-3">
+            <div className="card p-5 sm:p-8">
+              <h2 className="text-lg font-bold tracking-tight text-ink sm:text-xl">Riwayat status</h2>
+              <div className="mt-5">
+                {item.statusHistory.map((history: any, index: number) => (
+                  <div key={history.id} className="relative flex gap-4 pb-6 last:pb-0">
+                    <div className="flex flex-col items-center">
+                      <span className="h-3 w-3 shrink-0 rounded-full bg-brand ring-4 ring-brand/15" />
+                      {index < item.statusHistory.length - 1 ? <span className="w-px flex-1 bg-line" /> : null}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium text-ink"><StatusIcon status={history.statusBaru} /></div>
+                      <div className="mt-0.5 text-sm text-slate-400">
+                        {formatTanggalWaktu(history.createdAt)}
+                        {history.admin ? ` - ${history.admin.nama}` : " - Sistem"}
+                      </div>
+                      {history.pesan ? (
+                        <p className="mt-1.5 break-words text-sm leading-6 text-slate-600">{history.pesan}</p>
+                      ) : null}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
         </div>
       </main>
     </>
@@ -259,7 +263,7 @@ function Info({ label, value }: { label: string; value?: string | null }) {
   return (
     <div>
       <dt className="text-sm text-slate-400">{label}</dt>
-      <dd className="mt-1 font-medium text-ink">{value || "-"}</dd>
+      <dd className="mt-1 break-words font-medium text-ink">{value || "-"}</dd>
     </div>
   );
 }

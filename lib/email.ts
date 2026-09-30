@@ -89,7 +89,7 @@ async function sendMail(
 
 function buildEmailHtml(content: string, logoCid?: string) {
   const logoHtml = logoCid
-    ? `<img src="cid:${logoCid}" alt="UTM-TV" style="max-width:130px;height:auto;display:block;margin:0 auto;" />`
+    ? `<img src="cid:${logoCid}" alt="COMPACT" style="max-width:130px;height:auto;display:block;margin:0 auto;" />`
     : "";
   return `<!DOCTYPE html>
 <html lang="id">
@@ -222,7 +222,7 @@ function buildEmailHtml(content: string, logoCid?: string) {
         ${content}
       </div>
       <div class="card-footer">
-        &copy; ${new Date().getFullYear()} UTM-TV &mdash; Lembaga Penyiaran Kampus Universitas Trunojoyo Madura
+        &copy; ${new Date().getFullYear()} COMPACT &mdash; Lembaga Penyiaran Kampus Universitas Trunojoyo Madura
       </div>
     </div>
   </div>
@@ -356,7 +356,7 @@ export async function sendPermohonanDiperbaruiEmail(input: {
   const lacakUrl = `${getAppUrl()}/lacak`;
 
   const text = [
-    `Data pengajuan ${jenisLabel} Anda diperbarui oleh tim UTM-TV.`,
+    `Data pengajuan ${jenisLabel} Anda diperbarui oleh tim COMPACT.`,
     "",
     `Nomor rujukan: ${input.nomorRujukan}`,
     `Nama acara: ${input.namaAcara}`,
@@ -381,7 +381,7 @@ export async function sendPermohonanDiperbaruiEmail(input: {
   const html = buildEmailHtml(`
     <div class="text-center">
       <h1>Data Permohonan Diperbarui</h1>
-      <p style="color:#64748b;font-size:15px;">Ada bagian dari pengajuan ${jenisLabel} Anda yang dikoreksi oleh tim UTM-TV.</p>
+      <p style="color:#64748b;font-size:15px;">Ada bagian dari pengajuan ${jenisLabel} Anda yang dikoreksi oleh tim COMPACT.</p>
     </div>
     <table class="info-table">
       <tr>
@@ -403,7 +403,7 @@ export async function sendPermohonanDiperbaruiEmail(input: {
       </tr>
       ${rows}
     </table>
-    <p style="font-size:14px;">Bila data ini tidak sesuai dengan keadaan sebenarnya, balas email ini atau hubungi UTM-TV.</p>
+    <p style="font-size:14px;">Bila data ini tidak sesuai dengan keadaan sebenarnya, balas email ini atau hubungi COMPACT.</p>
     <div class="text-center mt-16">
       <a href="${lacakUrl}" class="btn">Lacak Permohonan</a>
     </div>
@@ -496,13 +496,13 @@ export async function sendPermohonanDisetujuiEmail(input: {
     "",
     `Dengan keterangan: ${keterangan}`,
     "",
-    "Terima kasih, salam hangat UTM-TV."
+    "Terima kasih, salam hangat COMPACT."
   ].join("\n");
 
   const html = buildEmailHtml(`
     <div class="text-center">
       <h1>Pengajuan Disetujui</h1>
-      <p style="color:#64748b;font-size:15px;">Selamat! Pengajuan ${jenisLabel} Anda telah disetujui oleh tim UTM-TV.</p>
+      <p style="color:#64748b;font-size:15px;">Selamat! Pengajuan ${jenisLabel} Anda telah disetujui oleh tim COMPACT.</p>
     </div>
     <table class="info-table">
       <tr>
@@ -556,5 +556,5 @@ export async function sendAdminPasswordResetEmail(input: {
     <p style="font-size:12px;color:#64748b;word-break:break-all;">${input.resetUrl}</p>
   `, "logo");
 
-  await sendMail(input.email, "Reset password admin UTM TV", text, html, getLogoAttachment());
+  await sendMail(input.email, "Reset password admin COMPACT", text, html, getLogoAttachment());
 }

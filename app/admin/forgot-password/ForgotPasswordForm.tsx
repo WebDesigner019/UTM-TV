@@ -36,14 +36,27 @@ export function ForgotPasswordForm() {
       {message ? <div className="rounded-xl border border-teal-200/80 bg-teal-50/80 px-4 py-3 text-sm text-teal-800">{message}</div> : null}
       {error ? <div className="rounded-xl border border-red-200/80 bg-red-50/80 px-4 py-3 text-sm text-red-700">{error}</div> : null}
       <div>
-        <label className="mb-2 block text-[15px] font-semibold text-ink">Email admin</label>
-        <input className="focus-ring input-field" name="email" type="email" required />
+        <label className="mb-2 block text-[15px] font-semibold text-ink" htmlFor="forgot-email">
+          Email admin
+        </label>
+        <input
+          autoCapitalize="none"
+          autoComplete="email"
+          autoCorrect="off"
+          className="focus-ring input-field"
+          id="forgot-email"
+          inputMode="email"
+          name="email"
+          spellCheck={false}
+          type="email"
+          required
+        />
       </div>
-      <button className="btn-primary w-full py-3">
+      <button className="btn-primary w-full py-3" disabled={loading} type="submit">
         <Mail className="h-4 w-4" />
         {loading ? "Mengirim..." : "Kirim Tautan Reset"}
       </button>
-      <Link className="block text-center text-sm font-semibold text-brand transition-colors hover:text-brand-hover" href="/admin/login">
+      <Link className="block py-2 text-center text-sm font-semibold text-brand transition-colors hover:text-brand-hover" href="/admin/login">
         Kembali ke login
       </Link>
     </form>

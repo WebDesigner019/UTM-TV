@@ -241,10 +241,10 @@ export function KalenderPermohonan({
 
   return (
     <div className="card overflow-hidden">
-      <div className="flex items-center gap-1.5 border-b border-line/70 px-3 py-2 sm:px-4">
+      <div className="flex flex-wrap items-center gap-1.5 border-b border-line/70 px-3 py-2 sm:flex-nowrap sm:px-4">
         <button
           aria-label="Bulan sebelumnya"
-          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-line text-slate-500 transition-colors duration-150 hover:bg-white hover:text-ink disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
+          className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-line text-slate-500 transition-colors duration-150 hover:bg-white hover:text-ink disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent sm:h-8 sm:w-8"
           disabled={!bisaSebelumnya}
           onClick={() => geserBulanIni(-1)}
           type="button"
@@ -259,7 +259,7 @@ export function KalenderPermohonan({
         </h3>
         <button
           aria-label="Bulan berikutnya"
-          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-line text-slate-500 transition-colors duration-150 hover:bg-white hover:text-ink disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
+          className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-line text-slate-500 transition-colors duration-150 hover:bg-white hover:text-ink disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent sm:h-8 sm:w-8"
           disabled={!bisaBerikutnya}
           onClick={() => geserBulanIni(1)}
           type="button"
@@ -268,7 +268,7 @@ export function KalenderPermohonan({
         </button>
         {bulan !== bulanIni ? (
           <button
-            className="ml-1 shrink-0 rounded-lg border border-line px-2.5 py-1.5 text-xs font-medium text-slate-600 transition-colors duration-150 hover:bg-white hover:text-ink"
+            className="ml-1 shrink-0 rounded-lg border border-line px-3 py-2.5 text-sm font-medium text-slate-600 transition-colors duration-150 hover:bg-white hover:text-ink sm:px-2.5 sm:py-1.5 sm:text-xs"
             onClick={() => setBulan(bulanIni)}
             type="button"
           >
@@ -296,7 +296,7 @@ export function KalenderPermohonan({
               <button
                 key={jenis}
                 aria-pressed={aktif}
-                className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors duration-150 ${
+                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-2 text-sm font-medium transition-colors duration-150 sm:px-2.5 sm:py-1 sm:text-xs ${
                   aktif ? gaya.chipClass : "border-line bg-white/70 text-slate-500"
                 } ${terkunci ? "cursor-not-allowed opacity-60" : ""}`}
                 onClick={() => toggleJenis(jenis)}
@@ -315,14 +315,14 @@ export function KalenderPermohonan({
 
       <div
         aria-busy={memuat}
-        className={`px-2 pb-2 pt-2.5 transition-opacity duration-150 sm:px-3 ${
+        className={`px-1.5 pb-2 pt-2.5 transition-opacity duration-150 sm:px-3 ${
           memuat ? "pointer-events-none opacity-60" : ""
         }`}
       >
         <div className="grid grid-cols-7 border-b border-line/70 pb-1.5">
           {HARI_MINGGU.map((hari) => (
             <div
-              className={`text-center text-[10px] font-semibold uppercase tracking-wide ${
+              className={`text-center text-[11px] font-semibold uppercase tracking-wide sm:text-[10px] ${
                 hari === "Min" ? "text-slate-400" : "text-slate-500"
               }`}
               key={hari}
@@ -334,7 +334,7 @@ export function KalenderPermohonan({
 
         <div className="mt-1 flex flex-col gap-1">
           {barisTerpakai.map((baris) => (
-            <div className="grid flex-1 grid-cols-7 gap-1" key={`baris-${baris[0].key}`}>
+            <div className="grid flex-1 grid-cols-7 gap-0.5 sm:gap-1" key={`baris-${baris[0].key}`}>
               {baris.map((sel) => {
                 const list = eventPerTanggal.get(sel.key) ?? [];
                 const kosong = list.length === 0;
@@ -360,7 +360,7 @@ export function KalenderPermohonan({
                     aria-label={`${formatTanggal(tanggalDariKey(sel.key))}${
                       kosong ? ", tanpa pengajuan" : `, ${jumlah} pengajuan: ${ringkas.join(", ")}`
                     }`}
-                    className={`flex h-[70px] flex-col overflow-hidden rounded-lg border p-1 text-left transition-colors duration-150 ${
+                    className={`flex h-[52px] flex-col overflow-hidden rounded-lg border p-1 text-left transition-colors duration-150 sm:h-[70px] ${
                       kosong
                         ? "cursor-default border-transparent bg-transparent"
                         : "cursor-pointer border-line/70 bg-white/80 hover:border-brand/50 hover:bg-white"
@@ -402,7 +402,7 @@ export function KalenderPermohonan({
                         >
                           {isi.map(({ jenis, n }) => (
                             <span
-                              className={`flex h-3.5 w-3.5 items-center justify-center rounded-[3px] text-[9px] font-bold leading-none text-white ${JENIS_KALENDER[jenis].petakClass}`}
+                              className={`flex h-4 w-4 items-center justify-center rounded-[3px] text-[10px] font-bold leading-none text-white sm:h-3.5 sm:w-3.5 sm:text-[9px] ${JENIS_KALENDER[jenis].petakClass}`}
                               key={jenis}
                               title={`${JENIS_KALENDER[jenis].label}: ${n}`}
                             >
@@ -441,7 +441,7 @@ export function KalenderPermohonan({
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-line/70 px-4 py-2.5 text-[11px] text-slate-500 sm:px-6">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-line/70 px-4 py-2.5 text-xs text-slate-500 sm:px-6 sm:text-[11px]">
         {JENIS_OPTIONS.map((jenis) => (
           <span className="inline-flex items-center gap-1.5" key={jenis}>
             {/* Kunci warna untuk kedua tampilan: di ponsel bentuknya sama
@@ -451,7 +451,7 @@ export function KalenderPermohonan({
             {JENIS_KALENDER[jenis].label}
           </span>
         ))}
-        <span className="ml-auto">Klik satu hari untuk melihat rinciannya.</span>
+        <span className="w-full sm:ml-auto sm:w-auto">Klik satu hari untuk melihat rinciannya.</span>
       </div>
 
       {/* Modal dirender lewat portal ke document.body, bukan tetap di dalam
@@ -485,16 +485,16 @@ export function KalenderPermohonan({
         ? createPortal(
             <div
               aria-modal="true"
-              className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ink/40 p-4 backdrop-blur-sm sm:items-center"
+              className="modal-overlay"
               onClick={(event) => {
                 if (event.target === event.currentTarget) tutupModal();
               }}
               role="dialog"
             >
-              <div className="card my-auto w-full max-w-2xl">
-                <div className="flex items-start justify-between gap-4 border-b border-line/70 px-6 py-5">
-                  <div>
-                    <h3 className="text-xl font-bold tracking-tight text-ink">
+              <div className="modal-panel max-w-2xl">
+                <div className="modal-header">
+                  <div className="min-w-0">
+                    <h3 className="text-lg font-bold tracking-tight text-ink sm:text-xl">
                       {formatTanggal(tanggalDariKey(hariDipilih))}
                     </h3>
                     <p className="mt-1 text-sm text-slate-500">
@@ -503,7 +503,7 @@ export function KalenderPermohonan({
                   </div>
                   <button
                     aria-label="Tutup"
-                    className="shrink-0 rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-ink"
+                    className="modal-close"
                     onClick={tutupModal}
                     ref={tombolTutupRef}
                     type="button"
@@ -512,7 +512,7 @@ export function KalenderPermohonan({
                   </button>
                 </div>
 
-                <div className="max-h-[65vh] space-y-3 overflow-y-auto px-6 py-5">
+                <div className="modal-body space-y-3">
                   {eventHariTerpilih.length === 0 ? (
                     <p className="py-6 text-center text-sm text-slate-500">
                       Belum ada pengajuan yang disetujui atau selesai pada hari ini.
@@ -526,7 +526,9 @@ export function KalenderPermohonan({
                           key={event.key}
                         >
                           <div className="flex items-start justify-between gap-3">
-                            <p className="font-semibold leading-snug text-ink">{event.namaAcara}</p>
+                            <p className="min-w-0 break-words font-semibold leading-snug text-ink">
+                              {event.namaAcara}
+                            </p>
                             <span
                               className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold ${gaya.chipClass}`}
                             >
@@ -535,27 +537,29 @@ export function KalenderPermohonan({
                           </div>
                           <dl className="mt-3 space-y-1.5 text-sm text-slate-600">
                             <div className="flex gap-2">
-                              <dt className="w-28 shrink-0 text-slate-400">Instansi</dt>
-                              <dd className="font-medium">{event.namaInstansi || "-"}</dd>
+                              <dt className="w-24 shrink-0 text-slate-400 sm:w-28">Instansi</dt>
+                              <dd className="min-w-0 break-words font-medium">
+                                {event.namaInstansi || "-"}
+                              </dd>
                             </div>
                             <div className="flex gap-2">
-                              <dt className="w-28 shrink-0 text-slate-400">
+                              <dt className="w-24 shrink-0 text-slate-400 sm:w-28">
                                 {event.jenis === "peminjaman_podcast" ? "Tanggal pinjam" : "Tanggal"}
                               </dt>
-                              <dd className="font-medium">
+                              <dd className="min-w-0 break-words font-medium">
                                 {formatTanggal(tanggalDariKey(event.tanggal))}
                               </dd>
                             </div>
                             {event.tempatAcara ? (
                               <div className="flex gap-2">
-                                <dt className="w-28 shrink-0 text-slate-400">Tempat</dt>
-                                <dd className="font-medium">{event.tempatAcara}</dd>
+                                <dt className="w-24 shrink-0 text-slate-400 sm:w-28">Tempat</dt>
+                                <dd className="min-w-0 break-words font-medium">{event.tempatAcara}</dd>
                               </div>
                             ) : null}
                             {event.waktu ? (
                               <div className="flex gap-2">
-                                <dt className="w-28 shrink-0 text-slate-400">Waktu</dt>
-                                <dd className="font-medium">{event.waktu}</dd>
+                                <dt className="w-24 shrink-0 text-slate-400 sm:w-28">Waktu</dt>
+                                <dd className="min-w-0 break-words font-medium">{event.waktu}</dd>
                               </div>
                             ) : null}
                           </dl>

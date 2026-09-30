@@ -97,31 +97,26 @@ export function HapusDataModal({
 
       {open ? (
         <div
+          aria-label="Hapus Permohonan"
           aria-modal="true"
-          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ink/40 p-4 backdrop-blur-sm sm:items-center"
+          className="modal-overlay"
           onClick={onOverlayClick}
           role="dialog"
         >
-          <div className="card my-auto w-full max-w-lg">
-            <div className="flex items-start justify-between gap-4 border-b border-line/70 px-6 py-5">
-              <div>
-                <h2 className="text-xl font-bold tracking-tight text-ink">Hapus Permohonan?</h2>
-                <p className="mt-1 text-sm text-slate-500">
+          <div className="modal-panel max-w-lg">
+            <div className="modal-header">
+              <div className="min-w-0">
+                <h2 className="text-lg font-bold tracking-tight text-ink sm:text-xl">Hapus Permohonan?</h2>
+                <p className="mt-1 break-words text-sm text-slate-500">
                   {nomorRujukan} &middot; {JENIS_TITLE[jenis]}
                 </p>
               </div>
-              <button
-                aria-label="Tutup"
-                className="shrink-0 rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-ink disabled:opacity-50"
-                disabled={loading}
-                onClick={close}
-                type="button"
-              >
+              <button aria-label="Tutup" className="modal-close" disabled={loading} onClick={close} type="button">
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            <div className="px-6 py-6">
+            <div className="modal-body">
               <div className="flex gap-3 rounded-2xl border border-red-200/80 bg-red-50/70 px-4 py-4">
                 <TriangleAlert className="h-5 w-5 shrink-0 text-red-600" />
                 <p className="text-sm leading-6 text-red-800">
@@ -163,7 +158,7 @@ export function HapusDataModal({
                   Batal
                 </button>
                 <button
-                  className="inline-flex items-center justify-center gap-2 rounded-full bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:bg-red-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:bg-red-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                   disabled={!siapHapus}
                   onClick={onHapus}
                   type="button"

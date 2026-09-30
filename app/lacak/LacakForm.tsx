@@ -74,12 +74,15 @@ export function LacakForm() {
 
   return (
     <div className="space-y-6">
-      <form onSubmit={onSubmit} className="card space-y-5 p-6 sm:p-8">
+      <form onSubmit={onSubmit} className="card space-y-5 p-5 sm:p-8">
         {error ? <div className="rounded-xl border border-red-200/80 bg-red-50/80 px-4 py-3 text-sm text-red-700">{error}</div> : null}
         <div>
-          <label className="mb-2 block text-[15px] font-semibold text-ink">Jenis pengajuan</label>
+          <label className="mb-2 block text-[15px] font-semibold text-ink" htmlFor="lacak-jenis">
+            Jenis pengajuan
+          </label>
           <select
             className="focus-ring input-field"
+            id="lacak-jenis"
             name="jenis_permohonan"
             defaultValue="liputan"
             onChange={(event) => setJenis(event.target.value)}
@@ -93,13 +96,36 @@ export function LacakForm() {
           </select>
         </div>
         <div>
-          <label className="mb-2 block text-[15px] font-semibold text-ink">Nomor rujukan</label>
-          <input className="focus-ring input-field uppercase" name="nomor_rujukan" required />
+          <label className="mb-2 block text-[15px] font-semibold text-ink" htmlFor="lacak-nomor">
+            Nomor rujukan
+          </label>
+          <input
+            autoCapitalize="characters"
+            autoComplete="off"
+            className="focus-ring input-field uppercase"
+            id="lacak-nomor"
+            name="nomor_rujukan"
+            required
+            spellCheck={false}
+          />
         </div>
         {jenis === "liputan" ? (
           <div>
-            <label className="mb-2 block text-[15px] font-semibold text-ink">Email kampus</label>
-            <input className="focus-ring input-field" name="email" type="email" required />
+            <label className="mb-2 block text-[15px] font-semibold text-ink" htmlFor="lacak-email">
+              Email kampus
+            </label>
+            <input
+              autoCapitalize="none"
+              autoComplete="email"
+              autoCorrect="off"
+              className="focus-ring input-field"
+              id="lacak-email"
+              inputMode="email"
+              name="email"
+              spellCheck={false}
+              type="email"
+              required
+            />
           </div>
         ) : null}
         <button className="btn-primary w-full py-3 sm:w-52">
@@ -109,12 +135,16 @@ export function LacakForm() {
       </form>
 
       {result ? (
-        <section className="card p-6 sm:p-8">
-          <div className="flex flex-col justify-between gap-3 border-b border-line/70 pb-5 sm:flex-row">
-            <div>
-              <p className="text-[13px] font-medium uppercase tracking-wide text-slate-400">{result.nomorRujukan}</p>
-              <h2 className="mt-1 text-2xl font-bold tracking-tight text-ink">{result.namaAcara}</h2>
-              <p className="mt-1.5 text-[15px] text-slate-500">
+        <section className="card p-5 sm:p-8">
+          <div className="flex flex-col justify-between gap-3 border-b border-line/70 pb-5 sm:flex-row sm:items-start">
+            <div className="min-w-0">
+              <p className="break-all text-sm font-medium uppercase tracking-wide text-slate-400">
+                {result.nomorRujukan}
+              </p>
+              <h2 className="mt-1 text-xl font-bold tracking-tight text-ink sm:text-2xl">
+                {result.namaAcara}
+              </h2>
+              <p className="mt-1.5 break-words text-[15px] text-slate-500">
                 {result.namaInstansi || result.fakultasOrganisasi || "-"}
                 {result.tanggalAcara ? ` - ${formatTanggal(result.tanggalAcara)}` : ""}
                 {result.waktuAcara ? ` - ${result.waktuAcara}` : ""}
@@ -123,11 +153,17 @@ export function LacakForm() {
                 {result.waktuMulai && result.waktuSelesai ? ` - ${result.waktuMulai} - ${result.waktuSelesai}` : ""}
                 {result.tempatAcara ? ` - ${result.tempatAcara}` : ""}
               </p>
-              {result.noWa ? <p className="text-sm text-slate-400">WA: {result.noWa}</p> : null}
-              {result.kontakPenanggungJawab ? <p className="text-sm text-slate-400">Kontak: {result.kontakPenanggungJawab}</p> : null}
-              {result.noteDetail ? <p className="text-sm text-slate-400">Note: {result.noteDetail}</p> : null}
+              {result.noWa ? <p className="break-all text-sm text-slate-400">WA: {result.noWa}</p> : null}
+              {result.kontakPenanggungJawab ? (
+                <p className="break-words text-sm text-slate-400">Kontak: {result.kontakPenanggungJawab}</p>
+              ) : null}
+              {result.noteDetail ? (
+                <p className="mt-1 break-words text-sm text-slate-400">Note: {result.noteDetail}</p>
+              ) : null}
             </div>
-            <StatusBadge status={result.status} />
+            <div className="shrink-0">
+              <StatusBadge status={result.status} />
+            </div>
           </div>
 
           {result.pesanPemohon ? (

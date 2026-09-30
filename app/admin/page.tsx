@@ -330,7 +330,7 @@ export default async function AdminPage({
   return (
     <>
       <AdminHeader nama={admin.nama} />
-      <main className="mx-auto max-w-6xl px-4 py-10">
+      <main className="mx-auto max-w-6xl px-4 py-8 sm:py-10">
         {terhapus ? (
           <div className="mb-6 flex items-start gap-3 rounded-2xl border border-emerald-200/80 bg-emerald-50/80 px-4 py-3.5">
             <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
@@ -341,65 +341,64 @@ export default async function AdminPage({
           </div>
         ) : null}
 
-        <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
-          <div>
-            <h1 className="text-balance text-3xl font-bold tracking-tight text-ink sm:text-4xl">Dashboard Permohonan</h1>
-            <p className="mt-2 text-slate-500">
-              Kelola permohonan liputan, media partner, kerjasama, dan peminjaman ruang podcast yang masuk.
-            </p>
-          </div>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <TambahDataModal
-              filterAktif={Boolean(status) || jenis !== "semua" || Boolean(q) || urut !== "terbaru"}
-            />
-            <form className="flex flex-col gap-2 sm:flex-row">
-              <select className="input-field sm:w-auto" name="jenis" defaultValue={jenis}>
-                {JENIS_OPTIONS.map((item) => (
-                  <option key={item.value} value={item.value}>
-                    {item.label}
-                  </option>
-                ))}
-              </select>
-              <select className="input-field sm:w-auto" name="status" defaultValue={status || ""}>
-                <option value="">Semua status</option>
-                {STATUS_OPTIONS.map((item) => (
-                  <option key={item} value={item}>
-                    {STATUS_LABEL[item]}
-                  </option>
-                ))}
-              </select>
-              <select className="input-field sm:w-auto" name="urut" defaultValue={urut}>
-                {URUTAN.map((item) => (
-                  <option key={item.value} value={item.value}>
-                    {item.label}
-                  </option>
-                ))}
-              </select>
-              <div className="relative">
-                <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                <input
-                  className="input-field pl-10"
-                  name="q"
-                  defaultValue={q}
-                  placeholder="Cari permohonan"
-                />
-              </div>
-              <button className="btn-primary sm:w-auto">Filter</button>
-            </form>
-          </div>
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <TambahDataModal
+            filterAktif={Boolean(status) || jenis !== "semua" || Boolean(q) || urut !== "terbaru"}
+          />
+          <form className="flex flex-wrap items-center gap-2">
+            <select className="input-field w-full sm:w-auto sm:min-w-[11rem]" name="jenis" defaultValue={jenis}>
+              {JENIS_OPTIONS.map((item) => (
+                <option key={item.value} value={item.value}>
+                  {item.label}
+                </option>
+              ))}
+            </select>
+            <select className="input-field w-full sm:w-auto sm:min-w-[11rem]" name="status" defaultValue={status || ""}>
+              <option value="">Semua status</option>
+              {STATUS_OPTIONS.map((item) => (
+                <option key={item} value={item}>
+                  {STATUS_LABEL[item]}
+                </option>
+              ))}
+            </select>
+            <select className="input-field w-full sm:w-auto sm:min-w-[10rem]" name="urut" defaultValue={urut}>
+              {URUTAN.map((item) => (
+                <option key={item.value} value={item.value}>
+                  {item.label}
+                </option>
+              ))}
+            </select>
+            <div className="relative w-full min-w-0 sm:w-56 sm:flex-1">
+              <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <input
+                className="input-field pl-10"
+                name="q"
+                defaultValue={q}
+                placeholder="Cari permohonan"
+                type="search"
+              />
+            </div>
+            <button className="btn-primary w-full sm:w-auto" type="submit">
+              Filter
+            </button>
+          </form>
         </div>
 
-        <div className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div className="mt-6 grid grid-cols-1 gap-3 sm:mt-8 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
           {STATUS_OPTIONS.map((item) => (
-            <div key={item} className="card p-6">
-              <div className="text-3xl font-bold tracking-tight text-ink">{countMap[item] || 0}</div>
-              <div className="mt-2"><StatusBadge status={item} /></div>
+            <div key={item} className="card flex items-center justify-between gap-3 p-4 sm:block sm:p-6">
+              <div className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">
+                {countMap[item] || 0}
+              </div>
+              <div className="sm:mt-2">
+                <StatusBadge status={item} />
+              </div>
             </div>
           ))}
         </div>
 
         {/* Mobile card layout */}
-        <div className="mt-8 space-y-3 md:hidden">
+        <div className="mt-6 space-y-3 sm:mt-8 lg:hidden">
           {items.length === 0 ? (
             <div className="card p-8 text-center text-slate-500">
               Belum ada data permohonan.
@@ -412,19 +411,21 @@ export default async function AdminPage({
                 className="card block p-5 transition-colors duration-150 hover:bg-white/90"
               >
                 <div className="flex items-start justify-between gap-2">
-                  <div className="font-semibold text-brand">
+                  {/* min-w-0 + break-words: tanpa keduanya nomor rujukan dan tag
+                      Manual mendorong StatusBadge keluar dari kartu. */}
+                  <div className="min-w-0 break-words font-semibold text-brand">
                     {item.nomorRujukan}
                     {item.inputManuallyEntered ? (
-                      <span className="ml-2 align-middle text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                      <span className="ml-2 align-middle text-xs font-semibold uppercase tracking-wide text-slate-400 sm:text-[11px]">
                         Manual
                       </span>
                     ) : null}
                   </div>
                   <StatusBadge status={item.status} />
                 </div>
-                <div className="mt-2 font-semibold text-ink">{item.namaAcara}</div>
-                <div className="mt-1 text-sm text-slate-500">{item.instansi}</div>
-                <div className="mt-1 text-sm text-slate-400">
+                <div className="mt-2 break-words font-semibold text-ink">{item.namaAcara}</div>
+                <div className="mt-1 break-words text-sm text-slate-500">{item.instansi}</div>
+                <div className="mt-1 break-words text-sm text-slate-400">
                   {item.tanggal ? formatTanggal(item.tanggal) : "-"}
                   {item.waktu ? ` · ${item.waktu}` : ""} · {JENIS_TITLE_SHORT[item.jenis as keyof typeof JENIS_TITLE_SHORT]}
                 </div>
@@ -434,18 +435,18 @@ export default async function AdminPage({
         </div>
 
         {/* Desktop table */}
-        <div className="card mt-8 hidden overflow-hidden md:block">
+        <div className="card mt-6 hidden overflow-hidden sm:mt-8 lg:block">
           <div className="overflow-x-auto">
             <table className="min-w-full text-left text-[15px]">
               <thead className="bg-slate-100/70 text-sm font-semibold text-slate-500">
                 <tr>
-                  <th className="px-6 py-3.5">Nomor</th>
-                  <th className="px-6 py-3.5">Acara</th>
-                  <th className="px-6 py-3.5">Instansi</th>
-                  <th className="px-6 py-3.5">Jenis</th>
-                  <th className="px-6 py-3.5">Tanggal</th>
-                  <th className="px-6 py-3.5">Waktu</th>
-                  <th className="px-6 py-3.5">Status</th>
+                  <th className="px-3 py-3.5 lg:px-6">Nomor</th>
+                  <th className="px-3 py-3.5 lg:px-6">Acara</th>
+                  <th className="px-3 py-3.5 lg:px-6">Instansi</th>
+                  <th className="px-3 py-3.5 lg:px-6">Jenis</th>
+                  <th className="px-3 py-3.5 lg:px-6">Tanggal</th>
+                  <th className="px-3 py-3.5 lg:px-6">Waktu</th>
+                  <th className="px-3 py-3.5 lg:px-6">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-line/70 bg-white">
@@ -454,7 +455,7 @@ export default async function AdminPage({
                     key={`${item.jenis}-${item.id}`}
                     className="relative cursor-pointer transition-colors duration-150 hover:bg-slate-50/80"
                   >
-                    <td className="px-6 py-4 font-medium">
+                    <td className="px-3 py-4 font-medium lg:px-6">
                       <Link
                         className="absolute inset-0"
                         href={`/admin/permohonan/${item.id}?jenis=${item.jenis}`}
@@ -462,17 +463,21 @@ export default async function AdminPage({
                       />
                       {item.nomorRujukan}
                       {item.inputManuallyEntered ? (
-                        <span className="ml-2 align-middle text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                        <span className="ml-2 align-middle text-xs font-semibold uppercase tracking-wide text-slate-400 sm:text-[11px]">
                           Manual
                         </span>
                       ) : null}
                     </td>
-                    <td className="px-6 py-4">{item.namaAcara}</td>
-                    <td className="px-6 py-4">{item.instansi}</td>
-                    <td className="px-6 py-4">{JENIS_TITLE_SHORT[item.jenis as keyof typeof JENIS_TITLE_SHORT]}</td>
-                    <td className="px-6 py-4">{item.tanggal ? formatTanggal(item.tanggal) : "-"}</td>
-                    <td className="px-6 py-4">{item.waktu || "-"}</td>
-                    <td className="px-6 py-4"><StatusBadge status={item.status} /></td>
+                    <td className="px-3 py-4 lg:px-6">{item.namaAcara}</td>
+                    <td className="px-3 py-4 lg:px-6">{item.instansi}</td>
+                    <td className="px-3 py-4 lg:px-6">
+                      {JENIS_TITLE_SHORT[item.jenis as keyof typeof JENIS_TITLE_SHORT]}
+                    </td>
+                    <td className="px-3 py-4 lg:px-6">{item.tanggal ? formatTanggal(item.tanggal) : "-"}</td>
+                    <td className="px-3 py-4 lg:px-6">{item.waktu || "-"}</td>
+                    <td className="px-3 py-4 lg:px-6">
+                      <StatusBadge status={item.status} />
+                    </td>
                   </tr>
                 ))}
                 {items.length === 0 ? (

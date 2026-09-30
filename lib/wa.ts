@@ -41,7 +41,7 @@ export async function sendWaToUser(input: {
   const keterangan = input.pesan || "-";
 
   const message = [
-    `Hi Tretan UTM!👋`,
+    `Hi Tretan COMPACT!👋`,
     `pengajuan liputan anda telah disetujui:`,
     `nama acara: ${input.namaAcara}`,
     `tempat: ${input.tempatAcara}`,
@@ -54,7 +54,7 @@ export async function sendWaToUser(input: {
     `dengan keterangan:`,
     `${keterangan}`,
     ``,
-    `terimakasih, salam hangat UTM-TV.`
+    `terimakasih, salam hangat COMPACT.`
   ].join("\n");
 
   await sendFonnte(token, input.noWa, message);
@@ -76,7 +76,7 @@ export async function sendWaMediaPartnerToUser(input: {
   const keterangan = input.pesan || "-";
 
   const message = [
-    `Hi Tretan UTM!👋`,
+    `Hi Tretan COMPACT!👋`,
     `pengajuan media partner anda telah disetujui:`,
     `nama acara: ${input.namaAcara}`,
     `tanggal request upload: ${tanggal}`,
@@ -85,7 +85,7 @@ export async function sendWaMediaPartnerToUser(input: {
     `dengan keterangan:`,
     `${keterangan}`,
     ``,
-    `terimakasih, salam hangat UTM-TV.`
+    `terimakasih, salam hangat COMPACT.`
   ].join("\n");
 
   await sendFonnte(token, input.noWa, message);
@@ -107,7 +107,7 @@ export async function sendWaKerjasamaToUser(input: {
   const keterangan = input.pesan || "-";
 
   const message = [
-    `Hi Tretan UTM!👋`,
+    `Hi Tretan COMPACT!👋`,
     `pengajuan kerjasama anda telah disetujui:`,
     `nama acara: ${input.namaAcara}`,
     `tanggal request upload: ${tanggal}`,
@@ -116,7 +116,7 @@ export async function sendWaKerjasamaToUser(input: {
     `dengan keterangan:`,
     `${keterangan}`,
     ``,
-    `terimakasih, salam hangat UTM-TV.`
+    `terimakasih, salam hangat COMPACT.`
   ].join("\n");
 
   await sendFonnte(token, input.noWa, message);
@@ -139,7 +139,7 @@ export async function sendWaPeminjamanPodcastToUser(input: {
   const keterangan = input.pesan || "-";
 
   const message = [
-    `Hi Tretan UTM!👋`,
+    `Hi Tretan COMPACT!👋`,
     `pengajuan peminjaman ruang podcast anda telah disetujui:`,
     `nama acara: ${input.namaAcara}`,
     `tanggal: ${formatTanggal(input.tanggalPeminjaman)}`,
@@ -149,7 +149,7 @@ export async function sendWaPeminjamanPodcastToUser(input: {
     `dengan keterangan:`,
     `${keterangan}`,
     ``,
-    `terimakasih, salam hangat UTM-TV.`
+    `terimakasih, salam hangat COMPACT.`
   ].join("\n");
 
   await sendFonnte(token, input.noWa, message);
@@ -173,7 +173,7 @@ export async function sendWaStatusChangedToUser(input: {
   const keterangan = input.pesan || "-";
 
   const message = [
-    `Hi Tretan UTM!👋`,
+    `Hi Tretan COMPACT!👋`,
     `status pengajuan ${jenisLabel} anda telah diperbarui.`,
     `nama acara: ${input.namaAcara}`,
     `status: ${statusLabel}`,
@@ -181,7 +181,7 @@ export async function sendWaStatusChangedToUser(input: {
     `dengan keterangan:`,
     `${keterangan}`,
     ``,
-    `terimakasih, salam hangat UTM-TV.`
+    `terimakasih, salam hangat COMPACT.`
   ].join("\n");
 
   await sendFonnte(token, input.noWa, message);
@@ -209,8 +209,8 @@ export async function sendWaDataDiperbaruiToUser(input: {
   const jenisLabel = JENIS_LABEL[input.jenis];
 
   const message = [
-    `Hi Tretan UTM!👋`,
-    `data pengajuan ${jenisLabel} anda diperbarui oleh tim UTM-TV.`,
+    `Hi Tretan COMPACT!👋`,
+    `data pengajuan ${jenisLabel} anda diperbarui oleh tim COMPACT.`,
     `nomor rujukan: ${input.nomorRujukan}`,
     `nama acara: ${input.namaAcara}`,
     ``,
@@ -218,7 +218,7 @@ export async function sendWaDataDiperbaruiToUser(input: {
     ...input.perubahan.map((item) => `- ${item.label}: "${item.dari}" -> "${item.ke}"`),
     ``,
     `bila ini tidak sesuai, hubungi kami ya.`,
-    `terimakasih, salam hangat UTM-TV.`
+    `terimakasih, salam hangat COMPACT.`
   ].join("\n");
 
   await sendFonnte(token, input.noWa, message);
@@ -245,7 +245,7 @@ export async function sendWaGroupNotification(input: {
   }
 
   const message = [
-    "Hi UTM-TV!",
+    "Hi COMPACT!",
     "ada permohonan pengajuan liputan berikut detailnya:",
     "",
     `nama instansi: ${input.namaInstansi}`,
@@ -275,7 +275,7 @@ export async function sendWaGroupNotificationMediaPartner(input: {
   }
 
   const message = [
-    "Hi UTM-TV!",
+    "Hi COMPACT!",
     "ada permohonan pengajuan media partner berikut detailnya:",
     "",
     `fakultas/organisasi: ${input.fakultasOrganisasi}`,
@@ -301,7 +301,7 @@ export async function sendWaGroupNotificationKerjasama(input: {
   }
 
   const message = [
-    "Hi UTM-TV!",
+    "Hi COMPACT!",
     "ada permohonan pengajuan kerjasama berikut detailnya:",
     "",
     `fakultas/organisasi: ${input.fakultasOrganisasi}`,
@@ -331,7 +331,7 @@ export async function sendWaGroupNotificationPeminjamanPodcast(input: {
   }
 
   const message = [
-    "Hi UTM-TV!",
+    "Hi COMPACT!",
     "ada permohonan peminjaman ruang podcast berikut detailnya:",
     "",
     `nama instansi/organisasi: ${input.namaInstansi}`,

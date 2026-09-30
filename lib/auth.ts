@@ -34,7 +34,13 @@ export function setAdminCookie(token: string) {
 }
 
 export function clearAdminCookie() {
-  cookies().delete(COOKIE_NAME);
+  cookies().set(COOKIE_NAME, "", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 0
+  });
 }
 
 export async function getCurrentAdmin() {

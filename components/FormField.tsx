@@ -99,7 +99,7 @@ export function TextareaField({
         required={required}
         rows={rows}
       />
-      {hint ? <p className="mt-1.5 text-[13px] text-slate-500">{hint}</p> : null}
+      {hint ? <p className="mt-1.5 text-sm text-slate-500 sm:text-[13px]">{hint}</p> : null}
     </div>
   );
 }
@@ -112,7 +112,9 @@ export function FormField({
   min,
   required = true,
   hint,
-  defaultValue
+  defaultValue,
+  autoComplete,
+  inputMode
 }: {
   label: string;
   name: string;
@@ -122,6 +124,10 @@ export function FormField({
   required?: boolean;
   hint?: string;
   defaultValue?: string;
+  /** Petunjuk isian otomatis browser, mis. "email" atau "name". */
+  autoComplete?: string;
+  /** Papan tombol yang benar di ponsel, mis. "tel" atau "numeric". */
+  inputMode?: "text" | "tel" | "email" | "numeric" | "url" | "search";
 }) {
   return (
     <div>
@@ -129,16 +135,18 @@ export function FormField({
         {label}
       </label>
       <input
+        autoComplete={autoComplete}
         className="focus-ring input-field"
         defaultValue={defaultValue}
         id={name}
+        inputMode={inputMode}
         name={name}
         type={type}
         placeholder={placeholder}
         min={min}
         required={required}
       />
-      {hint ? <p className="mt-1.5 text-[13px] text-slate-500">{hint}</p> : null}
+      {hint ? <p className="mt-1.5 text-sm text-slate-500 sm:text-[13px]">{hint}</p> : null}
     </div>
   );
 }
@@ -231,7 +239,7 @@ export function FileInput({
         {label}
       </label>
       {modeGanti && !file ? (
-        <p className="mb-2 text-[13px] leading-5 text-slate-500">
+        <p className="mb-2 text-sm leading-5 text-slate-500 sm:text-[13px]">
           <span className="font-semibold text-ink">Lampiran saat ini: {currentFileName}.</span>{" "}
           Biarkan kosong bila tidak ingin menggantinya.
         </p>
@@ -294,13 +302,14 @@ export function FileInput({
             </div>
 
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-ink" title={file.name}>
-                {file.name}
-              </p>
-              <p className="mt-0.5 text-[13px] text-slate-500">
+              {/* break-all, bukan truncate: di 360px nama berkas hanya terlihat
+                  sekitar 12 karakter kalau dipotong satu baris, dan title tidak
+                  pernah terbaca di layar sentuh. */}
+              <p className="break-all text-sm font-semibold leading-5 text-ink">{file.name}</p>
+              <p className="mt-0.5 text-sm text-slate-500 sm:text-[13px]">
                 {getTypeLabel(file)} &middot; {formatBytes(file.size)}
               </p>
-              <p className="mt-0.5 flex items-center gap-1 text-[13px] font-medium text-emerald-600">
+              <p className="mt-0.5 flex items-center gap-1 text-sm font-medium text-emerald-600 sm:text-[13px]">
                 <CheckCircle2 className="h-3.5 w-3.5" />
                 {modeGanti ? "Siap menggantikan lampiran" : "Siap diunggah"}
               </p>
@@ -308,9 +317,8 @@ export function FileInput({
 
             <button
               aria-label={`Hapus berkas ${file.name}`}
-              className="shrink-0 rounded-full p-1.5 text-slate-400 transition-colors duration-200 hover:bg-red-50 hover:text-red-600"
+              className="shrink-0 rounded-full p-2.5 text-slate-400 transition-colors duration-200 hover:bg-red-50 hover:text-red-600 sm:p-1.5"
               onClick={clearFile}
-              title="Hapus berkas"
               type="button"
             >
               <X className="h-4 w-4" />
@@ -327,29 +335,35 @@ export function FileInput({
             <span className="text-sm font-semibold text-ink">
               {modeGanti ? "Pilih berkas untuk mengganti lampiran" : "Pilih berkas untuk diunggah"}
             </span>
-            <span className="text-[13px] text-slate-500">atau tarik &amp; lepas berkas ke sini</span>
+            {/* Drag-and-drop tidak ada artinya di layar sentuh, jadi petunjuknya
+                disembunyikan di bawah sm supaya tidak memakan baris di ponsel. */}
+            <span className="hidden text-sm text-slate-500 sm:inline">
+              atau tarik &amp; lepas berkas ke sini
+            </span>
           </label>
         )}
 
         {file ? (
           <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-line/70 pt-3">
             <button
-              className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-brand transition-colors duration-200 hover:text-brand-hover"
+              className="inline-flex items-center gap-1.5 py-2 text-sm font-semibold text-brand transition-colors duration-200 hover:text-brand-hover sm:py-0 sm:text-[13px]"
               onClick={() => inputRef.current?.click()}
               type="button"
             >
               <RotateCcw className="h-3.5 w-3.5" />
               Ganti berkas
             </button>
-            <span className="text-[13px] text-slate-400">
+            <span className="text-sm text-slate-400 sm:text-[13px]">
               Maksimal {maxSizeMb} MB &middot; {describeAccept(accept)}
             </span>
           </div>
         ) : null}
       </div>
 
-      {error ? <p className="mt-2 text-[13px] font-medium text-red-600">{error}</p> : null}
-      {!error && hint ? <p className="mt-2 text-[13px] text-slate-500">{hint}</p> : null}
+      {error ? (
+        <p className="mt-2 text-sm font-medium text-red-600 sm:text-[13px]">{error}</p>
+      ) : null}
+      {!error && hint ? <p className="mt-2 text-sm text-slate-500 sm:text-[13px]">{hint}</p> : null}
     </div>
   );
 }

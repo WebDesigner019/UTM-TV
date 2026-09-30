@@ -33,7 +33,7 @@ export async function saveUploadedFile(file: File, options: UploadOptions = {}) 
   const extension = path.extname(originalName).toLowerCase();
 
   if (options.pdfOnly) {
-    if (extension !== ".pdf" && (file.type !== "application/pdf" && !file.type.includes("pdf"))) {
+    if (extension !== ".pdf" || file.type !== "application/pdf") {
       throw new Error("Format file harus PDF.");
     }
   } else if (!allowedExtensions.has(extension) || !allowedMimeTypes.has(file.type)) {

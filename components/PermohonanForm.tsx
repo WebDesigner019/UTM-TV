@@ -135,7 +135,7 @@ export function PermohonanForm({
   onSuccess,
   showStatusAwal = false,
   onBack,
-  className = "card space-y-5 p-6 sm:p-8",
+  className = "card space-y-5 p-5 sm:p-8",
   submitLabel
 }: Props) {
   const router = useRouter();
@@ -234,7 +234,7 @@ export function PermohonanForm({
       ) : null}
 
       {isAdmin ? (
-        <div className="rounded-xl border border-brand/25 bg-brand/5 px-4 py-3 text-[13px] leading-5 text-ink">
+        <div className="rounded-xl border border-brand/25 bg-brand/5 px-4 py-3 text-sm leading-5 text-ink sm:text-[13px]">
           Data dicatat atas nama admin, tanpa email, nomor WhatsApp, maupun lampiran surat. Karena
           tidak ada kontak pemohon, tidak ada notifikasi email atau WhatsApp yang dikirim untuk data
           ini.
@@ -242,7 +242,7 @@ export function PermohonanForm({
       ) : null}
 
       {isEdit ? (
-        <div className="rounded-xl border border-brand/25 bg-brand/5 px-4 py-3 text-[13px] leading-5 text-ink">
+        <div className="rounded-xl border border-brand/25 bg-brand/5 px-4 py-3 text-sm leading-5 text-ink sm:text-[13px]">
           {tanpaNotifikasi
             ? "Data ini dicatat manual oleh admin dan tidak punya kontak pemohon, jadi tidak ada email atau WhatsApp yang dikirim."
             : "Nomor rujukan dan status tidak diubah dari sini. Setelah disimpan, pemohon diberi tahu melalui email dan WhatsApp dengan daftar field yang berubah."}
@@ -252,7 +252,7 @@ export function PermohonanForm({
       {isEdit && !tanpaNotifikasi ? (
         <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-white/70 px-4 py-3">
           <input
-            className="mt-1 h-4 w-4 shrink-0 rounded border-line text-brand focus:ring-brand"
+            className="mt-0.5 h-5 w-5 shrink-0 rounded border-line text-brand focus:ring-brand"
             defaultChecked
             name="kirim_notifikasi"
             type="checkbox"
@@ -263,7 +263,7 @@ export function PermohonanForm({
               <BellRing className="h-4 w-4 text-brand" />
               Kirim notifikasi ke pemohon
             </span>
-            <span className="mt-0.5 block text-[13px] leading-5 text-slate-500">
+            <span className="mt-0.5 block text-sm leading-5 text-slate-500 sm:text-[13px]">
               Berisi daftar field yang berubah. Lepas centang bila hanya ingin menyimpan tanpa
               memberi tahu.
             </span>
@@ -288,7 +288,7 @@ export function PermohonanForm({
               </option>
             ))}
           </select>
-          <p className="mt-1.5 text-[13px] text-slate-500">
+          <p className="mt-1.5 text-sm text-slate-500 sm:text-[13px]">
             Bawaannya &quot;{STATUS_LABEL[STATUS_AWAL_ADMIN]}&quot;. Pilih status lain bila
             data dicatat dengan kondisi yang berbeda.
           </p>
@@ -322,7 +322,7 @@ export function PermohonanForm({
             {isEdit ? "Batal" : "Ganti jenis"}
           </button>
         ) : null}
-        <button className="btn-primary py-3 sm:w-52" disabled={loading} type="submit">
+        <button className="btn-primary w-full py-3 sm:w-52" disabled={loading} type="submit">
           {isAdmin || isEdit ? <CheckCircle2 className="h-4 w-4" /> : <Send className="h-4 w-4" />}
           {loading ? "Menyimpan..." : label}
         </button>

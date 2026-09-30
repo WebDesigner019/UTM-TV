@@ -44,19 +44,39 @@ export function ResetPasswordForm({ token }: { token: string }) {
       {message ? <div className="rounded-xl border border-teal-200/80 bg-teal-50/80 px-4 py-3 text-sm text-teal-800">{message}</div> : null}
       {error ? <div className="rounded-xl border border-red-200/80 bg-red-50/80 px-4 py-3 text-sm text-red-700">{error}</div> : null}
       <div>
-        <label className="mb-2 block text-[15px] font-semibold text-ink">Password baru</label>
-        <input className="focus-ring input-field" name="password" type="password" minLength={8} required />
+        <label className="mb-2 block text-[15px] font-semibold text-ink" htmlFor="password-baru">
+          Password baru
+        </label>
+        <input
+          autoComplete="new-password"
+          className="focus-ring input-field"
+          id="password-baru"
+          minLength={8}
+          name="password"
+          type="password"
+          required
+        />
       </div>
       <div>
-        <label className="mb-2 block text-[15px] font-semibold text-ink">Konfirmasi password</label>
-        <input className="focus-ring input-field" name="confirm_password" type="password" minLength={8} required />
+        <label className="mb-2 block text-[15px] font-semibold text-ink" htmlFor="konfirmasi-password">
+          Konfirmasi password
+        </label>
+        <input
+          autoComplete="new-password"
+          className="focus-ring input-field"
+          id="konfirmasi-password"
+          minLength={8}
+          name="confirm_password"
+          type="password"
+          required
+        />
       </div>
-      <button className="btn-primary w-full py-3">
+      <button className="btn-primary w-full py-3" disabled={loading} type="submit">
         <KeyRound className="h-4 w-4" />
         {loading ? "Menyimpan..." : "Simpan Password Baru"}
       </button>
       {message ? (
-        <Link className="block text-center text-sm font-semibold text-brand transition-colors hover:text-brand-hover" href="/admin/login">
+        <Link className="block py-2 text-center text-sm font-semibold text-brand transition-colors hover:text-brand-hover" href="/admin/login">
           Masuk dengan password baru
         </Link>
       ) : null}

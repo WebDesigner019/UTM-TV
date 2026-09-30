@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Eye, X } from "lucide-react";
+import { useModalDismiss } from "@/components/useModalDismiss";
 
 type Props = {
   id: number;
@@ -13,61 +15,74 @@ type Props = {
 
 export function PreviewSurat({ id, jenis, fileOriginalName, fileMimeType, file }: Props) {
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  const close = useCallback(() => setOpen(false), []);
+  useModalDismiss(open, close);
+
+  useEffect(() => setMounted(true), []);
 
   const isPreviewable =
     fileMimeType === "application/pdf" || fileMimeType.startsWith("image/");
 
   if (!isPreviewable) {
     return (
-      <span
-        className="inline-flex cursor-not-allowed items-center gap-2 rounded-full border border-line px-5 py-2.5 text-sm font-semibold text-slate-400"
-        title="Pratinjau tidak tersedia untuk file ini"
-      >
-        <Eye className="h-4 w-4" />
-        Lihat Surat
+      <span className="block">
+        <span
+          aria-disabled="true"
+          className="inline-flex cursor-not-allowed items-center gap-2 rounded-full border border-line px-5 py-2.5 text-sm font-semibold text-slate-400"
+        >
+          <Eye className="h-4 w-4" />
+          Lihat Surat
+        </span>
+        {/* Bukan title: di layar sentuh title tidak pernah terbaca, jadi
+            keterangan ini ditulis sebagai teks yang selalu terlihat. */}
+        <span className="mt-1.5 block text-sm text-slate-400 sm:text-[13px]">
+          Pratinjau hanya tersedia untuk berkas PDF dan gambar.
+        </span>
       </span>
     );
   }
 
   return (
     <>
-      <button
-        onClick={() => setOpen(true)}
-        className="btn-secondary"
-      >
+      <button className="btn-secondary" onClick={() => setOpen(true)} type="button">
         <Eye className="h-4 w-4" />
         Lihat Surat
       </button>
 
-      {open && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
-          onClick={() => setOpen(false)}
-        >
-          <div
-            className="flex h-full w-full max-w-5xl flex-col overflow-hidden rounded-3xl bg-white shadow-elevated"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between border-b border-line/70 px-6 py-4">
-              <h3 className="truncate font-semibold text-ink">{fileOriginalName}</h3>
-              <button
-                onClick={() => setOpen(false)}
-                className="rounded-full p-2 transition-colors duration-150 hover:bg-slate-100"
-                aria-label="Tutup pratinjau"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            <div className="flex-1">
-              <iframe
-                src={`/api/admin/permohonan/${id}/file/preview?jenis=${jenis}${file ? `&file=${file}` : ""}`}
-                className="h-full w-full"
-                title={fileOriginalName}
-              />
-            </div>
-          </div>
-        </div>
-      )}
+      {open && mounted
+        ? createPortal(
+            <div
+              aria-label={`Pratinjau ${fileOriginalName}`}
+              aria-modal="true"
+              className="modal-overlay"
+              onClick={(event) => {
+                if (event.target === event.currentTarget) close();
+              }}
+              role="dialog"
+            >
+              <div className="modal-panel max-w-5xl">
+                <div className="modal-header">
+                  <h3 className="min-w-0 flex-1 break-words font-semibold text-ink">
+                    {fileOriginalName}
+                  </h3>
+                  <button aria-label="Tutup pratinjau" className="modal-close" onClick={close} type="button">
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+                <div className="modal-body p-0">
+                  <iframe
+                    className="h-full min-h-[60vh] w-full sm:min-h-0"
+                    src={`/api/admin/permohonan/${id}/file/preview?jenis=${jenis}${file ? `&file=${file}` : ""}`}
+                    title={fileOriginalName}
+                  />
+                </div>
+              </div>
+            </div>,
+            document.body
+          )
+        : null}
     </>
   );
 }

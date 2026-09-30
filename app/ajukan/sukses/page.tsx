@@ -11,15 +11,17 @@ export default function SuksesPage({ searchParams }: { searchParams: { nomor?: s
     <>
       <CampusWatermark />
       <PublicNav />
-      <main className="mx-auto max-w-2xl px-4 py-16 text-center">
+      <main className="mx-auto max-w-2xl px-4 py-12 text-center sm:py-16">
         <span className="tile-icon mx-auto h-16 w-16">
           <CheckCircle2 className="h-8 w-8" />
         </span>
         <p className="mt-6 text-sm font-semibold uppercase tracking-widest text-brand">Permohonan terkirim</p>
-        <h1 className="mt-3 text-balance text-4xl font-bold tracking-tight text-ink">Simpan nomor rujukan Anda</h1>
-        <div className="card mt-8 p-10">
-          <div className="break-all text-4xl font-bold tracking-tight text-ink">{nomor}</div>
-          <p className="mt-4 leading-7 text-slate-500">
+        <h1 className="mt-3 text-balance text-2xl font-bold tracking-tight text-ink sm:text-3xl lg:text-4xl">
+          Simpan nomor rujukan Anda
+        </h1>
+        <div className="card mt-8 p-6 sm:p-10">
+          <div className="break-all text-2xl font-bold tracking-tight text-ink sm:text-4xl">{nomor}</div>
+          <p className="mt-4 text-[15px] leading-7 text-slate-500 sm:text-base">
             {butuhEmail
               ? "Nomor ini diperlukan untuk mengecek status permohonan bersama email kampus yang digunakan saat pengajuan."
               : "Nomor ini diperlukan untuk mengecek status permohonan Anda."}

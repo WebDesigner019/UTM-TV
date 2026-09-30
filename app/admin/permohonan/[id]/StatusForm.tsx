@@ -50,12 +50,19 @@ export function StatusForm({
   }
 
   return (
-    <form onSubmit={onSubmit} className="card space-y-5 p-6">
-      <h2 className="text-xl font-bold tracking-tight text-ink">Ubah status</h2>
+    <form onSubmit={onSubmit} className="card space-y-5 p-5 sm:p-6">
+      <h2 className="text-lg font-bold tracking-tight text-ink sm:text-xl">Ubah status</h2>
       {error ? <div className="rounded-xl border border-red-200/80 bg-red-50/80 px-4 py-3 text-sm text-red-700">{error}</div> : null}
       <div>
-        <label className="mb-2 block text-[15px] font-semibold text-ink">Status</label>
-        <select className="focus-ring input-field" name="status" defaultValue={status}>
+        <label className="mb-2 block text-[15px] font-semibold text-ink" htmlFor="status-permohonan">
+          Status
+        </label>
+        <select
+          className="focus-ring input-field"
+          defaultValue={status}
+          id="status-permohonan"
+          name="status"
+        >
           {STATUS_OPTIONS.map((item) => (
             <option key={item} value={item}>
               {STATUS_LABEL[item]}
@@ -64,24 +71,30 @@ export function StatusForm({
         </select>
       </div>
       <div>
-        <label className="mb-2 block text-[15px] font-semibold text-ink">Pesan untuk pemohon</label>
+        <label className="mb-2 block text-[15px] font-semibold text-ink" htmlFor="pesan-pemohon">
+          Pesan untuk pemohon
+        </label>
         <textarea
           className="focus-ring input-field min-h-28"
+          id="pesan-pemohon"
           name="pesan_pemohon"
           defaultValue={pesanPemohon || ""}
           placeholder="Pesan ini tampil di halaman lacak dan dikirim melalui email."
         />
       </div>
       <div>
-        <label className="mb-2 block text-[15px] font-semibold text-ink">Catatan internal</label>
+        <label className="mb-2 block text-[15px] font-semibold text-ink" htmlFor="catatan-internal">
+          Catatan internal
+        </label>
         <textarea
           className="focus-ring input-field min-h-28"
+          id="catatan-internal"
           name="catatan_internal"
           defaultValue={catatanInternal || ""}
           placeholder="Catatan ini hanya terlihat oleh admin."
         />
       </div>
-      <button className="btn-primary w-full">
+      <button className="btn-primary w-full" disabled={loading} type="submit">
         <Save className="h-4 w-4" />
         {loading ? "Menyimpan..." : "Simpan Perubahan"}
       </button>

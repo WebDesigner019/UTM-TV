@@ -54,32 +54,28 @@ export function TambahDataModal({ filterAktif }: { filterAktif: boolean }) {
 
       {open ? (
         <div
+          aria-label="Tambah Data Permohonan"
           aria-modal="true"
-          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ink/40 p-4 backdrop-blur-sm sm:items-center"
+          className="modal-overlay"
           onClick={(event) => {
             if (event.target === event.currentTarget) close();
           }}
           role="dialog"
         >
-          <div className="card my-auto w-full max-w-3xl">
-            <div className="flex items-start justify-between gap-4 border-b border-line/70 px-6 py-5">
+          <div className="modal-panel">
+            <div className="modal-header">
               <div>
-                <h2 className="text-xl font-bold tracking-tight text-ink">Tambah Data Permohonan</h2>
+                <h2 className="text-lg font-bold tracking-tight text-ink sm:text-xl">Tambah Data Permohonan</h2>
                 <p className="mt-1 text-sm text-slate-500">
                   Catat pengajuan yang diterima di luar formulir publik.
                 </p>
               </div>
-              <button
-                aria-label="Tutup"
-                className="shrink-0 rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-ink"
-                onClick={close}
-                type="button"
-              >
+              <button aria-label="Tutup" className="modal-close" onClick={close} type="button">
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            <div className="max-h-[70vh] overflow-y-auto px-6 py-6">
+            <div className="modal-body">
               {step.name === "pilih" ? (
                 <div className="grid gap-3 sm:grid-cols-2">
                   {JENIS_OPTIONS.map((jenis) => {
@@ -96,7 +92,7 @@ export function TambahDataModal({ filterAktif }: { filterAktif: boolean }) {
                         </span>
                         <span className="min-w-0">
                           <span className="block font-semibold text-ink">{JENIS_TITLE_SHORT[jenis]}</span>
-                          <span className="mt-1 block text-[13px] leading-5 text-slate-500">
+                          <span className="mt-1 block text-sm leading-5 text-slate-500 sm:text-[13px]">
                             {JENIS_DESCRIPTION[jenis]}
                           </span>
                         </span>

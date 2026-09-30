@@ -12,7 +12,7 @@ const prisma = new PrismaClient();
 async function main() {
   const email = (process.env.ADMIN_SEED_EMAIL || "admin@trunojoyo.ac.id").toLowerCase();
   const password = process.env.ADMIN_SEED_PASSWORD;
-  const nama = process.env.ADMIN_SEED_NAME || "Admin UTM TV";
+  const nama = process.env.ADMIN_SEED_NAME || "Admin COMPACT";
 
   if (!password || password === "change-me") {
     throw new Error("ADMIN_SEED_PASSWORD wajib diisi dengan nilai aman sebelum menjalankan seed.");

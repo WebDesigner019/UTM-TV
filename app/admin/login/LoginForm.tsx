@@ -40,18 +40,40 @@ export function LoginForm() {
     <form onSubmit={onSubmit} className="space-y-4">
       {error ? <div className="rounded-xl border border-red-200/80 bg-red-50/80 px-4 py-3 text-sm text-red-700">{error}</div> : null}
       <div>
-        <label className="mb-2 block text-[15px] font-semibold text-ink">Email admin</label>
-        <input className="focus-ring input-field" name="email" type="email" required />
+        <label className="mb-2 block text-[15px] font-semibold text-ink" htmlFor="login-email">
+          Email admin
+        </label>
+        <input
+          autoCapitalize="none"
+          autoComplete="email"
+          autoCorrect="off"
+          className="focus-ring input-field"
+          id="login-email"
+          inputMode="email"
+          name="email"
+          spellCheck={false}
+          type="email"
+          required
+        />
       </div>
       <div>
-        <label className="mb-2 block text-[15px] font-semibold text-ink">Password</label>
-        <input className="focus-ring input-field" name="password" type="password" required />
+        <label className="mb-2 block text-[15px] font-semibold text-ink" htmlFor="login-password">
+          Password
+        </label>
+        <input
+          autoComplete="current-password"
+          className="focus-ring input-field"
+          id="login-password"
+          name="password"
+          type="password"
+          required
+        />
       </div>
-      <button className="btn-primary w-full py-3">
+      <button className="btn-primary w-full py-3" disabled={loading} type="submit">
         <LogIn className="h-4 w-4" />
         {loading ? "Masuk..." : "Masuk"}
       </button>
-      <Link className="block text-center text-sm font-semibold text-brand transition-colors hover:text-brand-hover" href="/admin/forgot-password">
+      <Link className="block py-2 text-center text-sm font-semibold text-brand transition-colors hover:text-brand-hover" href="/admin/forgot-password">
         Lupa password?
       </Link>
     </form>

@@ -29,7 +29,7 @@ services:
       SESSION_SECRET: ganti-dengan-rahasia-cookie
       ADMIN_SEED_EMAIL: admin@trunojoyo.ac.id
       ADMIN_SEED_PASSWORD: change-me-please
-      ADMIN_SEED_NAME: Admin UTM TV
+      ADMIN_SEED_NAME: Admin COMPACT
       UPLOAD_DIR: /app/uploads
       MAX_FILE_SIZE_MB: "10"
       APP_URL: http://localhost:3000
