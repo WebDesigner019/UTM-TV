@@ -109,7 +109,7 @@ export default async function Home() {
           </section>
         ) : null}
 
-        <section className="mx-auto max-w-6xl px-4 py-16">
+        <section id="pilih-jenis" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-16">
           <h2 data-reveal className="text-balance text-3xl font-bold tracking-tight text-ink md:text-4xl">Pilih Jenis Pengajuan</h2>
           <p data-reveal className="mt-3 text-lg text-slate-500">Pilih salah satu jenis pengajuan sesuai kebutuhan Anda bersama UTM TV.</p>
           <div className="mt-10 grid gap-5 md:grid-cols-4" data-reveal-group>
@@ -151,10 +151,7 @@ export default async function Home() {
               Terima kasih telah menggunakan layanan pengajuan UTM TV.
               Kami siap membantu menghadirkan publikasi terbaik untuk acara Anda.
             </p>
-            <div data-reveal className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
-              <Link href="/ajukan" className="btn-primary px-7 py-3">
-                Ajukan Permohonan <ArrowRight className="h-4 w-4" />
-              </Link>
+            <div data-reveal className="mt-10 flex justify-center">
               <Link href="/lacak" className="btn-secondary px-7 py-3">
                 <Search className="h-4 w-4" /> Cek Status Permohonan
               </Link>

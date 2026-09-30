@@ -1,11 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import Image from "next/image";
+
+const AJUKAN_TARGET = "/#pilih-jenis";
 
 export function PublicNav() {
   const [scrolled, setScrolled] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -13,6 +17,37 @@ export function PublicNav() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  useEffect(() => {
+    if (pathname !== "/") return;
+    if (window.location.hash !== "#pilih-jenis") return;
+
+    // Beranda baru dirender saat navigasi dari halaman lain, jadi targetnya
+    // dicari setelah frame supaya elemen section sudah ada di DOM.
+    const raf = requestAnimationFrame(() => {
+      document.getElementById("pilih-jenis")?.scrollIntoView({ block: "start" });
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [pathname]);
+
+  /**
+   * Tombol "Ajukan" membawa pengguna ke beranda lalu ke section "Pilih Jenis
+   * Pengajuan". Kalau sedang sudah di beranda, scroll dilakukan manual supaya
+   * elemen dengan animasi reveal sudah ikut ter-scroll trigger.
+   */
+  const onAjukanClick = useCallback(
+    (event: React.MouseEvent<HTMLAnchorElement>) => {
+      if (pathname !== "/") return;
+
+      const target = document.getElementById("pilih-jenis");
+      if (!target) return;
+
+      event.preventDefault();
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+      window.history.replaceState(null, "", AJUKAN_TARGET);
+    },
+    [pathname]
+  );
 
   return (
     <header
@@ -43,7 +78,8 @@ export function PublicNav() {
           </Link>
           <Link
             className="rounded-full bg-brand px-4 py-2 font-medium text-white shadow-sm transition-all duration-200 hover:bg-brand-hover hover:shadow-elevated active:scale-[0.98]"
-            href="/ajukan"
+            href={AJUKAN_TARGET}
+            onClick={onAjukanClick}
           >
             Ajukan
           </Link>
