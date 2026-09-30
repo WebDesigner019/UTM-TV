@@ -13,9 +13,11 @@ export class PermohonanCreateError extends Error {}
  * Membuat satu record permohonan atas nama admin.
  *
  * Berbeda dengan alur publik: tidak ada email, tidak ada nomor WhatsApp, tidak
- * ada lampiran surat, tidak ada validasi domain kampus, dan tidak ada email
- * maupun notifikasi WhatsApp yang dikirim. Karena itu kolom file_* dibiarkan
- * null dan kolom kontak diisi null.
+ * ada kontak penanggung jawab, tidak ada lampiran surat, tidak ada validasi
+ * domain kampus, dan tidak ada email maupun notifikasi WhatsApp yang dikirim.
+ * Karena itu kolom file_* dan kolom kontak yang nullable dibiarkan null. Kolom
+ * kontak penanggung jawab tidak nullable di ketiga tabel, jadi diisi string
+ * kosong yang berarti "tidak ada kontak".
  *
  * Record ditandai input_manually_entered supaya notifikasi pada perubahan
  * status berikutnya juga dilewati.
@@ -73,7 +75,7 @@ export async function createPermohonanByAdmin(input: {
       fakultasOrganisasi: payload.fakultas_organisasi,
       email: null,
       namaAcara: payload.nama_acara,
-      kontakPenanggungJawab: payload.kontak_penanggung_jawab,
+      kontakPenanggungJawab: payload.kontak_penanggung_jawab ?? "",
       status: statusAwal.data,
       inputManuallyEntered: true,
       statusHistory: { create: initialHistory }
@@ -114,7 +116,7 @@ export async function createPermohonanByAdmin(input: {
         tanggalPeminjaman: new Date(payload.tanggal_peminjaman),
         waktuMulai: payload.waktu_mulai,
         waktuSelesai: payload.waktu_selesai,
-        kontakPenanggungJawab: payload.kontak_penanggung_jawab,
+        kontakPenanggungJawab: payload.kontak_penanggung_jawab ?? "",
         noteDetail: payload.note_detail,
         email: null,
         status: statusAwal.data,

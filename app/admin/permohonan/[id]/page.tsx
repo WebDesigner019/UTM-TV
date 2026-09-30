@@ -113,7 +113,9 @@ export default async function DetailPermohonanPage({
                   <Info label="Nama Acara/Tujuan Peminjaman" value={item.namaAcara} />
                   <Info label="Tanggal Peminjaman" value={formatTanggal(item.tanggalPeminjaman)} />
                   <Info label="Waktu" value={`${item.waktuMulai} - ${item.waktuSelesai}`} />
-                  <Info label="Kontak Penanggung Jawab" value={item.kontakPenanggungJawab} />
+                  {item.kontakPenanggungJawab ? (
+                    <Info label="Kontak Penanggung Jawab" value={item.kontakPenanggungJawab} />
+                  ) : null}
                   {item.noteDetail ? <Info label="Note Detail" value={item.noteDetail} /> : null}
                   <Info label="Diajukan" value={formatTanggalWaktu(item.createdAt)} />
                 </dl>
@@ -126,7 +128,9 @@ export default async function DetailPermohonanPage({
                     label="Hari dan Tanggal Request Upload"
                     value={item.tanggalRequestUpload ? formatTanggal(item.tanggalRequestUpload) : "-"}
                   />
-                  <Info label="Kontak Penanggung Jawab" value={item.kontakPenanggungJawab} />
+                  {item.kontakPenanggungJawab ? (
+                    <Info label="Kontak Penanggung Jawab" value={item.kontakPenanggungJawab} />
+                  ) : null}
                   <Info label="Diajukan" value={formatTanggalWaktu(item.createdAt)} />
                   {item.fileOriginalName ? <Info label="Nama file" value={item.fileOriginalName} /> : null}
                 </dl>

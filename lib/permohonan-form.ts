@@ -30,7 +30,15 @@ export type FieldDef = {
   rows?: number;
   /** Kolom date dibatasi minimal tanggal hari ini. Diabaikan pada variant admin. */
   minToday?: boolean;
-  /** Hanya tampil di formulir publik dan form edit: email, no_wa, dan unggah surat. */
+  /**
+   * Hanya tampil di formulir publik dan form edit: field kontak pemohon
+   * (email, no_wa, kontak penanggung jawab) dan unggah surat.
+   *
+   * Field kontak tidak muncul di input manual admin karena record manual tidak
+   * punya pemohon: tidak ada email, tidak ada nomor WhatsApp, dan notifikasi
+   * selalu dilewati. Field file punya alasan lain, yaitu admin mengunggah
+   * berkas lewat operasi berkas tersendiri.
+   */
   publicOnly?: boolean;
   /** Render berdua dalam satu grid, mis. waktu mulai dan waktu selesai. */
   half?: boolean;
@@ -161,6 +169,9 @@ export const PERMOHONAN_FORM: Record<JenisPermohonan, PermohonanFormConfig> = {
         type: "text",
         placeholder: KONTAK_PJ_PLACEHOLDER,
         hint: "Usahakan dapat dikontak via WhatsApp.",
+        // Field kontak: tidak ada di input manual admin karena record manual
+        // tidak pernah memicu notifikasi sehingga kontaknya tidak terpakai.
+        publicOnly: true,
         column: "kontakPenanggungJawab"
       },
       {
@@ -218,6 +229,9 @@ export const PERMOHONAN_FORM: Record<JenisPermohonan, PermohonanFormConfig> = {
         type: "text",
         placeholder: KONTAK_PJ_PLACEHOLDER,
         hint: "Usahakan dapat dikontak via WhatsApp.",
+        // Field kontak: tidak ada di input manual admin karena record manual
+        // tidak pernah memicu notifikasi sehingga kontaknya tidak terpakai.
+        publicOnly: true,
         column: "kontakPenanggungJawab"
       },
       {
@@ -268,6 +282,9 @@ export const PERMOHONAN_FORM: Record<JenisPermohonan, PermohonanFormConfig> = {
         type: "text",
         placeholder: "Contoh: +62812345678 (Nama Penanggung Jawab)",
         hint: "Nomor WhatsApp aktif dan nama penanggung jawab.",
+        // Sama seperti media partner dan kerjasama: field kontak tidak dibuka
+        // di input manual admin.
+        publicOnly: true,
         column: "kontakPenanggungJawab"
       },
       {
