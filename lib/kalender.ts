@@ -21,13 +21,32 @@ type KolomKalender = {
   tanggal: string;
   instansi: string;
   tempat?: string;
+  /** Satu kolom jam, misalnya waktuAcara pada liputan. */
+  waktu?: string;
+  /**
+   * Dua kolom jam untuk yang punya rentang, misalnya peminjaman podcast.
+   * Dipakai berpasangan; kalau satu terisi dan satu tidak, rentangnya tetap
+   * dirakit dari yang ada.
+   */
+  waktuMulai?: string;
+  waktuSelesai?: string;
 };
 
 const KOLOM_KALENDER: Record<JenisPermohonan, KolomKalender> = {
-  liputan: { tanggal: "tanggalAcara", instansi: "namaInstansi", tempat: "tempatAcara" },
+  liputan: {
+    tanggal: "tanggalAcara",
+    instansi: "namaInstansi",
+    tempat: "tempatAcara",
+    waktu: "waktuAcara"
+  },
   media_partner: { tanggal: "tanggalRequestUpload", instansi: "fakultasOrganisasi" },
   kerjasama: { tanggal: "tanggalRequestUpload", instansi: "fakultasOrganisasi" },
-  peminjaman_podcast: { tanggal: "tanggalPeminjaman", instansi: "namaInstansi" }
+  peminjaman_podcast: {
+    tanggal: "tanggalPeminjaman",
+    instansi: "namaInstansi",
+    waktuMulai: "waktuMulai",
+    waktuSelesai: "waktuSelesai"
+  }
 };
 
 /**
@@ -38,6 +57,11 @@ const KOLOM_KALENDER: Record<JenisPermohonan, KolomKalender> = {
  * pesan pemohon, catatan internal, maupun lampiran yang ikut terbawa ke
  * klien. Menambah kolom di sini berarti menambah data publik, jadi harus
  * disengaja.
+ *
+ * WaktuMulai dan waktuSelesai podcast ikut terbawa karena jadwal peminjaman
+ * ruang memang bagian dari acara yang diumumkan, sama seperti
+ * tanggalPeminjaman-nya. Yang tetap ditolak justru kontak_penanggung_jawab
+ * dari tabel yang sama: jam borrow tidak berarti nomor teleponnya ikut publik.
  */
 function selectKalender(kolom: KolomKalender) {
   return {
@@ -45,8 +69,34 @@ function selectKalender(kolom: KolomKalender) {
     namaAcara: true,
     [kolom.tanggal]: true,
     [kolom.instansi]: true,
-    ...(kolom.tempat ? { [kolom.tempat]: true } : {})
+    ...(kolom.tempat ? { [kolom.tempat]: true } : {}),
+    ...(kolom.waktu ? { [kolom.waktu]: true } : {}),
+    ...(kolom.waktuMulai ? { [kolom.waktuMulai]: true } : {}),
+    ...(kolom.waktuSelesai ? { [kolom.waktuSelesai]: true } : {})
   };
+}
+
+/**
+ * Jam acara sebagai satu string siap tampil: "HH:mm" untuk yang punya satu
+ * kolom, "HH:mm - HH:mm" untuk yang punya rentang, null kalau tidak ada.
+ *
+ * Bentuknya sama dengan kolom UnifiedItem.waktu di app/admin/page.tsx, jadi
+ * kedua layar tidak pernah menampilkan jam berbeda untuk baris yang sama.
+ */
+function waktuDariRow(kolom: KolomKalender, row: any): string | null {
+  if (kolom.waktu) {
+    const nilai = row[kolom.waktu];
+    return nilai ? String(nilai) : null;
+  }
+  if (kolom.waktuMulai && kolom.waktuSelesai) {
+    // Kedua kolomnya wajib di skema, tapi dirakit dari yang benar-benar ada
+    // supaya satu sisi yang kosong tidak menghasilkan "09:00 - ".
+    const rentang = [row[kolom.waktuMulai], row[kolom.waktuSelesai]]
+      .filter(Boolean)
+      .map(String);
+    return rentang.length > 0 ? rentang.join(" - ") : null;
+  }
+  return null;
 }
 
 function toEvent(
@@ -67,7 +117,8 @@ function toEvent(
     tanggal,
     namaInstansi: String(row[kolom.instansi] ?? ""),
     namaAcara: String(row.namaAcara ?? ""),
-    tempatAcara: kolom.tempat ? (row[kolom.tempat] ? String(row[kolom.tempat]) : null) : null
+    tempatAcara: kolom.tempat ? (row[kolom.tempat] ? String(row[kolom.tempat]) : null) : null,
+    waktu: waktuDariRow(kolom, row)
   };
 }
 

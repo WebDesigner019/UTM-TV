@@ -46,6 +46,8 @@ type UnifiedItem = {
   email: string | null;
   namaAcara: string;
   tanggal: Date | null;
+  /** Jam acara sebagai "HH:mm", atau rentang untuk peminjaman podcast. Null bila jenisnya tidak punya waktu. */
+  waktu: string | null;
   status: StatusPermohonan;
   createdAt: Date;
   inputManuallyEntered: boolean;
@@ -165,6 +167,7 @@ export default async function AdminPage({
             email: true,
             namaAcara: true,
             tanggalAcara: true,
+            waktuAcara: true,
             status: true,
             createdAt: true,
             inputManuallyEntered: true
@@ -228,6 +231,8 @@ export default async function AdminPage({
             email: true,
             namaAcara: true,
             tanggalPeminjaman: true,
+            waktuMulai: true,
+            waktuSelesai: true,
             status: true,
             createdAt: true,
             inputManuallyEntered: true
@@ -245,6 +250,7 @@ export default async function AdminPage({
       email: item.email,
       namaAcara: item.namaAcara,
       tanggal: item.tanggalAcara,
+      waktu: item.waktuAcara,
       status: item.status,
       createdAt: item.createdAt,
       inputManuallyEntered: item.inputManuallyEntered
@@ -257,6 +263,7 @@ export default async function AdminPage({
       email: item.email,
       namaAcara: item.namaAcara,
       tanggal: item.tanggalRequestUpload,
+      waktu: null,
       status: item.status,
       createdAt: item.createdAt,
       inputManuallyEntered: item.inputManuallyEntered
@@ -269,6 +276,7 @@ export default async function AdminPage({
       email: item.email,
       namaAcara: item.namaAcara,
       tanggal: item.tanggalRequestUpload,
+      waktu: null,
       status: item.status,
       createdAt: item.createdAt,
       inputManuallyEntered: item.inputManuallyEntered
@@ -281,6 +289,7 @@ export default async function AdminPage({
       email: item.email,
       namaAcara: item.namaAcara,
       tanggal: item.tanggalPeminjaman,
+      waktu: `${item.waktuMulai} - ${item.waktuSelesai}`,
       status: item.status,
       createdAt: item.createdAt,
       inputManuallyEntered: item.inputManuallyEntered
@@ -416,7 +425,8 @@ export default async function AdminPage({
                 <div className="mt-2 font-semibold text-ink">{item.namaAcara}</div>
                 <div className="mt-1 text-sm text-slate-500">{item.instansi}</div>
                 <div className="mt-1 text-sm text-slate-400">
-                  {item.tanggal ? formatTanggal(item.tanggal) : "-"} · {JENIS_TITLE_SHORT[item.jenis as keyof typeof JENIS_TITLE_SHORT]}
+                  {item.tanggal ? formatTanggal(item.tanggal) : "-"}
+                  {item.waktu ? ` · ${item.waktu}` : ""} · {JENIS_TITLE_SHORT[item.jenis as keyof typeof JENIS_TITLE_SHORT]}
                 </div>
               </Link>
             ))
@@ -434,6 +444,7 @@ export default async function AdminPage({
                   <th className="px-6 py-3.5">Instansi</th>
                   <th className="px-6 py-3.5">Jenis</th>
                   <th className="px-6 py-3.5">Tanggal</th>
+                  <th className="px-6 py-3.5">Waktu</th>
                   <th className="px-6 py-3.5">Status</th>
                 </tr>
               </thead>
@@ -460,12 +471,13 @@ export default async function AdminPage({
                     <td className="px-6 py-4">{item.instansi}</td>
                     <td className="px-6 py-4">{JENIS_TITLE_SHORT[item.jenis as keyof typeof JENIS_TITLE_SHORT]}</td>
                     <td className="px-6 py-4">{item.tanggal ? formatTanggal(item.tanggal) : "-"}</td>
+                    <td className="px-6 py-4">{item.waktu || "-"}</td>
                     <td className="px-6 py-4"><StatusBadge status={item.status} /></td>
                   </tr>
                 ))}
                 {items.length === 0 ? (
                   <tr>
-                    <td className="px-6 py-10 text-center text-slate-400" colSpan={6}>
+                    <td className="px-6 py-10 text-center text-slate-400" colSpan={7}>
                       Belum ada data permohonan.
                     </td>
                   </tr>

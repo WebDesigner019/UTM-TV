@@ -101,6 +101,7 @@ export default async function DetailPermohonanPage({
                   {item.email ? <Info label="Email" value={item.email} /> : null}
                   {item.noWa ? <Info label="No. WhatsApp" value={item.noWa} /> : null}
                   <Info label="Tanggal acara" value={formatTanggal(item.tanggalAcara)} />
+                  {item.waktuAcara ? <Info label="Waktu acara" value={item.waktuAcara} /> : null}
                   <Info label="Tempat acara" value={item.tempatAcara} />
                   {item.detailPesertaAudiens ? <Info label="Detail Peserta/Audiens" value={item.detailPesertaAudiens} /> : null}
                   <Info label="Diajukan" value={formatTanggalWaktu(item.createdAt)} />

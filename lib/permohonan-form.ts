@@ -106,6 +106,14 @@ export const PERMOHONAN_FORM: Record<JenisPermohonan, PermohonanFormConfig> = {
         minToday: true,
         column: "tanggalAcara"
       },
+      {
+        name: "waktu_acara",
+        label: "Waktu acara",
+        type: "time",
+        required: false,
+        hint: "Boleh dikosongkan bila jadwal acaranya belum pasti.",
+        column: "waktuAcara"
+      },
       { name: "tempat_acara", label: "Tempat acara", type: "text", column: "tempatAcara" },
       {
         name: "detail_peserta_audiens",

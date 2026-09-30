@@ -56,6 +56,7 @@ export async function createPermohonanByAdmin(input: {
           noWa: null,
           namaAcara: payload.nama_acara,
           tanggalAcara: new Date(payload.tanggal_acara),
+          waktuAcara: payload.waktu_acara || null,
           tempatAcara: payload.tempat_acara,
           detailPesertaAudiens: payload.detail_peserta_audiens || null,
           status: statusAwal.data,

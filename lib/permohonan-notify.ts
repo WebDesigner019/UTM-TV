@@ -58,6 +58,7 @@ export async function kirimNotifikasiStatus(input: {
           tanggalPeminjaman: record.tanggalPeminjaman,
           waktuMulai: record.waktuMulai,
           waktuSelesai: record.waktuSelesai,
+          waktuAcara: record.waktuAcara,
           pesan
         }).catch((error) => console.error("Gagal mengirim email disetujui:", error))
       );
@@ -72,6 +73,7 @@ export async function kirimNotifikasiStatus(input: {
               namaAcara,
               tempatAcara: record.tempatAcara,
               tanggalAcara: record.tanggalAcara,
+              waktuAcara: record.waktuAcara,
               pesan
             })
           : jenis === "media_partner"

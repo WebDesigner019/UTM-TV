@@ -59,6 +59,7 @@ model PermohonanLiputan {
   noWa                 String?                @map("no_wa")
   namaAcara            String                 @map("nama_acara")
   tanggalAcara         DateTime               @map("tanggal_acara") @db.Date
+  waktuAcara           String?                @map("waktu_acara") @db.VarChar(5)
   tempatAcara          String                 @map("tempat_acara")
   detailPesertaAudiens String?                @map("detail_peserta_audiens") @db.Text
   filePath             String?                @map("file_path")

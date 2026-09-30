@@ -13,6 +13,7 @@ type Result = {
   noWa?: string;
   namaAcara: string;
   tanggalAcara?: string;
+  waktuAcara?: string | null;
   tanggalRequestUpload?: string | null;
   tanggalPeminjaman?: string;
   waktuMulai?: string;
@@ -116,6 +117,7 @@ export function LacakForm() {
               <p className="mt-1.5 text-[15px] text-slate-500">
                 {result.namaInstansi || result.fakultasOrganisasi || "-"}
                 {result.tanggalAcara ? ` - ${formatTanggal(result.tanggalAcara)}` : ""}
+                {result.waktuAcara ? ` - ${result.waktuAcara}` : ""}
                 {result.tanggalRequestUpload ? ` - ${formatTanggal(result.tanggalRequestUpload)}` : ""}
                 {result.tanggalPeminjaman ? ` - ${formatTanggal(result.tanggalPeminjaman)}` : ""}
                 {result.waktuMulai && result.waktuSelesai ? ` - ${result.waktuMulai} - ${result.waktuSelesai}` : ""}

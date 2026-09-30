@@ -175,6 +175,16 @@ const INSTANSI: Record<JenisPermohonan, string[]> = {
 
 const TEMPAT = ["Auditorium FTI", "Lapangan Kampus", "Ruang Balek", "Lapangan Futsal", "Ruang Kelas", "Gedung Serbaguna"];
 
+/**
+ * Jam acara untuk data dummy liputan.
+ *
+ * Tidak semua baris diberi waktu: kolom waktu_acara di database nullable dan
+ * pemohon memang boleh melewatkannya, jadi seed harus menyisakan baris kosong
+ * agar kolom "Waktu" di dashboard benar-benar menguji tampilan "-" dan bukan
+ * selalu berisi.
+ */
+const WAKTU_ACARA = ["08:00", "09:30", "10:00", "13:00", "15:30", "19:00"];
+
 const NAMA = ["Rina", "Fajar", "Dimas", "Bayu", "Nadia", "Rizky", "Sari", "Andi", "Maya", "Tomi", "Gita", "Laras"];
 
 /** Email kampus, domain yang lolos isAllowedCampusEmail. */
@@ -310,6 +320,7 @@ async function seed(jumlah: number, adminId: number | null): Promise<Hasil[]> {
                 namaInstansi,
                 namaAcara,
                 tanggalAcara: tanggal(hariAcara),
+                waktuAcara: i % 3 === 0 ? null : WAKTU_ACARA[slot % WAKTU_ACARA.length],
                 tempatAcara: TEMPAT[slot % TEMPAT.length],
                 detailPesertaAudiens: `Sekitar ${50 + i * 25} peserta`,
                 email: manual ? null : emailUntuk(namaInstansi),

@@ -552,6 +552,12 @@ export function KalenderPermohonan({
                                 <dd className="font-medium">{event.tempatAcara}</dd>
                               </div>
                             ) : null}
+                            {event.waktu ? (
+                              <div className="flex gap-2">
+                                <dt className="w-28 shrink-0 text-slate-400">Waktu</dt>
+                                <dd className="font-medium">{event.waktu}</dd>
+                              </div>
+                            ) : null}
                           </dl>
                         </div>
                       );

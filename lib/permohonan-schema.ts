@@ -4,6 +4,17 @@ import { getFileFields, PERMOHONAN_FORM, type FieldDef } from "@/lib/permohonan-
 
 const wajib = (message: string, min = 1) => z.string().min(min, message);
 
+/**
+ * Waktu "HH:mm" dari input type="time".
+ *
+ * Sengaja opsional: pemohon boleh belum tahu jadwalnya, dan kolomnya nullable
+ * supaya data yang sudah ada tidak ikut berubah artinya. Polanya tetap dikunci
+ * supaya payload yang dirakit di luar formulir tidak bisa menyimpan "malam".
+ */
+const waktuHHMM = z
+  .string()
+  .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Format waktu tidak valid. Contoh: 09:30.");
+
 export const skemaPermohonan = {
   liputan: z.object({
     nama_instansi: wajib("Nama instansi wajib diisi.", 2),
@@ -11,6 +22,7 @@ export const skemaPermohonan = {
     no_wa: wajib("No. WhatsApp wajib diisi."),
     nama_acara: wajib("Nama acara wajib diisi.", 2),
     tanggal_acara: wajib("Tanggal acara wajib diisi."),
+    waktu_acara: waktuHHMM.optional(),
     tempat_acara: wajib("Tempat acara wajib diisi.", 2),
     detail_peserta_audiens: z.string().optional()
   }),

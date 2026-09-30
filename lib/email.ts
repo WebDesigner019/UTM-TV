@@ -428,6 +428,7 @@ export async function sendPermohonanDisetujuiEmail(input: {
   tanggalPeminjaman?: Date;
   waktuMulai?: string;
   waktuSelesai?: string;
+  waktuAcara?: string | null;
   pesan?: string | null;
 }) {
   const jenis = input.jenis || "liputan";
@@ -441,6 +442,16 @@ export async function sendPermohonanDisetujuiEmail(input: {
     : isLiputan
       ? formatTanggal(input.tanggalAcara || new Date())
       : (input.tanggalRequestUpload ? formatTanggal(input.tanggalRequestUpload) : "-");
+
+  // Baris waktu untuk liputan hanya dibuat kalau pemohon mengisinya. Baris
+  // kosong lebih buruk daripada tidak ada baris sama sekali di email ini.
+  const barisWaktuLiputan = input.waktuAcara
+    ? `
+      <tr>
+        <td>Waktu</td>
+        <td>${escapeHtml(input.waktuAcara)}</td>
+      </tr>`
+    : "";
 
   const detailRows = isPodcast
     ? `
@@ -461,7 +472,7 @@ export async function sendPermohonanDisetujuiEmail(input: {
       <tr>
         <td>Tanggal</td>
         <td>${tanggal}</td>
-      </tr>`
+      </tr>${barisWaktuLiputan}`
       : `
       <tr>
         <td>Tanggal Request Upload</td>
@@ -475,7 +486,11 @@ export async function sendPermohonanDisetujuiEmail(input: {
     ...(isPodcast
       ? [`Tanggal: ${tanggal}`, `Waktu: ${input.waktuMulai || "-"} - ${input.waktuSelesai || "-"}`]
       : isLiputan
-        ? [`Tempat: ${input.tempatAcara || "-"}`, `Tanggal: ${tanggal}`]
+        ? [
+            `Tempat: ${input.tempatAcara || "-"}`,
+            `Tanggal: ${tanggal}`,
+            ...(input.waktuAcara ? [`Waktu: ${input.waktuAcara}`] : [])
+          ]
         : [`Tanggal request upload: ${tanggal}`]),
     "Status: disetujui",
     "",

@@ -25,6 +25,7 @@ export async function POST(request: Request) {
       no_wa: string;
       nama_acara: string;
       tanggal_acara: string;
+      waktu_acara?: string;
       tempat_acara: string;
       detail_peserta_audiens?: string;
     };
@@ -50,6 +51,7 @@ export async function POST(request: Request) {
             noWa: payload.no_wa,
             namaAcara: payload.nama_acara,
             tanggalAcara: new Date(payload.tanggal_acara),
+            waktuAcara: payload.waktu_acara || null,
             tempatAcara: payload.tempat_acara,
             detailPesertaAudiens: payload.detail_peserta_audiens || null,
             filePath: uploaded.relativePath,
@@ -81,6 +83,7 @@ export async function POST(request: Request) {
       namaAcara: permohonan.namaAcara,
       tempatAcara: permohonan.tempatAcara,
       tanggalAcara: permohonan.tanggalAcara,
+      waktuAcara: permohonan.waktuAcara,
       detailPesertaAudiens: permohonan.detailPesertaAudiens,
       noWa: permohonan.noWa ?? "",
       email: permohonan.email ?? ""

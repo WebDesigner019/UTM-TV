@@ -65,6 +65,13 @@ export type EventKalender = {
   namaInstansi: string;
   namaAcara: string;
   tempatAcara: string | null;
+  /**
+   * Jam acara untuk jenis yang punya kolom waktu: "HH:mm" kalau satu jam
+   * seperti liputan, "HH:mm - HH:mm" kalau rentang seperti peminjaman podcast.
+   * Sudah dirakit server, klien tinggal menampilkannya. Null kalau jenisnya
+   * tidak punya waktu sama sekali.
+   */
+  waktu: string | null;
 };
 
 /** Tanggal lokal tengah malam dari bagian y/m/d. */

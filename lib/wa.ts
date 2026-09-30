@@ -28,6 +28,7 @@ export async function sendWaToUser(input: {
   namaAcara: string;
   tempatAcara: string;
   tanggalAcara: Date;
+  waktuAcara?: string | null;
   pesan?: string | null;
 }) {
   const token = process.env.FONNTE_WA_API;
@@ -45,6 +46,9 @@ export async function sendWaToUser(input: {
     `nama acara: ${input.namaAcara}`,
     `tempat: ${input.tempatAcara}`,
     `tanggal: ${tanggal}`,
+    // Baris waktu hanya muncul kalau pemohon mengisinya, supaya pesan tidak
+    // memunculkan "waktu: -" untuk pengajuan yang jadwalnya memang belum pasti.
+    ...(input.waktuAcara ? [`waktu: ${input.waktuAcara}`] : []),
     `status: disetujui`,
     ``,
     `dengan keterangan:`,
@@ -228,6 +232,7 @@ export async function sendWaGroupNotification(input: {
   namaAcara: string;
   tempatAcara: string;
   tanggalAcara: Date;
+  waktuAcara?: string | null;
   detailPesertaAudiens?: string | null;
   noWa: string;
   email: string;
@@ -248,6 +253,7 @@ export async function sendWaGroupNotification(input: {
     `tempat acara: ${input.tempatAcara}`,
     `detail peserta/audiens: ${input.detailPesertaAudiens || "-"}`,
     `tanggal acara: ${formatTanggal(input.tanggalAcara)}`,
+    `waktu acara: ${input.waktuAcara || "-"}`,
     `No whatsapp: ${input.noWa}`,
     `email: ${input.email}`
   ].join("\n");

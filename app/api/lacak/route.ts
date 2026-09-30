@@ -38,6 +38,7 @@ export async function POST(request: Request) {
           noWa: true,
           namaAcara: true,
           tanggalAcara: true,
+          waktuAcara: true,
           tempatAcara: true,
           status: true,
           pesanPemohon: true,
