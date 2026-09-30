@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { CheckCircle2, Search } from "lucide-react";
 import { AdminHeader } from "@/components/AdminHeader";
+import { Paginasi } from "@/components/Paginasi";
 import { TambahDataModal } from "./TambahDataModal";
 import { getCurrentAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -23,6 +24,20 @@ const JENIS_OPTIONS = [
   ...JENIS_VALUES.map((value) => ({ value, label: JENIS_TITLE[value] }))
 ] as const;
 
+/**
+ * Urutan daftar. "terbaru" memakai tanggal pengajuan, "acara" memakai tanggal
+ * acara pada kolom Tanggal, yang isinya berbeda per jenis.
+ */
+const URUTAN = [
+  { value: "terbaru", label: "Pengajuan terbaru" },
+  { value: "acara", label: "Tanggal acara terbaru" }
+] as const;
+
+type Urutan = (typeof URUTAN)[number]["value"];
+
+/** Jumlah baris per halaman di tabel admin. */
+const PER_HALAMAN = 15;
+
 type UnifiedItem = {
   id: number;
   jenis: string;
@@ -39,7 +54,7 @@ type UnifiedItem = {
 export default async function AdminPage({
   searchParams
 }: {
-  searchParams: { status?: string; q?: string; jenis?: string; page?: string; terhapus?: string };
+  searchParams: { status?: string; q?: string; jenis?: string; urut?: string; page?: string; terhapus?: string };
 }) {
   const admin = await getCurrentAdmin();
   if (!admin) redirect("/admin/login");
@@ -47,13 +62,53 @@ export default async function AdminPage({
   const status = searchParams.status;
   const q = searchParams.q?.trim();
   const jenis = searchParams.jenis || "semua";
+  const urut: Urutan = URUTAN.some((item) => item.value === searchParams.urut)
+    ? (searchParams.urut as Urutan)
+    : "terbaru";
   const page = Math.max(Number(searchParams.page || "1"), 1);
   // Ditulis HapusDataModal setelah delete berhasil. Menempel di query param,
   // bukan state, karena admin diarahkan ke dashboard lewat router.push dan
   // halaman ini tidak punya tempat menyimpan toast.
   const terhapus = searchParams.terhapus?.trim();
-  const take = 15;
-  const skip = (page - 1) * take;
+  const skip = (page - 1) * PER_HALAMAN;
+
+  /**
+   * Link navigasi memakai filter yang sedang aktif, jadi berpindah halaman
+   * tidak menghapus pencarian yang sudah diketik admin. terhapus sengaja
+   * tidak ikut karena itu pesan sekali pakai, bukan bagian filter.
+   */
+  function queryAktif(halaman: number) {
+    const params = new URLSearchParams();
+    if (status) params.set("status", status);
+    if (q) params.set("q", q);
+    if (jenis !== "semua") params.set("jenis", jenis);
+    if (urut !== "terbaru") params.set("urut", urut);
+    if (halaman > 1) params.set("page", String(halaman));
+    const query = params.toString();
+    return query ? `/admin?${query}` : "/admin";
+  }
+
+  /**
+   * Bandingkan dua baris untuk urutan yang dipilih.
+   *
+   * Pengajuan disatukan dari empat tabel, jadi pengurutan akhir dikerjakan di
+   * sini, bukan di query. Tanggal acara boleh kosong pada kerjasama karena
+   * request upload-nya opsional, dan baris seperti itu diurutkan paling akhir.
+   */
+  function bandingkan(a: UnifiedItem, b: UnifiedItem) {
+    const nilai = (item: UnifiedItem) => (urut === "acara" ? item.tanggal : item.createdAt);
+    const ka = nilai(a);
+    const kb = nilai(b);
+    if (ka && kb && ka.getTime() !== kb.getTime()) return kb.getTime() - ka.getTime();
+    // Baris tanpa tanggal acara diletakkan paling akhir supaya tidak menutupi
+    // daftar, dan kebetulan ini juga membuat urutan tidak berganti saat pindah
+    // filter.
+    if (ka && !kb) return -1;
+    if (!ka && kb) return 1;
+    const selisih = b.createdAt.getTime() - a.createdAt.getTime();
+    if (selisih !== 0) return selisih;
+    return b.id - a.id;
+  }
 
   const includeLiputan = jenis === "semua" || jenis === "liputan";
   const includeMediaPartner = jenis === "semua" || jenis === "media_partner";
@@ -81,13 +136,28 @@ export default async function AdminPage({
   const whereKerjasama = buildWhere(["nomorRujukan", "namaAcara", "fakultasOrganisasi", "kontakPenanggungJawab"]);
   const wherePeminjamanPodcast = buildWhere(["nomorRujukan", "namaAcara", "namaInstansi", "kontakPenanggungJawab"]);
 
+  /**
+   * Berapa baris teratas yang harus diambil tiap tabel.
+   *
+   * Halaman aktif disusun dari gabungan empat tabel, jadi tiap tabel perlu
+   * menyumbang baris teratas sebanyak skip + PER_HALAMAN. Kalau tiap tabel
+   * memakai skip dan take sendiri, baris halaman pertama bisa muncul lagi di
+   * halaman berikutnya dan jumlah baris tiap halaman tidak sama.
+   */
+  const SEQULT = skip + PER_HALAMAN;
+
   const [liputanItems, mpItems, kjItems, ppItems] = await Promise.all([
     includeLiputan
       ? prisma.permohonanLiputan.findMany({
           where: whereLiputan,
-          orderBy: { createdAt: "desc" },
-          skip,
-          take,
+          // Kolom tanggal acara tiap jenis berbeda, jadi tiap tabel mengurutkan
+          // dengan kolomnya sendiri. Urutan gabungannya dihitung ulang di bawah
+          // karena Prisma tidak bisa mengurutkan hasil gabungan beberapa tabel.
+          orderBy:
+            urut === "acara"
+              ? [{ tanggalAcara: "desc" }, { id: "desc" }]
+              : [{ createdAt: "desc" }, { id: "desc" }],
+          take: SEQULT,
           select: {
             id: true,
             nomorRujukan: true,
@@ -104,9 +174,11 @@ export default async function AdminPage({
     includeMediaPartner
       ? prisma.permohonanMediaPartner.findMany({
           where: whereMediaPartner,
-          orderBy: { createdAt: "desc" },
-          skip,
-          take,
+          orderBy:
+            urut === "acara"
+              ? [{ tanggalRequestUpload: "desc" }, { id: "desc" }]
+              : [{ createdAt: "desc" }, { id: "desc" }],
+          take: SEQULT,
           select: {
             id: true,
             nomorRujukan: true,
@@ -123,9 +195,11 @@ export default async function AdminPage({
     includeKerjasama
       ? prisma.permohonanKerjasama.findMany({
           where: whereKerjasama,
-          orderBy: { createdAt: "desc" },
-          skip,
-          take,
+          orderBy:
+            urut === "acara"
+              ? [{ tanggalRequestUpload: "desc" }, { id: "desc" }]
+              : [{ createdAt: "desc" }, { id: "desc" }],
+          take: SEQULT,
           select: {
             id: true,
             nomorRujukan: true,
@@ -142,9 +216,11 @@ export default async function AdminPage({
     includePeminjamanPodcast
       ? prisma.permohonanPeminjamanPodcast.findMany({
           where: wherePeminjamanPodcast,
-          orderBy: { createdAt: "desc" },
-          skip,
-          take,
+          orderBy:
+            urut === "acara"
+              ? [{ tanggalPeminjaman: "desc" }, { id: "desc" }]
+              : [{ createdAt: "desc" }, { id: "desc" }],
+          take: SEQULT,
           select: {
             id: true,
             nomorRujukan: true,
@@ -160,7 +236,7 @@ export default async function AdminPage({
       : []
   ]);
 
-  const items: UnifiedItem[] = [
+  const semua: UnifiedItem[] = [
     ...liputanItems.map((item) => ({
       id: item.id,
       jenis: "liputan",
@@ -209,7 +285,12 @@ export default async function AdminPage({
       createdAt: item.createdAt,
       inputManuallyEntered: item.inputManuallyEntered
     }))
-  ].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  ].sort(bandingkan);
+
+  // Potong baru di sini, setelah keempat tabel digabung dan diurutkan, supaya
+  // isi halaman benar-benar baris skip+1 sampai skip+PER_HALAMAN dari seluruh
+  // daftar, bukan potongan dari tiap tabel terpisah.
+  const items = semua.slice(skip, skip + PER_HALAMAN);
 
   const [totalLiputan, totalMp, totalKj, totalPp] = await Promise.all([
     includeLiputan ? prisma.permohonanLiputan.count({ where: whereLiputan }) : 0,
@@ -218,6 +299,12 @@ export default async function AdminPage({
     includePeminjamanPodcast ? prisma.permohonanPeminjamanPodcast.count({ where: wherePeminjamanPodcast }) : 0
   ]);
   const total = totalLiputan + totalMp + totalKj + totalPp;
+  const totalHalaman = Math.max(Math.ceil(total / PER_HALAMAN), 1);
+
+  // Halaman yang lewat akhir (mis. setelah memfilter, atau admin mengetik angka
+  // halaman sendiri) diarahkan ke halaman terakhir yang masih berisi data,
+  // bukan ditampilkan sebagai tabel kosong.
+  if (page > totalHalaman) redirect(queryAktif(totalHalaman));
 
   const [liputanCounts, mpCounts, kjCounts, ppCounts] = await Promise.all([
     includeLiputan ? prisma.permohonanLiputan.groupBy({ by: ["status"], _count: { status: true } }) : [],
@@ -254,7 +341,7 @@ export default async function AdminPage({
           </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <TambahDataModal
-              filterAktif={Boolean(status) || jenis !== "semua" || Boolean(q)}
+              filterAktif={Boolean(status) || jenis !== "semua" || Boolean(q) || urut !== "terbaru"}
             />
             <form className="flex flex-col gap-2 sm:flex-row">
               <select className="input-field sm:w-auto" name="jenis" defaultValue={jenis}>
@@ -269,6 +356,13 @@ export default async function AdminPage({
                 {STATUS_OPTIONS.map((item) => (
                   <option key={item} value={item}>
                     {STATUS_LABEL[item]}
+                  </option>
+                ))}
+              </select>
+              <select className="input-field sm:w-auto" name="urut" defaultValue={urut}>
+                {URUTAN.map((item) => (
+                  <option key={item.value} value={item.value}>
+                    {item.label}
                   </option>
                 ))}
               </select>
@@ -381,11 +475,12 @@ export default async function AdminPage({
           </div>
         </div>
 
-        <div className="mt-4 flex items-center justify-between text-sm text-slate-500">
-          <span>Total {total} permohonan</span>
+        <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between text-sm text-slate-500">
           <span>
-            Halaman {page} dari {Math.max(Math.ceil(total / take), 1)}
+            Menampilkan {items.length === 0 ? 0 : skip + 1}-{skip + items.length} dari {total}{" "}
+            permohonan
           </span>
+          <Paginasi page={page} totalHalaman={totalHalaman} href={(halaman) => queryAktif(halaman)} />
         </div>
       </main>
     </>
