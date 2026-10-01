@@ -24,6 +24,13 @@ const securityHeaders = [
 ];
 
 const nextConfig = {
+  // Container production hanya menyalin .next/standalone beserta dependensi
+  // yang benar-benar terpakai, jadi image tidak ikut membawa devDependencies
+  // dan seluruh node_modules. `next start` tetap bisa dipakai di luar Docker.
+  output: "standalone",
+  // X-Powered-By: Next.js hanya memberi tahu versi framework yang dipakai.
+  // Dihilangkan supaya pemindai tidak bisa memilih target berdasarkan versi.
+  poweredByHeader: false,
   experimental: {
     serverActions: {
       bodySizeLimit: "12mb"
@@ -41,6 +48,17 @@ const nextConfig = {
       {
         source: "/:path*",
         headers: securityHeaders
+      },
+      {
+        // Halaman admin dan endpoint API tidak ada gunanya di indeks mesin
+        // pencari. Login yang terindeks juga memperbesar permukaan serangan
+        // tebak password lewat bot yang memindai dari internet.
+        source: "/admin/:path*",
+        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }]
+      },
+      {
+        source: "/api/:path*",
+        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }]
       }
     ];
   }

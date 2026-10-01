@@ -1,7 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Search, Video, Handshake, Megaphone, Mic, Phone } from "lucide-react";
-import { CampusWatermark } from "@/components/CampusWatermark";
 import { KalenderPermohonan } from "@/components/KalenderPermohonan";
 import { LayananProsedur } from "@/components/LayananProsedur";
 import { PublicNav } from "@/components/PublicNav";
@@ -38,7 +37,6 @@ export default async function Home() {
   return (
     <>
       <LandingAnimations />
-      <CampusWatermark />
       <PublicNav />
       <main>
         <section className="bg-white/60 backdrop-blur">

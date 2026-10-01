@@ -1,5 +1,4 @@
 import { PublicNav } from "@/components/PublicNav";
-import { CampusWatermark } from "@/components/CampusWatermark";
 import { PermohonanForm } from "@/components/PermohonanForm";
 import { getMaxFileSizeBytes } from "@/lib/env";
 
@@ -10,7 +9,6 @@ export default function PeminjamanPodcastPage() {
 
   return (
     <>
-      <CampusWatermark />
       <PublicNav />
       <main className="mx-auto max-w-3xl px-4 py-10 sm:py-14">
         <h1 className="text-balance text-2xl font-bold tracking-tight text-ink sm:text-3xl lg:text-4xl">Pengajuan Peminjaman Ruang Podcast</h1>

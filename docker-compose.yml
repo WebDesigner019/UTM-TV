@@ -1,42 +1,111 @@
+name: utm-tv-liputan
+
+# Log driver dibatasi ukurannya. Tanpa ini, driver json-file bawaan menulis
+# log container tanpa batas sampai disk host penuh, dan aplikasi di server
+# yang sama ikut gagal karena tidak ada ruang.
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+
 services:
   mysql:
     image: mysql:8.4
     restart: unless-stopped
+    logging: *logging
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      # Buffer pool 128MB: instance kecil dengan RAM 1-2GB akan kehabisan
+      # memory kalau MySQL disetel jauh lebih besar dari ini.
+      - --innodb-buffer-pool-size=128M
     environment:
-      MYSQL_DATABASE: utm_tv_liputan
-      MYSQL_USER: utmtv
-      MYSQL_PASSWORD: utmtv_password
-      MYSQL_ROOT_PASSWORD: root_password
-    ports:
-      - "3306:3306"
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-utm_tv_liputan}
+      MYSQL_USER: ${MYSQL_USER:-utmtv}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?MYSQL_PASSWORD wajib diisi di .env}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD wajib diisi di .env}
+    # Port MySQL sengaja tidak dipublikasikan ke host. Database hanya perlu
+    # dijangkau dari container app, jadi tidak ada alasan membukanya ke luar.
+    # Untuk akses manual: docker compose exec mysql mysql ...
+    expose:
+      - "3306"
     volumes:
       - mysql-data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test:
+        [
+          "CMD-SHELL",
+          "mysqladmin ping -h 127.0.0.1 -u root -p\"$$MYSQL_ROOT_PASSWORD\" --silent"
+        ]
       interval: 10s
       timeout: 5s
-      retries: 10
+      retries: 12
+      start_period: 30s
 
-  app:
-    build: .
-    restart: unless-stopped
+  # Dijalankan sekali sebelum app naik. Berhenti dengan exit code 0 kalau
+  # migration sudah Applied, bukan restart terus-menerus.
+  migrate:
+    build:
+      context: .
+      target: migrate
+    environment:
+      DATABASE_URL: mysql://${MYSQL_USER:-utmtv}:${MYSQL_PASSWORD}@mysql:3306/${MYSQL_DATABASE:-utm_tv_liputan}
+      # Hanya dibutuhkan bila seed admin dijalankan lewat tahap ini:
+      # docker compose run --rm migrate npx tsx prisma/seed.ts
+      ADMIN_SEED_EMAIL: ${ADMIN_SEED_EMAIL:-admin@trunojoyo.ac.id}
+      ADMIN_SEED_PASSWORD: ${ADMIN_SEED_PASSWORD:-}
+      ADMIN_SEED_NAME: ${ADMIN_SEED_NAME:-Admin COMPACT}
     depends_on:
       mysql:
         condition: service_healthy
+    restart: "no"
+    logging: *logging
+
+  app:
+    build:
+      context: .
+      target: runner
+    restart: unless-stopped
+    logging: *logging
+    # init: true memberi Node PID 1 sehingga SIGTERM benar-benar sampai ke
+    # proses Next dan koneksi yang sedang dilayani sempat selesai.
+    init: true
+    # Docker mengirim SIGKILL 10 detik setelah SIGTERM, sedangkan Next menutup
+    # koneksi yang sedang dilayani sebelum keluar. 30s memberi ruang untuk
+    # permintaan yang sedang mengunduh lampiran besar supaya tidak terpotong
+    # saat deploy.
+    stop_grace_period: 30s
+    depends_on:
+      mysql:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     environment:
-      DATABASE_URL: mysql://utmtv:utmtv_password@mysql:3306/utm_tv_liputan
-      JWT_SECRET: ganti-dengan-rahasia-panjang
-      SESSION_SECRET: ganti-dengan-rahasia-cookie
-      ADMIN_SEED_EMAIL: admin@trunojoyo.ac.id
-      ADMIN_SEED_PASSWORD: change-me-please
-      ADMIN_SEED_NAME: Admin COMPACT
+      NODE_ENV: production
+      PORT: "3000"
+      HOSTNAME: 0.0.0.0
+      DATABASE_URL: mysql://${MYSQL_USER:-utmtv}:${MYSQL_PASSWORD}@mysql:3306/${MYSQL_DATABASE:-utm_tv_liputan}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET wajib diisi di .env}
+      # Dipakai hanya sebagai cadangan kalau JWT_SECRET kosong, jadi tidak wajib.
+      SESSION_SECRET: ${SESSION_SECRET:-}
       UPLOAD_DIR: /app/uploads
-      MAX_FILE_SIZE_MB: "10"
-      APP_URL: http://localhost:3000
-      ALLOWED_EMAIL_DOMAINS: student.trunojoyo.ac.id,trunojoyo.ac.id
-      SMTP_FROM: noreply@trunojoyo.ac.id
+      MAX_FILE_SIZE_MB: ${MAX_FILE_SIZE_MB:-10}
+      APP_URL: ${APP_URL:-http://localhost:3000}
+      ALLOWED_EMAIL_DOMAINS: ${ALLOWED_EMAIL_DOMAINS:-student.trunojoyo.ac.id,trunojoyo.ac.id}
+      # Jumlah proxy yang menyisipkan X-Forwarded-For. Kosong berarti header itu
+      # tidak dipercaya. Setel 1 kalau ada nginx atau Caddy di depan aplikasi,
+      # 0 kalau port 3000 diekspos langsung ke internet.
+      TRUSTED_PROXY_HOPS: ${TRUSTED_PROXY_HOPS:-0}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: ${SMTP_FROM:-}
+      FONNTE_WA_API: ${FONNTE_WA_API:-}
+      FONNTE_GROUP_ID: ${FONNTE_GROUP_ID:-}
     ports:
-      - "3000:3000"
+      - "${APP_BIND:-0.0.0.0}:${APP_PORT:-3000}:3000"
     volumes:
       - uploads:/app/uploads
 

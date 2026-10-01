@@ -17,7 +17,10 @@ export function isAllowedCampusEmail(email: string) {
 }
 
 export function getMaxFileSizeBytes() {
-  const mb = Number(process.env.MAX_FILE_SIZE_MB || "5");
+  // Default 10 MB, sama dengan MAX_FILE_SIZE_MB di .env.example dan
+  // docker-compose. Nilai bawaan yang berbeda dari dua sumber itu bikin
+  // batas upload berbeda antar lingkungan tanpa disadari.
+  const mb = Number(process.env.MAX_FILE_SIZE_MB || "10");
   return mb * 1024 * 1024;
 }
 

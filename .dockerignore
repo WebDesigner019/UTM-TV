@@ -1,7 +1,17 @@
 node_modules
 .next
+.git
+.gitignore
 .env
 .env.local
+.env.*.local
 uploads
 coverage
+dist
 *.log
+Dockerfile
+docker-compose.yml
+.dockerignore
+README.md
+tsconfig.tsbuildinfo
+next-env.d.ts

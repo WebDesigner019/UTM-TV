@@ -2,8 +2,14 @@ node_modules
 .next
 .env
 .env.local
+.env.*.local
 uploads
 *.log
 dist
 coverage
 create.md
+tsconfig.tsbuildinfo
+
+# Skrip sekali pakai untuk memeriksa data lokal, tidak dipakai aplikasi.
+inventori-tmp.cjs
+scripts/tmp-*.ts

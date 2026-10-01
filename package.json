@@ -8,6 +8,8 @@
     "start": "next start",
     "start:local": "node scripts/start-local-server.mjs",
     "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run lint && npm run typecheck",
     "prisma:generate": "prisma generate",
     "check:kalender": "tsx scripts/check-kalender.ts",
     "prisma:migrate": "tsx scripts/prisma-with-env.ts migrate dev",
