@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { Eye, X } from "lucide-react";
+import { Download, Eye, X } from "lucide-react";
 import { useModalDismiss } from "@/components/useModalDismiss";
 
 type Props = {
@@ -24,6 +24,10 @@ export function PreviewSurat({ id, jenis, fileOriginalName, fileMimeType, file }
 
   const isPreviewable =
     fileMimeType === "application/pdf" || fileMimeType.startsWith("image/");
+  const isImage = fileMimeType.startsWith("image/");
+  const query = `jenis=${jenis}${file ? `&file=${file}` : ""}`;
+  const previewUrl = `/api/admin/permohonan/${id}/file/preview?${query}`;
+  const downloadUrl = `/api/admin/permohonan/${id}/file?${query}`;
 
   if (!isPreviewable) {
     return (
@@ -62,21 +66,43 @@ export function PreviewSurat({ id, jenis, fileOriginalName, fileMimeType, file }
               }}
               role="dialog"
             >
-              <div className="modal-panel max-w-5xl">
-                <div className="modal-header">
-                  <h3 className="min-w-0 flex-1 break-words font-semibold text-ink">
-                    {fileOriginalName}
-                  </h3>
-                  <button aria-label="Tutup pratinjau" className="modal-close" onClick={close} type="button">
-                    <X className="h-5 w-5" />
-                  </button>
+              <div className="modal-panel h-[calc(100dvh-1.5rem)] max-w-6xl sm:h-[85vh]">
+                <div className="modal-header items-center">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-lg font-bold tracking-tight text-ink">Pratinjau Surat</h3>
+                    <p className="mt-0.5 truncate text-sm text-slate-400" title={fileOriginalName}>
+                      {fileOriginalName}
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <a
+                      aria-label="Unduh surat"
+                      className="btn-secondary px-3 py-2 sm:px-4"
+                      href={downloadUrl}
+                    >
+                      <Download className="h-4 w-4" />
+                      <span className="hidden sm:inline">Unduh</span>
+                    </a>
+                    <button aria-label="Tutup pratinjau" className="modal-close" onClick={close} type="button">
+                      <X className="h-5 w-5" />
+                    </button>
+                  </div>
                 </div>
-                <div className="modal-body p-0">
-                  <iframe
-                    className="h-full min-h-[60vh] w-full sm:min-h-0"
-                    src={`/api/admin/permohonan/${id}/file/preview?jenis=${jenis}${file ? `&file=${file}` : ""}`}
-                    title={fileOriginalName}
-                  />
+                <div className="modal-body flex flex-1 items-center justify-center overflow-hidden bg-slate-100 p-0">
+                  {isImage ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      alt={fileOriginalName}
+                      className="max-h-full max-w-full object-contain"
+                      src={previewUrl}
+                    />
+                  ) : (
+                    <iframe
+                      className="h-full w-full border-0 bg-white"
+                      src={previewUrl}
+                      title={fileOriginalName}
+                    />
+                  )}
                 </div>
               </div>
             </div>,

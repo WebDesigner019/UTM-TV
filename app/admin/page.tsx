@@ -332,9 +332,9 @@ export default async function AdminPage({
       <AdminHeader nama={admin.nama} />
       <main className="mx-auto max-w-6xl px-4 py-8 sm:py-10">
         {terhapus ? (
-          <div className="mb-6 flex items-start gap-3 rounded-2xl border border-emerald-200/80 bg-emerald-50/80 px-4 py-3.5">
-            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
-            <p className="text-sm text-emerald-800">
+            <div className="mb-6 flex items-start gap-3 rounded-2xl border border-emerald-200/80 bg-emerald-50/80 px-4 py-3.5 dark:border-emerald-500/30 dark:bg-emerald-500/10">
+              <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+              <p className="text-sm text-emerald-800 dark:text-emerald-200">
               Permohonan <span className="font-semibold">{terhapus}</span> beserta riwayat
               status dan lampirannya sudah dihapus permanen.
             </p>

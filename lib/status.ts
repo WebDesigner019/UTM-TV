@@ -86,25 +86,25 @@ export const JENIS_KALENDER: Record<
   kerjasama: {
     label: "Collab",
     petakClass: "bg-purple-700",
-    chipClass: "border-purple-300 bg-purple-50 text-purple-800",
+    chipClass: "border-purple-300 bg-purple-50 text-purple-800 dark:border-purple-500/40 dark:bg-purple-500/15 dark:text-purple-200",
     dotClass: "bg-purple-700"
   },
   liputan: {
     label: "Liputan",
     petakClass: "bg-blue-700",
-    chipClass: "border-blue-300 bg-blue-50 text-blue-800",
+    chipClass: "border-blue-300 bg-blue-50 text-blue-800 dark:border-blue-500/40 dark:bg-blue-500/15 dark:text-blue-200",
     dotClass: "bg-blue-700"
   },
   media_partner: {
     label: "Medpart",
     petakClass: "bg-yellow-700",
-    chipClass: "border-yellow-400 bg-yellow-50 text-yellow-900",
+    chipClass: "border-yellow-400 bg-yellow-50 text-yellow-900 dark:border-yellow-500/40 dark:bg-yellow-500/15 dark:text-yellow-200",
     dotClass: "bg-yellow-700"
   },
   peminjaman_podcast: {
     label: "Podcast",
     petakClass: "bg-emerald-700",
-    chipClass: "border-emerald-300 bg-emerald-50 text-emerald-800",
+    chipClass: "border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-500/40 dark:bg-emerald-500/15 dark:text-emerald-200",
     dotClass: "bg-emerald-700"
   }
 };

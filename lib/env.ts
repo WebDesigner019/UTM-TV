@@ -32,3 +32,9 @@ export function getUploadDir() {
 export function getAppUrl() {
   return (process.env.APP_URL || "http://localhost:3000").replace(/\/$/, "");
 }
+
+// Token verifikasi Google Search Console. Kosong berarti meta tag verifikasi
+// tidak dirender, jadi aman dibiarkan kosong sebelum domain didaftarkan.
+export function getGoogleSiteVerification() {
+  return (process.env.GOOGLE_SITE_VERIFICATION || "").trim();
+}

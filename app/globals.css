@@ -4,6 +4,48 @@
 
 :root {
   color-scheme: light;
+
+  --canvas: 245 245 247;
+  --ink: 29 29 31;
+  --line: 210 210 215;
+  --surface: 255 255 255;
+
+  --slate-50: 248 250 252;
+  --slate-100: 241 245 249;
+  --slate-200: 226 232 240;
+  --slate-300: 203 213 225;
+  --slate-400: 148 163 184;
+  --slate-500: 100 116 139;
+  --slate-600: 71 85 105;
+  --slate-700: 51 65 85;
+  --slate-800: 30 41 59;
+  --slate-900: 15 23 42;
+
+  --gray-50: 249 250 251;
+  --gray-100: 243 244 246;
+}
+
+.dark {
+  color-scheme: dark;
+
+  --canvas: 18 18 20;
+  --ink: 245 245 247;
+  --line: 58 58 60;
+  --surface: 30 30 32;
+
+  --slate-50: 38 38 41;
+  --slate-100: 45 45 49;
+  --slate-200: 58 58 63;
+  --slate-300: 110 110 117;
+  --slate-400: 152 152 159;
+  --slate-500: 176 176 182;
+  --slate-600: 199 199 204;
+  --slate-700: 216 216 220;
+  --slate-800: 228 228 231;
+  --slate-900: 238 238 241;
+
+  --gray-50: 38 38 41;
+  --gray-100: 45 45 49;
 }
 
 * {
@@ -19,8 +61,8 @@ html {
 
 body {
   margin: 0;
-  background: #f5f5f7;
-  color: #1d1d1f;
+  background: rgb(var(--canvas));
+  color: rgb(var(--ink));
   /* Jaring pengaman untuk konten yang kebetulan lebih lebar dari layar:
      clip, bukan hidden, supaya position sticky di header tetap jalan. */
   overflow-x: clip;
@@ -39,7 +81,7 @@ button {
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-brand-hover hover:shadow-[0_8px_24px_rgba(0,113,227,0.35)] active:scale-[0.98] active:bg-brand-active disabled:cursor-not-allowed disabled:opacity-60;
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-onbrand shadow-sm transition-all duration-200 hover:bg-brand-hover hover:shadow-[0_8px_24px_rgba(0,113,227,0.35)] active:scale-[0.98] active:bg-brand-active disabled:cursor-not-allowed disabled:opacity-60;
   }
 
   .btn-secondary {
@@ -71,7 +113,7 @@ button {
    * bawah sm supaya dialog tetap punya ruang baca yang layak di 360px.
    */
   .modal-overlay {
-    @apply fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ink/40 p-3 backdrop-blur-sm sm:items-center sm:p-4;
+    @apply fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 p-3 backdrop-blur-sm sm:items-center sm:p-4 dark:bg-black/70;
   }
 
   .modal-panel {

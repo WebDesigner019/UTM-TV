@@ -29,14 +29,14 @@ export function LayananProsedur() {
   useEffect(() => setMounted(true), []);
 
   return (
-    <div data-hero className="card h-fit border-amber-300 bg-amber-50/70 p-8">
+    <div data-hero className="card h-fit border-amber-300 bg-amber-50/70 p-8 dark:border-amber-500/30 dark:bg-amber-500/10">
       <div className="flex items-center gap-4">
-        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
           <AlertTriangle className="h-6 w-6" />
         </span>
         <div>
           <h2 className="font-semibold text-ink">Baca dulu sebelum mengajukan</h2>
-          <p className="mt-3 text-sm leading-6 text-amber-900/80">
+          <p className="mt-3 text-sm leading-6 text-amber-900/80 dark:text-amber-200/80">
             Sebelum mengajukan dan mengisi form, diharapkan untuk membaca dan memahami prosedur dan
             ketentuan tiap layanan COMPACT UTM TV.
           </p>

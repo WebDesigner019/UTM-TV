@@ -87,7 +87,7 @@ export function HapusDataModal({
   return (
     <>
       <button
-        className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-red-200 bg-red-50/70 px-5 py-2.5 text-sm font-semibold text-red-700 backdrop-blur transition-all duration-200 hover:bg-red-100 active:scale-[0.98]"
+        className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-red-200 bg-red-50/70 px-5 py-2.5 text-sm font-semibold text-red-700 backdrop-blur transition-all duration-200 hover:bg-red-100 active:scale-[0.98] dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300 dark:hover:bg-red-500/20"
         onClick={() => setOpen(true)}
         type="button"
       >
@@ -117,9 +117,9 @@ export function HapusDataModal({
             </div>
 
             <div className="modal-body">
-              <div className="flex gap-3 rounded-2xl border border-red-200/80 bg-red-50/70 px-4 py-4">
-                <TriangleAlert className="h-5 w-5 shrink-0 text-red-600" />
-                <p className="text-sm leading-6 text-red-800">
+              <div className="flex gap-3 rounded-2xl border border-red-200/80 bg-red-50/70 px-4 py-4 dark:border-red-500/30 dark:bg-red-500/10">
+                <TriangleAlert className="h-5 w-5 shrink-0 text-red-600 dark:text-red-400" />
+                <p className="text-sm leading-6 text-red-800 dark:text-red-200">
                   Permohonan <span className="font-semibold">{namaAcara}</span> akan dihapus permanen
                   dan tidak bisa dikembalikan.
                 </p>
@@ -132,13 +132,13 @@ export function HapusDataModal({
               </ul>
 
               {error ? (
-                <div className="mt-5 rounded-xl border border-red-200/80 bg-red-50/80 px-4 py-3 text-sm text-red-700">
+                <div className="mt-5 rounded-xl border border-red-200/80 bg-red-50/80 px-4 py-3 text-sm text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
                   {error}
                 </div>
               ) : null}
 
               <label className="mt-5 block text-sm font-medium text-ink" htmlFor="konfirmasi-hapus">
-                Ketik <span className="font-semibold text-red-700">{KATA_KONFIRMASI}</span> untuk
+                Ketik <span className="font-semibold text-red-700 dark:text-red-400">{KATA_KONFIRMASI}</span> untuk
                 melanjutkan
               </label>
               <input
@@ -158,7 +158,7 @@ export function HapusDataModal({
                   Batal
                 </button>
                 <button
-                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:bg-red-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-red-600 px-5 py-2.5 text-sm font-semibold text-onbrand transition-all duration-200 hover:bg-red-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                   disabled={!siapHapus}
                   onClick={onHapus}
                   type="button"

@@ -99,7 +99,7 @@ export function UbahDataModal({
                 />
               ) : (
                 <div className="py-6 text-center">
-                  <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+                  <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400">
                     <CheckCircle2 className="h-7 w-7" />
                   </span>
                   <h3 className="mt-4 text-xl font-bold tracking-tight text-ink">

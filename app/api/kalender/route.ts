@@ -13,6 +13,14 @@ import { todayISO } from "@/lib/status";
 export const dynamic = "force-dynamic";
 
 /**
+ * JSON kalender tidak boleh disimpan cache perantara mana pun. Klien meminta
+ * URL berbeda per bulan (?bulan=YYYY-MM), tapi tanpa header ini browser atau
+ * CDN di depan aplikasi boleh menjawab dari cache dan grid menampilkan event
+ * bulan yang salah di bawah judul bulan yang benar.
+ */
+const NO_STORE_HEADERS = { "Cache-Control": "no-store" };
+
+/**
  * Event kalender untuk satu bulan, dipanggil klien saat pengguna memindah
  * bulan. Tanpa ini kalender hanya bisa menampilkan bulan yang sedang berjalan.
  *
@@ -25,14 +33,14 @@ export async function GET(req: Request) {
   // Saklar yang sama dengan landing page. Kalau dimatikan admin, kalender
   // harus hilang juga di sini, bukan hanya jadi kosong.
   const aktif = await isKalenderPublikAktif();
-  if (!aktif) return NextResponse.json({ aktif: false });
+  if (!aktif) return NextResponse.json({ aktif: false }, { headers: NO_STORE_HEADERS });
 
   const diminta = new URL(req.url).searchParams.get("bulan") ?? todayISO().slice(0, 7);
   const bulan = tanggalDariBulan(diminta);
   if (!bulan) {
     return NextResponse.json(
       { aktif: true, galat: "Format bulan harus YYYY-MM, misalnya 2026-09." },
-      { status: 400 }
+      { status: 400, headers: NO_STORE_HEADERS }
     );
   }
 
@@ -43,10 +51,13 @@ export async function GET(req: Request) {
   if (Math.abs(geser) > MAKS_GESER_BULAN) {
     return NextResponse.json(
       { aktif: true, galat: `Hanya ${MAKS_GESER_BULAN} bulan dari bulan berjalan yang bisa dibuka.` },
-      { status: 400 }
+      { status: 400, headers: NO_STORE_HEADERS }
     );
   }
 
   const events = await getKalenderPermohonan(rentangGrid(bulan));
-  return NextResponse.json({ aktif: true, bulan: keTanggalKey(bulan), events });
+  return NextResponse.json(
+    { aktif: true, bulan: keTanggalKey(bulan), events },
+    { headers: NO_STORE_HEADERS }
+  );
 }

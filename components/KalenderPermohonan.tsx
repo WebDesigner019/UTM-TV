@@ -126,8 +126,11 @@ export function KalenderPermohonan({
    * ruang sia-sia.
    */
   const barisTerpakai = useMemo(() => {
+    // Hanya tanggal milik bulan ini yang menentukan baris terpakai. Sel bulan
+    // lain dirender kosong (lihat di bawah), jadi event di tanggal tersebut
+    // tidak boleh menahan baris yang isinya sudah tidak terlihat.
     const ada = (baris: (typeof grid)[number]) =>
-      baris.some((sel) => (eventPerTanggal.get(sel.key) ?? []).length > 0);
+      baris.some((sel) => sel.bulanIni && (eventPerTanggal.get(sel.key) ?? []).length > 0);
 
     let awal = 0;
     let akhir = grid.length - 1;
@@ -178,7 +181,14 @@ export function KalenderPermohonan({
     setMemuat(true);
     setGalat(null);
 
-    fetch(`/api/kalender?bulan=${bulan.slice(0, 7)}`, { signal: controller.signal })
+    // no-store: setiap bulan diminta lewat URL berbeda (?bulan=YYYY-MM),
+    // tapi tanpa ini browser atau CDN di depan aplikasi boleh menjawab dari
+    // cache dan grid menampilkan event bulan yang salah di bawah judul bulan
+    // yang benar.
+    fetch(`/api/kalender?bulan=${bulan.slice(0, 7)}`, {
+      signal: controller.signal,
+      cache: "no-store"
+    })
       .then(async (res) => {
         const data = await res.json();
         if (data.aktif === false) {
@@ -279,7 +289,7 @@ export function KalenderPermohonan({
 
       {galat !== null ? (
         <div
-          className="border-b border-line/70 bg-rose-50 px-4 py-2 text-xs text-rose-700 sm:px-6"
+            className="border-b border-line/70 bg-rose-50 px-4 py-2 text-xs text-rose-700 sm:px-6 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300"
           role="alert"
         >
           {galat}
@@ -336,6 +346,20 @@ export function KalenderPermohonan({
           {barisTerpakai.map((baris) => (
             <div className="grid flex-1 grid-cols-7 gap-0.5 sm:gap-1" key={`baris-${baris[0].key}`}>
               {baris.map((sel) => {
+                // Tanggal milik bulan lain tidak digambar: sel kosong menjaga
+                // posisi grid 7 kolom, tapi tanpa angka maupun event. Event di
+                // tanggal tersebut tetap ada di bulan asalnya, jadi tidak ada
+                // informasi yang hilang.
+                if (!sel.bulanIni) {
+                  return (
+                    <div
+                      aria-hidden="true"
+                      className="flex h-[52px] flex-col rounded-lg sm:h-[70px]"
+                      key={sel.key}
+                    />
+                  );
+                }
+
                 const list = eventPerTanggal.get(sel.key) ?? [];
                 const kosong = list.length === 0;
                 const jumlah = list.length;
@@ -364,11 +388,6 @@ export function KalenderPermohonan({
                       kosong
                         ? "cursor-default border-transparent bg-transparent"
                         : "cursor-pointer border-line/70 bg-white/80 hover:border-brand/50 hover:bg-white"
-                    } ${
-                      // Sel bulan lain diredupkan hanya kalau kosong. Kalau
-                      // berisi pengajuan, petaknya harus tetap terbaca: acara
-                      // bulan depan tetap acara yang dicari.
-                      !sel.bulanIni && kosong ? "opacity-40" : ""
                     }`}
                     disabled={kosong}
                     key={sel.key}
@@ -377,11 +396,7 @@ export function KalenderPermohonan({
                   >
                     <span
                       className={`inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full px-1 text-[11px] font-semibold leading-4 ${
-                        sel.key === today
-                          ? "bg-brand text-white"
-                          : sel.bulanIni
-                            ? "text-slate-600"
-                            : "text-slate-400"
+                        sel.key === today ? "bg-brand text-onbrand" : "text-slate-600"
                       }`}
                     >
                       {sel.tanggal.getDate()}
@@ -402,7 +417,7 @@ export function KalenderPermohonan({
                         >
                           {isi.map(({ jenis, n }) => (
                             <span
-                              className={`flex h-4 w-4 items-center justify-center rounded-[3px] text-[10px] font-bold leading-none text-white sm:h-3.5 sm:w-3.5 sm:text-[9px] ${JENIS_KALENDER[jenis].petakClass}`}
+                              className={`flex h-4 w-4 items-center justify-center rounded-[3px] text-[10px] font-bold leading-none text-onbrand sm:h-3.5 sm:w-3.5 sm:text-[9px] ${JENIS_KALENDER[jenis].petakClass}`}
                               key={jenis}
                               title={`${JENIS_KALENDER[jenis].label}: ${n}`}
                             >
@@ -421,7 +436,7 @@ export function KalenderPermohonan({
 
                             return (
                               <span
-                                className={`flex h-4 min-w-0 items-center justify-center truncate rounded px-1 text-[10px] font-medium leading-4 text-white ${gaya.petakClass}`}
+                                className={`flex h-4 min-w-0 items-center justify-center truncate rounded px-1 text-[10px] font-medium leading-4 text-onbrand ${gaya.petakClass}`}
                                 key={jenis}
                                 title={`${gaya.label}: ${n}`}
                               >

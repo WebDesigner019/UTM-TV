@@ -87,9 +87,9 @@ async function sendMail(
   await transporter.sendMail(mailOptions);
 }
 
-function buildEmailHtml(content: string, logoCid?: string) {
-  const logoHtml = logoCid
-    ? `<img src="cid:${logoCid}" alt="COMPACT" style="max-width:130px;height:auto;display:block;margin:0 auto;" />`
+function buildEmailHtml(content: string, logoSrc?: string) {
+  const logoHtml = logoSrc
+    ? `<img src="${logoSrc}" alt="COMPACT" width="130" style="max-width:130px;height:auto;display:block;margin:0 auto;border:0;outline:none;text-decoration:none;" />`
     : "";
   return `<!DOCTYPE html>
 <html lang="id">
@@ -230,12 +230,32 @@ function buildEmailHtml(content: string, logoCid?: string) {
 </html>`;
 }
 
-function getLogoAttachment(): Mail.Attachment[] {
+/**
+ * Logo email dikirim sebagai lampiran inline (CID) supaya tetap tampil walau
+ * klien email memblokir gambar remote. Bila berkas logo tidak ada di runtime,
+ * src jatuh ke URL publik supaya header tidak berisi gambar rusak.
+ */
+function getLogo(): { src: string; attachments: Mail.Attachment[] } {
   const logoPath = path.join(process.cwd(), "public", "assets", "utm-tv-logo.jpg");
   if (fs.existsSync(logoPath)) {
-    return [{ filename: "utm-tv-logo.jpg", path: logoPath, cid: "logo" }];
+    return {
+      src: "cid:compact-logo",
+      attachments: [
+        {
+          filename: "utm-tv-logo.jpg",
+          path: logoPath,
+          cid: "compact-logo",
+          contentType: "image/jpeg",
+          contentDisposition: "inline"
+        }
+      ]
+    };
   }
-  return [];
+
+  return {
+    src: `${getAppUrl()}/assets/utm-tv-logo.jpg`,
+    attachments: []
+  };
 }
 
 export async function sendPermohonanDiterimaEmail(input: {
@@ -247,6 +267,7 @@ export async function sendPermohonanDiterimaEmail(input: {
   const jenis = input.jenis || "liputan";
   const jenisLabel = JENIS_LABEL[jenis];
   const lacakUrl = `${getAppUrl()}/lacak`;
+  const logo = getLogo();
   const text = [
     `Permohonan ${jenisLabel} Anda telah diterima.`,
     "",
@@ -281,9 +302,9 @@ export async function sendPermohonanDiterimaEmail(input: {
     <div class="text-center mt-16">
       <a href="${lacakUrl}" class="btn btn-orange">Lacak Permohonan</a>
     </div>
-  `, "logo");
+  `, logo.src);
 
-  await sendMail(input.email, `Permohonan ${jenisLabel} diterima - ${input.nomorRujukan}`, text, html, getLogoAttachment());
+  await sendMail(input.email, `Permohonan ${jenisLabel} diterima - ${input.nomorRujukan}`, text, html, logo.attachments);
 }
 
 export async function sendStatusChangedEmail(input: {
@@ -298,6 +319,7 @@ export async function sendStatusChangedEmail(input: {
   const label = STATUS_LABEL[input.status];
   const color = STATUS_COLOR[input.status];
   const bg = STATUS_BG[input.status];
+  const logo = getLogo();
 
   const text = [
     `Status permohonan ${jenisLabel} ${input.nomorRujukan} diperbarui.`,
@@ -333,9 +355,9 @@ export async function sendStatusChangedEmail(input: {
     <div class="text-center mt-16">
       <a href="${getAppUrl()}/lacak" class="btn">Lacak Permohonan</a>
     </div>
-  `, "logo");
+  `, logo.src);
 
-  await sendMail(input.email, `Status permohonan ${jenisLabel} diperbarui - ${input.nomorRujukan}`, text, html, getLogoAttachment());
+  await sendMail(input.email, `Status permohonan ${jenisLabel} diperbarui - ${input.nomorRujukan}`, text, html, logo.attachments);
 }
 
 /**
@@ -354,6 +376,7 @@ export async function sendPermohonanDiperbaruiEmail(input: {
 }) {
   const jenisLabel = JENIS_LABEL[input.jenis];
   const lacakUrl = `${getAppUrl()}/lacak`;
+  const logo = getLogo();
 
   const text = [
     `Data pengajuan ${jenisLabel} Anda diperbarui oleh tim COMPACT.`,
@@ -407,14 +430,14 @@ export async function sendPermohonanDiperbaruiEmail(input: {
     <div class="text-center mt-16">
       <a href="${lacakUrl}" class="btn">Lacak Permohonan</a>
     </div>
-  `, "logo");
+  `, logo.src);
 
   await sendMail(
     input.email,
     `Data pengajuan ${jenisLabel} diperbarui - ${input.nomorRujukan}`,
     text,
     html,
-    getLogoAttachment()
+    logo.attachments
   );
 }
 
@@ -434,6 +457,7 @@ export async function sendPermohonanDisetujuiEmail(input: {
   const jenis = input.jenis || "liputan";
   const jenisLabel = JENIS_LABEL[jenis];
   const keterangan = input.pesan || "-";
+  const logo = getLogo();
 
   const isLiputan = jenis === "liputan";
   const isPodcast = jenis === "peminjaman_podcast";
@@ -523,9 +547,9 @@ export async function sendPermohonanDisetujuiEmail(input: {
     <div class="text-center mt-16">
       <a href="${getAppUrl()}/lacak" class="btn btn-orange">Cek Status</a>
     </div>
-  `, "logo");
+  `, logo.src);
 
-  await sendMail(input.email, `Pengajuan ${jenisLabel} disetujui`, text, html, getLogoAttachment());
+  await sendMail(input.email, `Pengajuan ${jenisLabel} disetujui`, text, html, logo.attachments);
 }
 
 export async function sendAdminPasswordResetEmail(input: {
@@ -533,6 +557,7 @@ export async function sendAdminPasswordResetEmail(input: {
   nama: string;
   resetUrl: string;
 }) {
+  const logo = getLogo();
   const text = [
     `Halo ${input.nama},`,
     "",
@@ -554,7 +579,7 @@ export async function sendAdminPasswordResetEmail(input: {
     </div>
     <p style="font-size:13px;color:#94a3b8;margin-top:24px;">Abaikan email ini jika Anda tidak merasa meminta reset password. Jika tombol tidak berfungsi, salin tautan berikut ke browser:</p>
     <p style="font-size:12px;color:#64748b;word-break:break-all;">${input.resetUrl}</p>
-  `, "logo");
+  `, logo.src);
 
-  await sendMail(input.email, "Reset password admin COMPACT", text, html, getLogoAttachment());
+  await sendMail(input.email, "Reset password admin COMPACT", text, html, logo.attachments);
 }

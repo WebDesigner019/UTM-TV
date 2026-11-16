@@ -3,6 +3,36 @@ import { JENIS_LABEL, type JenisPermohonan, STATUS_LABEL, formatTanggal } from "
 
 const FONNTE_API = "https://api.fonnte.com/send";
 
+function pesanDisetujui(jenisLabel: string, detail: string[], pesan?: string | null) {
+  return [
+    "*Hi, Tretan UTM* 👋",
+    "",
+    `Kabar baik! Pengajuan layanan ${jenisLabel} Anda telah DISETUJUI oleh tim UTM TV.`,
+    "",
+    "Berikut detail kegiatan yang telah dikonfirmasi:",
+    ...detail,
+    "✅ *Status*: Disetujui",
+    "",
+    "*Catatan dari Tim COMPACT*:",
+    pesan?.trim() || "-",
+    "",
+    "Terima kasih telah menggunakan layanan COMPACT UTM TV.",
+    "",
+    "Salam hangat,",
+    "*Tim Administrasi dan Kerjasama – UTM TV*"
+  ].join("\n");
+}
+
+function pesanGrup(jenisLabel: string, detail: string[]) {
+  return [
+    "*Hi, Tim Administrasi dan Kerjasama* 👋",
+    `Ada permohonan layanan ${jenisLabel} baru yang masuk dengan detail berikut:`,
+    ...detail,
+    "",
+    "Mohon segera dilakukan pengecekan dan tindak lanjut pengajuan."
+  ].join("\n");
+}
+
 async function sendFonnte(token: string, target: string, message: string) {
   const response = await fetch(FONNTE_API, {
     method: "POST",
@@ -38,24 +68,19 @@ export async function sendWaToUser(input: {
   }
 
   const tanggal = formatTanggal(input.tanggalAcara);
-  const keterangan = input.pesan || "-";
 
-  const message = [
-    `Hi Tretan COMPACT!👋`,
-    `pengajuan liputan anda telah disetujui:`,
-    `nama acara: ${input.namaAcara}`,
-    `tempat: ${input.tempatAcara}`,
-    `tanggal: ${tanggal}`,
-    // Baris waktu hanya muncul kalau pemohon mengisinya, supaya pesan tidak
-    // memunculkan "waktu: -" untuk pengajuan yang jadwalnya memang belum pasti.
-    ...(input.waktuAcara ? [`waktu: ${input.waktuAcara}`] : []),
-    `status: disetujui`,
-    ``,
-    `dengan keterangan:`,
-    `${keterangan}`,
-    ``,
-    `terimakasih, salam hangat COMPACT.`
-  ].join("\n");
+  const message = pesanDisetujui(
+    JENIS_LABEL.liputan,
+    [
+      `📌 *Nama Acara*: ${input.namaAcara}`,
+      `📍 *Tempat*: ${input.tempatAcara}`,
+      `📅 *Tanggal*: ${tanggal}`,
+      // Baris waktu hanya muncul kalau pemohon mengisinya, supaya pesan tidak
+      // memunculkan "waktu: -" untuk pengajuan yang jadwalnya memang belum pasti.
+      ...(input.waktuAcara ? [`⏰ *Waktu*: ${input.waktuAcara}`] : [])
+    ],
+    input.pesan
+  );
 
   await sendFonnte(token, input.noWa, message);
 }
@@ -73,20 +98,15 @@ export async function sendWaMediaPartnerToUser(input: {
   }
 
   const tanggal = input.tanggalRequestUpload ? formatTanggal(input.tanggalRequestUpload) : "-";
-  const keterangan = input.pesan || "-";
 
-  const message = [
-    `Hi Tretan COMPACT!👋`,
-    `pengajuan media partner anda telah disetujui:`,
-    `nama acara: ${input.namaAcara}`,
-    `tanggal request upload: ${tanggal}`,
-    `status: disetujui`,
-    ``,
-    `dengan keterangan:`,
-    `${keterangan}`,
-    ``,
-    `terimakasih, salam hangat COMPACT.`
-  ].join("\n");
+  const message = pesanDisetujui(
+    JENIS_LABEL.media_partner,
+    [
+      `📌 *Nama Acara*: ${input.namaAcara}`,
+      `📅 *Tanggal Request Upload*: ${tanggal}`
+    ],
+    input.pesan
+  );
 
   await sendFonnte(token, input.noWa, message);
 }
@@ -104,20 +124,15 @@ export async function sendWaKerjasamaToUser(input: {
   }
 
   const tanggal = input.tanggalRequestUpload ? formatTanggal(input.tanggalRequestUpload) : "-";
-  const keterangan = input.pesan || "-";
 
-  const message = [
-    `Hi Tretan COMPACT!👋`,
-    `pengajuan kerjasama anda telah disetujui:`,
-    `nama acara: ${input.namaAcara}`,
-    `tanggal request upload: ${tanggal}`,
-    `status: disetujui`,
-    ``,
-    `dengan keterangan:`,
-    `${keterangan}`,
-    ``,
-    `terimakasih, salam hangat COMPACT.`
-  ].join("\n");
+  const message = pesanDisetujui(
+    JENIS_LABEL.kerjasama,
+    [
+      `📌 *Nama Acara*: ${input.namaAcara}`,
+      `📅 *Tanggal Request Upload*: ${tanggal}`
+    ],
+    input.pesan
+  );
 
   await sendFonnte(token, input.noWa, message);
 }
@@ -136,21 +151,15 @@ export async function sendWaPeminjamanPodcastToUser(input: {
     return;
   }
 
-  const keterangan = input.pesan || "-";
-
-  const message = [
-    `Hi Tretan COMPACT!👋`,
-    `pengajuan peminjaman ruang podcast anda telah disetujui:`,
-    `nama acara: ${input.namaAcara}`,
-    `tanggal: ${formatTanggal(input.tanggalPeminjaman)}`,
-    `waktu: ${input.waktuMulai} - ${input.waktuSelesai}`,
-    `status: disetujui`,
-    ``,
-    `dengan keterangan:`,
-    `${keterangan}`,
-    ``,
-    `terimakasih, salam hangat COMPACT.`
-  ].join("\n");
+  const message = pesanDisetujui(
+    JENIS_LABEL.peminjaman_podcast,
+    [
+      `📌 *Nama Acara*: ${input.namaAcara}`,
+      `📅 *Tanggal*: ${formatTanggal(input.tanggalPeminjaman)}`,
+      `⏰ *Waktu*: ${input.waktuMulai} - ${input.waktuSelesai}`
+    ],
+    input.pesan
+  );
 
   await sendFonnte(token, input.noWa, message);
 }
@@ -244,19 +253,16 @@ export async function sendWaGroupNotification(input: {
     return;
   }
 
-  const message = [
-    "Hi COMPACT!",
-    "ada permohonan pengajuan liputan berikut detailnya:",
-    "",
-    `nama instansi: ${input.namaInstansi}`,
-    `nama acara: ${input.namaAcara}`,
-    `tempat acara: ${input.tempatAcara}`,
-    `detail peserta/audiens: ${input.detailPesertaAudiens || "-"}`,
-    `tanggal acara: ${formatTanggal(input.tanggalAcara)}`,
-    `waktu acara: ${input.waktuAcara || "-"}`,
-    `No whatsapp: ${input.noWa}`,
-    `email: ${input.email}`
-  ].join("\n");
+  const message = pesanGrup(JENIS_LABEL.liputan, [
+    `📌 *Instansi*: ${input.namaInstansi}`,
+    `🎥 *Acara*: ${input.namaAcara}`,
+    `📍 *Tempat*: ${input.tempatAcara}`,
+    `📅 *Tanggal*: ${formatTanggal(input.tanggalAcara)}`,
+    `⏰ *Waktu*: ${input.waktuAcara || "-"}`,
+    `👥 *Detail*: ${input.detailPesertaAudiens || "-"}`,
+    `📞 *WhatsApp*: ${input.noWa}`,
+    `✉️ *Email*: ${input.email}`
+  ]);
 
   await sendToGroup(token, groupId, message);
 }
@@ -266,6 +272,7 @@ export async function sendWaGroupNotificationMediaPartner(input: {
   namaAcara: string;
   tanggalRequestUpload: Date;
   kontakPenanggungJawab: string;
+  email: string;
 }) {
   const token = process.env.FONNTE_WA_API;
   const groupId = process.env.FONNTE_GROUP_ID;
@@ -274,15 +281,16 @@ export async function sendWaGroupNotificationMediaPartner(input: {
     return;
   }
 
-  const message = [
-    "Hi COMPACT!",
-    "ada permohonan pengajuan media partner berikut detailnya:",
-    "",
-    `fakultas/organisasi: ${input.fakultasOrganisasi}`,
-    `nama acara: ${input.namaAcara}`,
-    `tanggal request upload: ${formatTanggal(input.tanggalRequestUpload)}`,
-    `kontak penanggung jawab: ${input.kontakPenanggungJawab}`
-  ].join("\n");
+  const message = pesanGrup(JENIS_LABEL.media_partner, [
+    `📌 *Instansi*: ${input.fakultasOrganisasi}`,
+    `🎥 *Acara*: ${input.namaAcara}`,
+    `📍 *Tempat*: -`,
+    `📅 *Tanggal*: ${formatTanggal(input.tanggalRequestUpload)}`,
+    `⏰ *Waktu*: -`,
+    `👥 *Detail*: -`,
+    `📞 *WhatsApp*: ${input.kontakPenanggungJawab}`,
+    `✉️ *Email*: ${input.email}`
+  ]);
 
   await sendToGroup(token, groupId, message);
 }
@@ -292,6 +300,7 @@ export async function sendWaGroupNotificationKerjasama(input: {
   namaAcara: string;
   tanggalRequestUpload?: Date | null;
   kontakPenanggungJawab: string;
+  email: string;
 }) {
   const token = process.env.FONNTE_WA_API;
   const groupId = process.env.FONNTE_GROUP_ID;
@@ -300,15 +309,16 @@ export async function sendWaGroupNotificationKerjasama(input: {
     return;
   }
 
-  const message = [
-    "Hi COMPACT!",
-    "ada permohonan pengajuan kerjasama berikut detailnya:",
-    "",
-    `fakultas/organisasi: ${input.fakultasOrganisasi}`,
-    `nama acara: ${input.namaAcara}`,
-    `tanggal request upload: ${input.tanggalRequestUpload ? formatTanggal(input.tanggalRequestUpload) : "-"}`,
-    `kontak penanggung jawab: ${input.kontakPenanggungJawab}`
-  ].join("\n");
+  const message = pesanGrup(JENIS_LABEL.kerjasama, [
+    `📌 *Instansi*: ${input.fakultasOrganisasi}`,
+    `🎥 *Acara*: ${input.namaAcara}`,
+    `📍 *Tempat*: -`,
+    `📅 *Tanggal*: ${input.tanggalRequestUpload ? formatTanggal(input.tanggalRequestUpload) : "-"}`,
+    `⏰ *Waktu*: -`,
+    `👥 *Detail*: -`,
+    `📞 *WhatsApp*: ${input.kontakPenanggungJawab}`,
+    `✉️ *Email*: ${input.email}`
+  ]);
 
   await sendToGroup(token, groupId, message);
 }
@@ -330,18 +340,16 @@ export async function sendWaGroupNotificationPeminjamanPodcast(input: {
     return;
   }
 
-  const message = [
-    "Hi COMPACT!",
-    "ada permohonan peminjaman ruang podcast berikut detailnya:",
-    "",
-    `nama instansi/organisasi: ${input.namaInstansi}`,
-    `nama acara/tujuan: ${input.namaAcara}`,
-    `tanggal: ${formatTanggal(input.tanggalPeminjaman)}`,
-    `waktu: ${input.waktuMulai} - ${input.waktuSelesai}`,
-    `kontak penanggung jawab: ${input.kontakPenanggungJawab}`,
-    `note detail: ${input.noteDetail || "-"}`,
-    `email: ${input.email}`
-  ].join("\n");
+  const message = pesanGrup(JENIS_LABEL.peminjaman_podcast, [
+    `📌 *Instansi*: ${input.namaInstansi}`,
+    `🎥 *Acara*: ${input.namaAcara}`,
+    `📍 *Tempat*: Ruang Podcast`,
+    `📅 *Tanggal*: ${formatTanggal(input.tanggalPeminjaman)}`,
+    `⏰ *Waktu*: ${input.waktuMulai} - ${input.waktuSelesai}`,
+    `👥 *Detail*: ${input.noteDetail || "-"}`,
+    `📞 *WhatsApp*: ${input.kontakPenanggungJawab}`,
+    `✉️ *Email*: ${input.email}`
+  ]);
 
   await sendToGroup(token, groupId, message);
 }

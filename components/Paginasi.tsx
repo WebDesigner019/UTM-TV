@@ -7,7 +7,7 @@ const JUMLAH_TOMBOL = 5;
 /* 44px di ponsel supaya target sentuhnya layak, lalu kembali 36px di sm
    supaya tujuh kontrol masih muat satu baris di tablet. */
 const KELAS = "inline-flex h-11 min-w-11 items-center justify-center gap-1 rounded-full px-3.5 text-sm font-semibold transition-colors duration-150 sm:h-9 sm:min-w-9";
-const KELAS_AKTIF = `${KELAS} bg-brand text-white`;
+const KELAS_AKTIF = `${KELAS} bg-brand text-onbrand`;
 const KELAS_NORMAL = `${KELAS} text-ink hover:bg-slate-100`;
 const KELAS_MATI = `${KELAS} text-slate-300`;
 

@@ -39,15 +39,24 @@ const nextConfig = {
   async headers() {
     return [
       {
-        source: "/api/admin/permohonan/:id/file/preview",
-        headers: [
-          ...securityHeaders,
-          { key: "Content-Security-Policy", value: "sandbox; default-src 'none'" }
-        ]
-      },
-      {
         source: "/:path*",
         headers: securityHeaders
+      },
+      {
+        // Ditaruh sesudah "/:path*" supaya menang atas X-Frame-Options: DENY
+        // di atas: Next menggabung header dari semua source yang cocok dan
+        // entri belakangan menimpa yang lebih dulu untuk kunci yang sama.
+        source: "/api/admin/permohonan/:id/file/preview",
+        headers: [
+          // SAMEORIGIN, bukan DENY: halaman admin menanam endpoint ini di
+          // <iframe> (PreviewSurat.tsx). DENY membuat browser menolak
+          // memuatnya ("refused to connect"). SAMEORIGIN tetap menolak situs
+          // lain menanamnya, dan frame-ancestors di CSP menegaskan hal yang
+          // sama untuk browser modern.
+          ...securityHeaders.filter(({ key }) => key !== "X-Frame-Options"),
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "Content-Security-Policy", value: "sandbox; default-src 'none'; frame-ancestors 'self'" }
+        ]
       },
       {
         // Halaman admin dan endpoint API tidak ada gunanya di indeks mesin

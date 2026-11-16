@@ -291,7 +291,7 @@ export function FileInput({
                 // eslint-disable-next-line @next/next/no-img-element
                 <img alt="" className="h-full w-full object-cover" src={previewUrl} />
               ) : getExtension(file.name) === "pdf" ? (
-                <span className="flex h-full w-full items-center justify-center bg-red-50 text-red-600">
+                <span className="flex h-full w-full items-center justify-center bg-red-50 text-red-600 dark:bg-red-500/15 dark:text-red-400">
                   <FileText className="h-6 w-6" />
                 </span>
               ) : (
@@ -309,7 +309,7 @@ export function FileInput({
               <p className="mt-0.5 text-sm text-slate-500 sm:text-[13px]">
                 {getTypeLabel(file)} &middot; {formatBytes(file.size)}
               </p>
-              <p className="mt-0.5 flex items-center gap-1 text-sm font-medium text-emerald-600 sm:text-[13px]">
+              <p className="mt-0.5 flex items-center gap-1 text-sm font-medium text-emerald-600 sm:text-[13px] dark:text-emerald-400">
                 <CheckCircle2 className="h-3.5 w-3.5" />
                 {modeGanti ? "Siap menggantikan lampiran" : "Siap diunggah"}
               </p>
@@ -317,7 +317,7 @@ export function FileInput({
 
             <button
               aria-label={`Hapus berkas ${file.name}`}
-              className="shrink-0 rounded-full p-2.5 text-slate-400 transition-colors duration-200 hover:bg-red-50 hover:text-red-600 sm:p-1.5"
+              className="shrink-0 rounded-full p-2.5 text-slate-400 transition-colors duration-200 hover:bg-red-50 hover:text-red-600 sm:p-1.5 dark:hover:bg-red-500/15 dark:hover:text-red-400"
               onClick={clearFile}
               type="button"
             >
@@ -361,7 +361,7 @@ export function FileInput({
       </div>
 
       {error ? (
-        <p className="mt-2 text-sm font-medium text-red-600 sm:text-[13px]">{error}</p>
+          <p className="mt-2 text-sm font-medium text-red-600 sm:text-[13px] dark:text-red-400">{error}</p>
       ) : null}
       {!error && hint ? <p className="mt-2 text-sm text-slate-500 sm:text-[13px]">{hint}</p> : null}
     </div>

@@ -115,7 +115,7 @@ export function TambahDataModal({ filterAktif }: { filterAktif: boolean }) {
 
               {step.name === "selesai" ? (
                 <div className="py-6 text-center">
-                  <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+                  <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400">
                     <CheckCircle2 className="h-7 w-7" />
                   </span>
                   <h3 className="mt-4 text-xl font-bold tracking-tight text-ink">Data tersimpan</h3>
@@ -129,7 +129,7 @@ export function TambahDataModal({ filterAktif }: { filterAktif: boolean }) {
                   </p>
 
                   {filterAktif ? (
-                    <p className="mx-auto mt-4 max-w-md rounded-xl border border-amber-200/80 bg-amber-50/80 px-4 py-3 text-[13px] leading-5 text-amber-900">
+                    <p className="mx-auto mt-4 max-w-md rounded-xl border border-amber-200/80 bg-amber-50/80 px-4 py-3 text-[13px] leading-5 text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
                       Filter atau pencarian sedang aktif, jadi data ini mungkin tidak terlihat di
                       daftar. Klik &quot;Filter&quot; dengan kosongkan kolom untuk melihat semua data.
                     </p>

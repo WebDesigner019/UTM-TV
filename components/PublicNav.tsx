@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const AJUKAN_TARGET = "/#pilih-jenis";
 
@@ -70,6 +71,7 @@ export function PublicNav() {
           <span suppressHydrationWarning>COMPACT UTM TV</span>
         </Link>
         <nav className="flex items-center gap-1.5 text-xs sm:gap-2 sm:text-sm">
+          <ThemeToggle />
           <Link
             className="relative whitespace-nowrap rounded-full px-3 py-2.5 font-medium text-ink transition-colors duration-200 after:absolute after:inset-x-4 after:bottom-1.5 after:h-px after:origin-left after:scale-x-0 after:bg-ink after:transition-transform after:duration-300 hover:bg-gray-100 hover:after:scale-x-100 sm:px-4"
             href="/lacak"
@@ -77,7 +79,7 @@ export function PublicNav() {
             Cek Status
           </Link>
           <Link
-            className="whitespace-nowrap rounded-full bg-brand px-3 py-2.5 font-medium text-white shadow-sm transition-all duration-200 hover:bg-brand-hover hover:shadow-elevated active:scale-[0.98] sm:px-4 sm:text-sm"
+            className="whitespace-nowrap rounded-full bg-brand px-3 py-2.5 font-medium text-onbrand shadow-sm transition-all duration-200 hover:bg-brand-hover hover:shadow-elevated active:scale-[0.98] sm:px-4 sm:text-sm"
             href={AJUKAN_TARGET}
             onClick={onAjukanClick}
           >

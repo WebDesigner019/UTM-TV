@@ -127,8 +127,8 @@ export default async function Home() {
           </div>
         </section>
       </main>
-      <footer data-reveal className="border-t border-line/70 bg-white/60 px-4 py-8 text-center text-sm text-slate-500 backdrop-blur">
-        COMPACT - Universitas Trunojoyo Madura
+      <footer className="border-t border-line/70 bg-white/60 px-4 py-8 text-center text-sm text-slate-500 backdrop-blur">
+        UTM-TV Integritas Terpercaya
       </footer>
     </>
   );

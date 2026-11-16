@@ -160,7 +160,48 @@ Buat admin pertama setelah migration dan build selesai, ada di langkah 4.
 
 ### 3. Reverse proxy dengan TLS
 
-Contoh nginx:
+Pasang nginx dan certbot:
+
+```bash
+sudo apt update
+sudo apt install -y nginx certbot python3-certbot-nginx
+```
+
+Urutannya penting: blok 443 tidak bisa dimuat nginx sebelum berkas sertifikat ada, sedangkan certbot butuh nginx di depan port 80 untuk menjawab tantangan HTTP-01. Jadi pasang dulu konfigurasi HTTP saja, terbitkan sertifikat, baru aktifkan TLS.
+
+Konfigurasi sementara tanpa TLS di `/etc/nginx/sites-available/utm-tv`:
+
+```nginx
+server {
+    listen 80;
+    server_name tv.trunojoyo.ac.id;
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 120s;
+    }
+}
+```
+
+Aktifkan, lalu terbitkan sertifikat dengan authenticator `nginx`. `certonly` hanya mengambil berkas sertifikat dan tidak menyentuh konfigurasi ini, jadi blok TLS di bawah tetap jadi satu-satunya sumber kebenaran:
+
+```bash
+sudo ln -s /etc/nginx/sites-available/utm-tv /etc/nginx/sites-enabled/utm-tv
+sudo nginx -t && sudo systemctl reload nginx
+
+sudo certbot certonly --nginx \
+  -d tv.trunojoyo.ac.id \
+  --agree-tos -m admin@trunojoyo.ac.id --no-eff-email
+```
+
+Sertifikat dan rantainya tersimpan di `/etc/letsencrypt/live/tv.trunojoyo.ac.id/`. Ganti `admin@trunojoyo.ac.id` dengan alamat yang benar, karena Let's Encrypt memakainya untuk notifikasi kedaluwarsa. Nama domain harus cocok persis dengan `server_name`; menggantinya berarti menerbitkan sertifikat baru.
+
+Konfigurasi akhir dengan TLS:
 
 ```nginx
 server {
@@ -197,6 +238,13 @@ Aktifkan lalu cek konfigurasi sebelum reload. `nginx -t` yang gagal reload bisa 
 
 ```bash
 sudo nginx -t && sudo systemctl reload nginx
+```
+
+Paket `python3-certbot-nginx` memasang timer systemd yang memperbarui sertifikat otomatis dan memuat ulang nginx. Cek sekali setelah setup, dan ulangi `--dry-run` sesudah tiap perubahan konfigurasi karena pembaruan berjalan tanpa pengawasan:
+
+```bash
+systemctl list-timers certbot.timer
+sudo certbot renew --dry-run
 ```
 
 `proxy_add_x_forwarded_for` menambahkan IP asli ke header. Aplikasi membacanya hanya sebanyak `TRUSTED_PROXY_HOPS`. Kalau nilainya tetap `0`, seluruh pengunjung terlihat berasal dari satu alamat dan rate limit ikut menolak orang yang tidak bersalah. Kalau lebih besar dari jumlah proxy sebenarnya, penyerang bisa memakai IP palsu untuk melewati rate limit.
@@ -376,6 +424,7 @@ Yang perlu diketahui:
 - Port MySQL tidak dipublikasikan ke host, jadi database hanya bisa dijangkau dari container app. Untuk masuk manual: `docker compose exec mysql mysql -u root -p utmtv_liputan`.
 - Seed admin lewat service migrate, karena `migrate` sudah berhenti: `docker compose run --rm migrate npx tsx prisma/seed.ts`.
 - Log container dibatasi 10 MB x 5 file lewat driver `json-file`.
+- Compose tidak menangani terminasi TLS. Jalankan reverse proxy (nginx atau Caddy) di host atau container lain untuk sertifikat Let's Encrypt, arahkan ke port `APP_PORT`, lalu set `TRUSTED_PROXY_HOPS=1` supaya rate limit membaca IP asli. Langkah certbot-nya sama seperti bagian [Reverse proxy dengan TLS](#3-reverse-proxy-dengan-tls).
 
 `MYSQL_PASSWORD`, `MYSQL_ROOT_PASSWORD`, dan `JWT_SECRET` wajib diisi di `.env`, compose berhenti kalau kosong.
 

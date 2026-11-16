@@ -3,10 +3,10 @@ import type { StatusPermohonan } from "@prisma/client";
 import { STATUS_LABEL } from "@/lib/status";
 
 const STYLES: Record<StatusPermohonan, { icon: typeof Inbox; bg: string; text: string }> = {
-  diterima: { icon: Inbox, bg: "bg-blue-50", text: "text-blue-600" },
-  disetujui: { icon: CheckCircle2, bg: "bg-green-50", text: "text-green-600" },
-  ditolak: { icon: CircleSlash, bg: "bg-red-50", text: "text-red-600" },
-  selesai: { icon: PartyPopper, bg: "bg-teal-50", text: "text-teal-600" }
+  diterima: { icon: Inbox, bg: "bg-blue-50 dark:bg-blue-500/15", text: "text-blue-600 dark:text-blue-300" },
+  disetujui: { icon: CheckCircle2, bg: "bg-green-50 dark:bg-green-500/15", text: "text-green-600 dark:text-green-300" },
+  ditolak: { icon: CircleSlash, bg: "bg-red-50 dark:bg-red-500/15", text: "text-red-600 dark:text-red-300" },
+  selesai: { icon: PartyPopper, bg: "bg-teal-50 dark:bg-teal-500/15", text: "text-teal-600 dark:text-teal-300" }
 };
 
 export function StatusBadge({ status }: { status: StatusPermohonan }) {
