@@ -1,10 +1,11 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Search, Video, Handshake, Megaphone, Mic, Phone } from "lucide-react";
+import { Phone, Search } from "lucide-react";
 import { KalenderPermohonan } from "@/components/KalenderPermohonan";
 import { LayananProsedur } from "@/components/LayananProsedur";
 import { PublicNav } from "@/components/PublicNav";
 import { LandingAnimations } from "@/components/LandingAnimations";
+import { ScrollAccordion } from "@/components/ScrollAccordion";
 import { getKalenderPermohonan, isKalenderPublikAktif } from "@/lib/kalender";
 import { rentangGrid, tanggalDariKey } from "@/lib/kalender-grid";
 import { todayISO } from "@/lib/status";
@@ -77,40 +78,7 @@ export default async function Home() {
           </section>
         ) : null}
 
-        <section id="pilih-jenis" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-12 sm:py-16">
-          <h2 data-reveal className="text-balance text-2xl font-bold tracking-tight text-ink sm:text-3xl md:text-4xl">Pilih Jenis Pengajuan</h2>
-          <p data-reveal className="mt-3 text-base text-slate-500 sm:text-lg">Pilih salah satu jenis pengajuan sesuai kebutuhan Anda bersama COMPACT.</p>
-          <div className="mt-8 grid gap-5 sm:grid-cols-2 md:mt-10 md:grid-cols-4" data-reveal-group>
-            <JenisCard
-              icon={<Megaphone className="h-6 w-6" />}
-              title="Pengajuan Liputan"
-              text="Ajukan permohonan liputan acara kampus Anda dan pantau statusnya sampai proses selesai."
-              href="/ajukan"
-              cta="Ajukan Liputan"
-            />
-            <JenisCard
-              icon={<Handshake className="h-6 w-6" />}
-              title="Pengajuan Media Partner"
-              text="Bentuk kolaborasi publikasi poster dan promosi acara bersama COMPACT sebagai media partner."
-              href="/ajukan/media-partner"
-              cta="Ajukan Media Partner"
-            />
-            <JenisCard
-              icon={<Video className="h-6 w-6" />}
-              title="Pengajuan Kerjasama"
-              text="Ajukan bentuk kerjasama lainnya bersama COMPACT dalam bentuk kolaborasi media."
-              href="/ajukan/kerjasama"
-              cta="Ajukan Kerjasama"
-            />
-            <JenisCard
-              icon={<Mic className="h-6 w-6" />}
-              title="Pengajuan Peminjaman Ruang Podcast"
-              text="Ajukan peminjaman ruang podcast COMPACT untuk kebutuhan rekaman dan produksi konten Anda."
-              href="/ajukan/peminjaman-podcast"
-              cta="Ajukan Ruang Podcast"
-            />
-          </div>
-        </section>
+        <ScrollAccordion />
 
         <section className="border-y border-line/70 bg-gradient-to-b from-white/70 to-white/40 py-12 backdrop-blur sm:py-16">
           <div className="mx-auto max-w-3xl px-4 text-center">
@@ -128,40 +96,9 @@ export default async function Home() {
         </section>
       </main>
       <footer className="border-t border-line/70 bg-white/60 px-4 py-8 text-center text-sm text-slate-500 backdrop-blur">
-        UTM-TV Integritas Terpercaya
+        <p>UTM-TV Integritas Terpercaya</p>
+        <p className="mt-1 text-xs text-slate-400">COMPACT 2.0.0</p>
       </footer>
     </>
-  );
-}
-
-function JenisCard({
-  icon,
-  title,
-  text,
-  href,
-  cta
-}: {
-  icon: React.ReactNode;
-  title: string;
-  text: string;
-  href: string;
-  cta: string;
-}) {
-  return (
-    <div
-      className="card group flex flex-col p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-elevated sm:p-8"
-      data-reveal-item
-    >
-      <span className="tile-icon h-14 w-14 transition-transform duration-300 group-hover:scale-110">{icon}</span>
-      <h3 className="mt-6 break-words text-lg font-semibold tracking-tight text-ink sm:text-xl">
-        {title}
-      </h3>
-      <p className="mt-2 flex-1 text-[15px] leading-6 text-slate-500">{text}</p>
-      {/* Tombol dibuat selebar kartu di ponsel supaya target sentuhnya besar,
-          lalu kembali ke lebar isinya di layar lebar. */}
-      <Link href={href} className="btn-primary mt-7 w-full justify-center sm:w-auto sm:self-start">
-        {cta} <ArrowRight className="h-4 w-4" />
-      </Link>
-    </div>
   );
 }

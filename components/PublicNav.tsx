@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { scrollToTarget } from "@/lib/smooth-scroll";
 
 const AJUKAN_TARGET = "/#pilih-jenis";
 
@@ -26,7 +27,8 @@ export function PublicNav() {
     // Beranda baru dirender saat navigasi dari halaman lain, jadi targetnya
     // dicari setelah frame supaya elemen section sudah ada di DOM.
     const raf = requestAnimationFrame(() => {
-      document.getElementById("pilih-jenis")?.scrollIntoView({ block: "start" });
+      const target = document.getElementById("pilih-jenis");
+      if (target) scrollToTarget(target, false);
     });
     return () => cancelAnimationFrame(raf);
   }, [pathname]);
@@ -44,7 +46,7 @@ export function PublicNav() {
       if (!target) return;
 
       event.preventDefault();
-      target.scrollIntoView({ behavior: "smooth", block: "start" });
+      scrollToTarget(target);
       window.history.replaceState(null, "", AJUKAN_TARGET);
     },
     [pathname]

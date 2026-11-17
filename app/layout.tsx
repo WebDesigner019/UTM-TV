@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getAppUrl, getGoogleSiteVerification } from "@/lib/env";
+import { SmoothScroll } from "@/components/SmoothScroll";
 import "./globals.css";
 
 const googleSiteVerification = getGoogleSiteVerification();
@@ -29,6 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="id" translate="no" className="notranslate" suppressHydrationWarning>
       <body suppressHydrationWarning>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <SmoothScroll />
         {children}
       </body>
     </html>
