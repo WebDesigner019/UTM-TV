@@ -8,6 +8,18 @@ export function setLenis(instance: Lenis | null) {
   activeLenis = instance;
 }
 
+type AccordionJumpHandler = (index: number) => boolean;
+
+let accordionJumpHandler: AccordionJumpHandler | null = null;
+
+export function setAccordionJumpHandler(handler: AccordionJumpHandler | null) {
+  accordionJumpHandler = handler;
+}
+
+export function jumpToAccordion(index: number) {
+  return accordionJumpHandler ? accordionJumpHandler(index) : false;
+}
+
 export function scrollToTarget(target: HTMLElement, smooth = true) {
   if (activeLenis) {
     activeLenis.scrollTo(target, { offset: 0, immediate: !smooth });

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { scrollToTarget } from "@/lib/smooth-scroll";
+import { jumpToAccordion, scrollToTarget } from "@/lib/smooth-scroll";
 
 const AJUKAN_TARGET = "/#pilih-jenis";
 
@@ -24,30 +24,35 @@ export function PublicNav() {
     if (pathname !== "/") return;
     if (window.location.hash !== "#pilih-jenis") return;
 
-    // Beranda baru dirender saat navigasi dari halaman lain, jadi targetnya
-    // dicari setelah frame supaya elemen section sudah ada di DOM.
-    const raf = requestAnimationFrame(() => {
+    // Beranda baru dirender saat navigasi dari halaman lain. Accordion perlu
+    // waktu untuk menyiapkan handler lompat, jadi tunggu beberapa frame dulu
+    // sebelum jatuh ke scroll statis.
+    let frame = 0;
+    let raf = 0;
+    const tryJump = () => {
+      if (jumpToAccordion(0)) return;
+      if (frame < 30) {
+        frame += 1;
+        raf = requestAnimationFrame(tryJump);
+        return;
+      }
       const target = document.getElementById("pilih-jenis");
       if (target) scrollToTarget(target, false);
-    });
+    };
+    raf = requestAnimationFrame(tryJump);
     return () => cancelAnimationFrame(raf);
   }, [pathname]);
 
-  /**
-   * Tombol "Ajukan" membawa pengguna ke beranda lalu ke section "Pilih Jenis
-   * Pengajuan". Kalau sedang sudah di beranda, scroll dilakukan manual supaya
-   * elemen dengan animasi reveal sudah ikut ter-scroll trigger.
-   */
+  // Tombol "Ajukan" langsung membuka kartu pertama accordion (Pengajuan
+  // Liputan), bukan hanya menggulir ke judul section-nya.
   const onAjukanClick = useCallback(
     (event: React.MouseEvent<HTMLAnchorElement>) => {
       if (pathname !== "/") return;
-
-      const target = document.getElementById("pilih-jenis");
-      if (!target) return;
-
       event.preventDefault();
-      scrollToTarget(target);
       window.history.replaceState(null, "", AJUKAN_TARGET);
+      if (jumpToAccordion(0)) return;
+      const target = document.getElementById("pilih-jenis");
+      if (target) scrollToTarget(target);
     },
     [pathname]
   );

@@ -48,6 +48,7 @@ const config: Config = {
         }
       },
       fontFamily: {
+        display: ["var(--font-bebas)", "Impact", "sans-serif"],
         sans: [
           "-apple-system",
           "BlinkMacSystemFont",

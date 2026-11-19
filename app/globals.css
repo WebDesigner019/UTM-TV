@@ -176,8 +176,96 @@ button {
   }
 }
 
+/*
+ * Judul COMPACT berlapis (biru -> oranye -> tinta).
+ *
+ * Ketiga lapisan menempati sel grid yang sama supaya saling menimpa. Setiap
+ * huruf dibungkus kotak overflow-hidden sehingga huruf hanya tampak ketika
+ * sudah masuk ke area judul, sisanya terpotong seperti clipping mask.
+ */
+.hero-title {
+  font-family: var(--font-bebas), Impact, sans-serif;
+  font-weight: 400;
+}
+
+.hero-title__stack {
+  display: grid;
+}
+
+.hero-title__layer {
+  grid-area: 1 / 1;
+  display: inline-flex;
+  line-height: 1;
+}
+
+.hero-title__layer--blue {
+  color: #00aeef;
+}
+
+.hero-title__layer--orange {
+  color: #ff6a00;
+}
+
+.hero-title__layer--ink {
+  color: rgb(var(--ink));
+}
+
+.hero-title__letter {
+  display: inline-block;
+  overflow: hidden;
+  padding-block: 0.06em;
+  margin-block: -0.06em;
+}
+
+.hero-title__letter-inner {
+  display: inline-block;
+  animation-name: hero-letter-drop;
+  animation-duration: 0.62s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-fill-mode: both;
+  will-change: transform;
+}
+
+/* Lapisan berwarna memudar setelah lapisan tinta selesai turun. */
+.hero-title__layer--blue,
+.hero-title__layer--orange {
+  animation-name: hero-layer-fade;
+  animation-duration: 0.24s;
+  animation-timing-function: ease-out;
+  animation-fill-mode: both;
+}
+
+@keyframes hero-letter-drop {
+  from {
+    transform: translateY(-115%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes hero-layer-fade {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
+  }
+
+  .hero-title__letter-inner {
+    animation: none;
+    transform: none;
+  }
+
+  .hero-title__layer--blue,
+  .hero-title__layer--orange {
+    display: none;
   }
 }

@@ -6,7 +6,7 @@ import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ArrowRight, Handshake, Megaphone, Mic, Video, type LucideIcon } from "lucide-react";
-import { scrollToY } from "@/lib/smooth-scroll";
+import { scrollToY, setAccordionJumpHandler } from "@/lib/smooth-scroll";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -23,7 +23,7 @@ type AccordionItem = {
   cta: string;
   href: string;
   icon: LucideIcon;
-  images: { collapsed: string; expanded: string };
+  images: { collapsed: string; expanded: string; blue: string; orange: string };
 };
 
 const ITEMS: AccordionItem[] = [
@@ -36,7 +36,9 @@ const ITEMS: AccordionItem[] = [
     icon: Megaphone,
     images: {
       collapsed: "/images/accordion/card-1-collapsed.png",
-      expanded: "/images/accordion/card-1-expanded.png"
+      expanded: "/images/accordion/card-1-expanded.png",
+      blue: "/images/accordion/card-1-expanded-blue.png",
+      orange: "/images/accordion/card-1-expanded-orange.png"
     }
   },
   {
@@ -48,7 +50,9 @@ const ITEMS: AccordionItem[] = [
     icon: Handshake,
     images: {
       collapsed: "/images/accordion/card-2-collapsed.png",
-      expanded: "/images/accordion/card-2-expanded.png"
+      expanded: "/images/accordion/card-2-expanded.png",
+      blue: "/images/accordion/card-2-expanded-blue.png",
+      orange: "/images/accordion/card-2-expanded-orange.png"
     }
   },
   {
@@ -60,7 +64,9 @@ const ITEMS: AccordionItem[] = [
     icon: Video,
     images: {
       collapsed: "/images/accordion/card-3-collapsed.png",
-      expanded: "/images/accordion/card-3-expanded.png"
+      expanded: "/images/accordion/card-3-expanded.png",
+      blue: "/images/accordion/card-3-expanded-blue.png",
+      orange: "/images/accordion/card-3-expanded-orange.png"
     }
   },
   {
@@ -72,7 +78,9 @@ const ITEMS: AccordionItem[] = [
     icon: Mic,
     images: {
       collapsed: "/images/accordion/card-4-collapsed.png",
-      expanded: "/images/accordion/card-4-expanded.png"
+      expanded: "/images/accordion/card-4-expanded.png",
+      blue: "/images/accordion/card-4-expanded-blue.png",
+      orange: "/images/accordion/card-4-expanded-orange.png"
     }
   }
 ];
@@ -84,6 +92,8 @@ export function ScrollAccordion() {
   const cardRefs = useRef<(HTMLElement | null)[]>([]);
   const expandedGroupRefs = useRef<(HTMLDivElement | null)[]>([]);
   const collapsedGroupRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const blueRefs = useRef<(HTMLImageElement | null)[]>([]);
+  const orangeRefs = useRef<(HTMLImageElement | null)[]>([]);
   const jumpRef = useRef<(index: number) => void>(() => {});
 
   useIsomorphicLayoutEffect(() => {
@@ -95,6 +105,8 @@ export function ScrollAccordion() {
     const cards = cardRefs.current.filter(Boolean) as HTMLElement[];
     const expandedGroups = expandedGroupRefs.current.filter(Boolean) as HTMLElement[];
     const collapsedGroups = collapsedGroupRefs.current.filter(Boolean) as HTMLButtonElement[];
+    const blueSilhouettes = blueRefs.current.filter(Boolean) as HTMLImageElement[];
+    const orangeSilhouettes = orangeRefs.current.filter(Boolean) as HTMLImageElement[];
     if (cards.length !== ITEMS.length) return;
 
     const mm = gsap.matchMedia();
@@ -122,6 +134,11 @@ export function ScrollAccordion() {
         });
         collapsedGroups.forEach((button) => {
           button.tabIndex = 0;
+        });
+        [...blueSilhouettes, ...orangeSilhouettes].forEach((silhouette) => {
+          silhouette.style.removeProperty("opacity");
+          silhouette.style.removeProperty("visibility");
+          silhouette.style.removeProperty("transform");
         });
       };
 
@@ -162,11 +179,13 @@ export function ScrollAccordion() {
       // terbuka benar-benar tidak bisa menerima klik maupun fokus.
       gsap.set(expandedGroups, { autoAlpha: 0, filter: "blur(14px)" });
       gsap.set(collapsedGroups, { autoAlpha: 1, filter: "blur(0px)" });
+      // Siluet warna mulai tersembunyi tepat di belakang foto, lalu melebar
+      // keluar saat kartu benar-benar terbuka penuh.
+      gsap.set([...blueSilhouettes, ...orangeSilhouettes], { autoAlpha: 0, xPercent: 0 });
       cards[0].querySelectorAll<HTMLElement>("[data-card-link]").forEach((link) => {
         link.removeAttribute("tabindex");
       });
 
-      const entrance = 1;
       const view = 1.3;
       const transition = 1.6;
       const activeTimes: number[] = [0];
@@ -195,40 +214,44 @@ export function ScrollAccordion() {
 
       let time = 0;
 
-      // Semua panel mulai sebagai strip sempit, lalu panel pertama melebar.
-      timeline.fromTo(
-        cards[0],
-        { width: () => collapsedWidth() },
-        { width: () => activeWidth(), duration: entrance, ease: "power2.out" },
-        time
-      );
-      for (let i = 1; i < ITEMS.length; i += 1) {
-        timeline.fromTo(
-          cards[i],
-          { width: () => collapsedWidth() },
-          { width: () => collapsedWidth(), duration: entrance },
-          time
+      const spreadSilhouettes = (index: number, at: number, duration: number) => {
+        const start = at + 0.2;
+        timeline.to(
+          orangeSilhouettes[index],
+          { autoAlpha: 1, xPercent: -1.1, duration, ease: "power3.out" },
+          start
         );
-      }
-      timeline.to(
-        collapsedGroups[0],
-        { autoAlpha: 0, filter: "blur(14px)", duration: entrance * 0.45, ease: "power2.inOut" },
-        time + entrance * 0.1
-      );
-      timeline.to(
-        expandedGroups[0],
-        { autoAlpha: 1, duration: entrance * 0.35, ease: "power2.out" },
-        time + entrance * 0.15
-      );
-      // Teks tetap buram selama kartu melebar, lalu menajam tepat saat kartu
-      // sudah terbuka penuh.
-      timeline.to(
-        expandedGroups[0],
-        { filter: "blur(0px)", duration: entrance * 0.3, ease: "power2.inOut" },
-        time + entrance * 0.7
-      );
+        timeline.to(
+          blueSilhouettes[index],
+          { autoAlpha: 1, xPercent: 1.1, duration, ease: "power3.out" },
+          start
+        );
+      };
 
-      time += entrance + view;
+      const retractSilhouettes = (index: number, at: number, duration: number) => {
+        timeline.to(
+          orangeSilhouettes[index],
+          { autoAlpha: 0, xPercent: 0, duration, ease: "power2.in" },
+          at
+        );
+        timeline.to(
+          blueSilhouettes[index],
+          { autoAlpha: 0, xPercent: 0, duration, ease: "power2.in" },
+          at
+        );
+      };
+
+      // Kartu pertama langsung terbuka sejak awal.
+      timeline.set(cards[0], { width: () => activeWidth() }, 0);
+      for (let i = 1; i < ITEMS.length; i += 1) {
+        timeline.set(cards[i], { width: () => collapsedWidth() }, 0);
+      }
+      timeline.set(collapsedGroups[0], { autoAlpha: 0, filter: "blur(14px)" }, 0);
+      timeline.set(expandedGroups[0], { autoAlpha: 1, filter: "blur(0px)" }, 0);
+      timeline.set(orangeSilhouettes[0], { autoAlpha: 1, xPercent: -1.5 }, 0);
+      timeline.set(blueSilhouettes[0], { autoAlpha: 1, xPercent: 1.5 }, 0);
+
+      time += view;
 
       for (let i = 0; i < ITEMS.length - 1; i += 1) {
         const start = time;
@@ -262,6 +285,9 @@ export function ScrollAccordion() {
           { filter: "blur(0px)", duration: transition * 0.3, ease: "power2.inOut" },
           start + transition * 0.7
         );
+        retractSilhouettes(i, start, transition * 0.3);
+        // Kartu berikutnya baru memunculkan siluetnya saat sudah terbuka penuh.
+        spreadSilhouettes(i + 1, start + transition * 0.85, transition * 0.5);
 
         // Samakan status aktif dengan akhir animasi panel supaya aria-hidden
         // tidak menandai konten yang masih terlihat.
@@ -273,10 +299,10 @@ export function ScrollAccordion() {
 
       activeFractions = activeTimes.map((value) => value / timeline.duration());
       // Titik scroll di tengah fase diam tiap kartu, dipakai saat kartu sempit
-      // diklik. Untuk kartu pertama, fase diamnya mulai setelah animasi masuk.
+      // diklik. Kartu pertama sudah terbuka sejak awal.
       const jumpFractions = activeTimes.map((value, i) =>
         i === 0
-          ? (entrance + view * 0.3) / timeline.duration()
+          ? (view * 0.3) / timeline.duration()
           : (value + transition * 0.35 + view * 0.15) / timeline.duration()
       );
       jumpRef.current = (index) => {
@@ -318,6 +344,11 @@ export function ScrollAccordion() {
         run(0);
       };
 
+      setAccordionJumpHandler((index) => {
+        jumpRef.current(index);
+        return true;
+      });
+
       setActiveCard(0);
 
       const raf = requestAnimationFrame(() => ScrollTrigger.refresh());
@@ -330,6 +361,7 @@ export function ScrollAccordion() {
         jumpToken += 1;
         if (jumpTimer !== null) window.clearTimeout(jumpTimer);
         jumpRef.current = () => {};
+        setAccordionJumpHandler(null);
         restoreCardState();
       };
     });
@@ -341,20 +373,20 @@ export function ScrollAccordion() {
 
   return (
     <section id="pilih-jenis" ref={sectionRef} className="scroll-mt-24 pb-12 sm:pb-16">
-      <div className="mx-auto max-w-6xl px-4 pt-12 sm:pt-16">
-        <h2 data-reveal className="text-balance text-2xl font-bold tracking-tight text-ink sm:text-3xl md:text-4xl">
-          Pilih Jenis Pengajuan
-        </h2>
-        <p data-reveal className="mt-3 text-base text-slate-500 sm:text-lg">
-          Pilih salah satu jenis pengajuan sesuai kebutuhan Anda bersama COMPACT.
-        </p>
-      </div>
-
       <div
         ref={stageRef}
         data-accordion-stage
-        className="accordion-stage relative mx-auto mt-8 flex w-full max-w-7xl flex-col items-center overflow-hidden px-4 sm:mt-10 motion-safe:md:justify-center md:px-0"
+        className="accordion-stage relative mx-auto flex w-full max-w-7xl flex-col items-center gap-4 overflow-hidden px-4 pt-8 sm:pt-10 motion-safe:md:justify-center motion-safe:md:gap-3 md:px-0"
       >
+        <div className="mx-auto w-full max-w-6xl px-0 md:px-4">
+          <h2 data-reveal className="text-balance text-2xl font-bold tracking-tight text-ink sm:text-3xl md:text-4xl">
+            Pilih Jenis Pengajuan
+          </h2>
+          <p data-reveal className="mt-1.5 text-base text-slate-500 sm:text-lg">
+            Pilih salah satu jenis pengajuan sesuai kebutuhan Anda bersama COMPACT.
+          </p>
+        </div>
+
         <div
           ref={trackRef}
           data-accordion-track
@@ -395,12 +427,34 @@ export function ScrollAccordion() {
 
                   <div className="relative h-64 w-full shrink-0 overflow-hidden sm:h-72 md:h-auto md:w-[46%]">
                     <Image
+                      ref={(element) => {
+                        orangeRefs.current[index] = element;
+                      }}
+                      src={item.images.orange}
+                      alt=""
+                      fill
+                      sizes="(min-width: 768px) 30vw, 90vw"
+                      aria-hidden
+                      className="pointer-events-none -translate-x-[1.5%] select-none object-contain object-bottom"
+                    />
+                    <Image
+                      ref={(element) => {
+                        blueRefs.current[index] = element;
+                      }}
+                      src={item.images.blue}
+                      alt=""
+                      fill
+                      sizes="(min-width: 768px) 30vw, 90vw"
+                      aria-hidden
+                      className="pointer-events-none translate-x-[1.5%] select-none object-contain object-bottom"
+                    />
+                    <Image
                       src={item.images.expanded}
                       alt=""
                       fill
                       priority={index === 0}
                       sizes="(min-width: 768px) 30vw, 90vw"
-                      className="object-contain object-bottom"
+                      className="z-10 object-contain object-bottom"
                     />
                   </div>
                 </div>

@@ -5,6 +5,7 @@ import { KalenderPermohonan } from "@/components/KalenderPermohonan";
 import { LayananProsedur } from "@/components/LayananProsedur";
 import { PublicNav } from "@/components/PublicNav";
 import { LandingAnimations } from "@/components/LandingAnimations";
+import { HeroTitle } from "@/components/HeroTitle";
 import { ScrollAccordion } from "@/components/ScrollAccordion";
 import { getKalenderPermohonan, isKalenderPublikAktif } from "@/lib/kalender";
 import { rentangGrid, tanggalDariKey } from "@/lib/kalender-grid";
@@ -53,9 +54,7 @@ export default async function Home() {
                 data-hero
               />
               <p data-hero className="mb-4 text-sm font-semibold uppercase tracking-widest text-brand">UTM TV SERVICE SYSTEM</p>
-              <h1 data-hero className="max-w-3xl text-balance text-3xl font-bold leading-tight tracking-tight text-ink sm:text-4xl md:text-6xl">
-                COMPACT
-              </h1>
+              <HeroTitle className="max-w-3xl text-[4.83rem] leading-none tracking-tight sm:text-[5.8125rem] md:text-[5.6875rem]" />
               <p data-hero className="mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:mt-6 sm:text-lg sm:leading-8">
                 Cooperation, Media Partnership, Administration, Collaboration, &amp; Tracking
               </p>

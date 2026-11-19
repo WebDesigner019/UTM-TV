@@ -1,7 +1,15 @@
 import type { Metadata } from "next";
+import { Bebas_Neue } from "next/font/google";
 import { getAppUrl, getGoogleSiteVerification } from "@/lib/env";
 import { SmoothScroll } from "@/components/SmoothScroll";
 import "./globals.css";
+
+const bebasNeue = Bebas_Neue({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-bebas",
+  display: "swap"
+});
 
 const googleSiteVerification = getGoogleSiteVerification();
 
@@ -27,7 +35,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="id" translate="no" className="notranslate" suppressHydrationWarning>
+    <html lang="id" translate="no" className={`notranslate ${bebasNeue.variable}`} suppressHydrationWarning>
       <body suppressHydrationWarning>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <SmoothScroll />

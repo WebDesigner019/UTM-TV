@@ -50,6 +50,39 @@ function escapeHtml(value: string) {
     .replace(/'/g, "&#39;");
 }
 
+/** Versi escapeHtml untuk nilai opsional/null, dengan pengganti "-". */
+function escapeHtmlOr(value: string | null | undefined, fallback = "-") {
+  return escapeHtml(value || fallback);
+}
+
+/**
+ * Transporter dibuat sekali dan dipakai ulang. Konfigurasi SMTP tidak berubah
+ * selama proses berjalan, sedangkan createTransport() membuka connection pool
+ * baru setiap kali dipanggil. Kunci konfigurasi dicek ulang supaya perubahan
+ * env saat pengembangan tidak memakai transporter lama.
+ */
+let cachedTransporter: nodemailer.Transporter | null = null;
+let cachedTransporterKey = "";
+
+function getTransporter() {
+  const key = [process.env.SMTP_HOST, process.env.SMTP_PORT, process.env.SMTP_USER, process.env.SMTP_PASS].join("|");
+  if (!cachedTransporter || cachedTransporterKey !== key) {
+    cachedTransporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT),
+      secure: Number(process.env.SMTP_PORT) === 465,
+      auth: process.env.SMTP_USER
+        ? {
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS
+          }
+        : undefined
+    });
+    cachedTransporterKey = key;
+  }
+  return cachedTransporter;
+}
+
 async function sendMail(
   to: string,
   subject: string,
@@ -62,17 +95,7 @@ async function sendMail(
     return;
   }
 
-  const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT),
-    secure: Number(process.env.SMTP_PORT) === 465,
-    auth: process.env.SMTP_USER
-      ? {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS
-        }
-      : undefined
-  });
+  const transporter = getTransporter();
 
   const mailOptions: nodemailer.SendMailOptions = {
     from: process.env.SMTP_FROM,
@@ -89,7 +112,7 @@ async function sendMail(
 
 function buildEmailHtml(content: string, logoSrc?: string) {
   const logoHtml = logoSrc
-    ? `<img src="${logoSrc}" alt="COMPACT" width="130" style="max-width:130px;height:auto;display:block;margin:0 auto;border:0;outline:none;text-decoration:none;" />`
+    ? `<img src="${escapeHtml(logoSrc)}" alt="COMPACT" width="130" style="max-width:130px;height:auto;display:block;margin:0 auto;border:0;outline:none;text-decoration:none;" />`
     : "";
   return `<!DOCTYPE html>
 <html lang="id">
@@ -235,10 +258,14 @@ function buildEmailHtml(content: string, logoSrc?: string) {
  * klien email memblokir gambar remote. Bila berkas logo tidak ada di runtime,
  * src jatuh ke URL publik supaya header tidak berisi gambar rusak.
  */
+let cachedLogo: { src: string; attachments: Mail.Attachment[] } | null = null;
+
 function getLogo(): { src: string; attachments: Mail.Attachment[] } {
+  if (cachedLogo) return cachedLogo;
+
   const logoPath = path.join(process.cwd(), "public", "assets", "utm-tv-logo.jpg");
   if (fs.existsSync(logoPath)) {
-    return {
+    cachedLogo = {
       src: "cid:compact-logo",
       attachments: [
         {
@@ -250,12 +277,14 @@ function getLogo(): { src: string; attachments: Mail.Attachment[] } {
         }
       ]
     };
+    return cachedLogo;
   }
 
-  return {
+  cachedLogo = {
     src: `${getAppUrl()}/assets/utm-tv-logo.jpg`,
     attachments: []
   };
+  return cachedLogo;
 }
 
 export async function sendPermohonanDiterimaEmail(input: {
